@@ -12,10 +12,10 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    if args.file is not None:
+    if args.file is None:
         print("Usage: python lab1.py -f filename.txt")
     else:
-        filename = "data.txt"
+        filename = args.file
         try:
             with open(filename, "r", encoding="utf8") as file:
                 lines = file.readlines()
