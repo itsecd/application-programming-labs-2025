@@ -1,3 +1,4 @@
+# ВЫПОЛНИЛ ДОЛЖИКОВ ДМИТРИЙ 6212-100503D
 import argparse
 from validations import *
 from functions import *
