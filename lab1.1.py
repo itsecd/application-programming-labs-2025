@@ -19,3 +19,33 @@ def openfile()->list[str]:
     text = file.read()
     file.close()
     return text
+def get_full_records_by_name(name:str)->list[str]:
+    """
+    Функция для проверки анкет по имени
+    Сначала передаем имя которое ввел пользователь 'name'
+    далее создаем список в котором будут храниться нужные анкеты
+    проводим проверку с анкетами и функция возвращает список анкет
+    """
+    text=openfile()
+    if text is None:
+        return []
+    blocks = text.split('\n\n')
+    records = []
+    for block in blocks:
+      cleaned_block = block.strip()
+      if cleaned_block:
+        records.append(cleaned_block)
+    found_records=[]
+    for record in records:
+        
+        lines = record.splitlines()
+        for line in lines:
+            if line.startswith('Имя:'):
+                parts = line.split(':', 1)
+                record_name = parts[1]
+                record_name=record_name.strip()
+                record_name = record_name.lower()
+                if re.search(name, record_name) :
+                    found_records.append(record)
+                    break
+    return found_records  
