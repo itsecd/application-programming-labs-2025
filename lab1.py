@@ -8,17 +8,18 @@ def main() -> None:
     if filename is None:
         print("Usage: python lab1.py -f filename.txt")
         exit(3)
-    lines = functions.read_file(filename)
-
-    if lines is None:
+    try:
+        lines = functions.read_file(filename)
+    except FileNotFoundError:
         print("ERROR: No such file or directory")
         exit(1)
 
     age_statistics = functions.get_statistics(lines)
 
-    if functions.save_result(age_statistics):
+    try:
+        functions.save_result(age_statistics)
         print("Saved to 'result.txt'")
-    else:
+    except PermissionError:
         print("ERROR: Unable to save the file Permisson Denied")
         exit(2)
 

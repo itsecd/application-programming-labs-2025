@@ -27,7 +27,7 @@ def read_file(filename: str) -> str:
         with open(filename, "r", encoding="utf8") as file:
             return file.readlines()
     except FileNotFoundError:
-        return None
+        raise FileNotFoundError
 
 
 def get_statistics(lines: str) -> dict[str:int]:
@@ -56,7 +56,7 @@ def get_statistics(lines: str) -> dict[str:int]:
     return age_statistics
 
 
-def save_result(age_statistics: dict[str:int]) -> bool:
+def save_result(age_statistics: dict[str:int]) -> None:
     """Saving statistics
     Return True if the save is successful"""
     result_str = ""
@@ -65,9 +65,8 @@ def save_result(age_statistics: dict[str:int]) -> bool:
             result_str += f"{group}: {count}\n"
         with open("result.txt", "w", encoding="utf-8") as file:
             file.write(result_str)
-            return True
     except PermissionError:
-        return False
+        raise PermissionError
 
 
 def get_group_type(gender: str, age: int) -> str:
