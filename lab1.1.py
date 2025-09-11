@@ -50,7 +50,7 @@ def get_full_records_by_name(name:str)->list[str]:
                     break
     return found_records 
 
-def ritefile(found_records:list[str]) -> None:
+def writefile(found_records:list[str]) -> None:
     """
     функция для записи в файл
     """
@@ -63,3 +63,15 @@ def ritefile(found_records:list[str]) -> None:
     for exit_file in found_records:
         file.write(exit_file + '\n\n')
     return None
+def main()->None:
+    """
+    главная функция которая управляет кодом    нужна для запроса имени,вывода количества анкет"""
+    name=input('введите нужное имя:')
+    name=name.lower()    
+    found_records=get_full_records_by_name(name)
+    writefile(found_records)    
+    total=len(found_records)
+    print('Людей с именем ',name,'найдено ',total,'человек')   
+      
+if __name__ == "__main__":
+    main()
