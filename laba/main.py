@@ -1,14 +1,14 @@
-import re
 import argparse
+import re
 from typing import List, Tuple
-import sys
+
 
 KEY_PATTERN = re.compile(
     r"Фамилия:\s*(?P<lastname>.+?)\nИмя:\s*(?P<firstname>.+?)\n"
 )
 OLD_NUMBER_PATTERN = re.compile(r"^\d+\)")
 
-def parser_t():
+def parser_t() -> Tuple[str, str] :
     """
     функция нужна для ввода названий файлов
     """
@@ -17,15 +17,18 @@ def parser_t():
     parser.add_argument('-of', '--output_file', default='output.txt', type=str, help='Путь к файлу для сохранения результата')
 
     args = parser.parse_args()
-    return args
+    return args.source_file, args.output_file
 
-def open_file(filepath):
+def read_file(filepath: str) -> str:
     """
     функция для прочтения файла
     """
-    with open(filepath, "r", encoding="utf-8") as file:
-        full_text = file.read()
-    return full_text
+    try:
+        with open(filepath, "r", encoding="utf-8") as file:
+            full_text = file.read()
+        return full_text
+    except FileNotFoundError as e:
+        raise FileNotFoundError(f"файл {filepath} не найден")
 
 
 def split_into_blocks(full_text: str) -> List[str]:
@@ -38,7 +41,6 @@ def split_into_blocks(full_text: str) -> List[str]:
         for i in range(0, len(raw_blocks), 2)
     ]
     return grouped_blocks
-
 
 def create_sortable_list(blocks: List[str]) -> List[Tuple[str, str, str]]:
     """
@@ -67,20 +69,16 @@ def write_sorted_blocks_to_file(
             new_block = OLD_NUMBER_PATTERN.sub(new_number_str, s_tuple[2])
             output_file.write(new_block + "\n\n")
 
-
 def main() -> None:
     """
     главная функция, управляющая всем процессом.
     """
 
-    a = parser_t()
-
-    input_filename = a.source_file
-    output_filename = a.output_file
+    input_filename, output_filename = parser_t()
 
     print(f"Чтение файла '{input_filename}'...")
     try:
-        full_text = open_file(input_filename)
+        full_text = read_file(input_filename)
         blocks = split_into_blocks(full_text)
 
         sortable_data = create_sortable_list(blocks)
@@ -88,9 +86,9 @@ def main() -> None:
         write_sorted_blocks_to_file(output_filename, final_sorted_list)
 
         print("\nПроцесс успешно завершен!")
-    except FileNotFoundError:
-        print("\nПроцесс завершился с ошибкой")
-        sys.exit()
+    except Exception as e:
+        print(f"\nПроцесс завершился с ошибкой: {e}")
+
 
 if __name__ == '__main__':
     main()
