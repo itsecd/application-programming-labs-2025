@@ -13,11 +13,23 @@ def find_full_names(filename: str) -> list:
             surnames = re.findall(r'Фамилия:\s+\w+', data)
             res_names = []
             for i in range(len(names)):
-                res_names.append(surnames[i][9].upper()+surnames[i][10:] + " " + names[i][5].upper() + ".")
+                res_names.append(surnames[i][9:] + " " + names[i][5] + ".")
             return sorted(res_names)
     except:
         print("Файл с таким именем не найден, увынск(")
         return []
+
+def find_correct_names(full_names: list[str]) -> list[str]:
+    """
+    Функция проверяет коррекность фамилии и имени и возвращает список с корректными значениями
+    """
+    res_names = []
+    for i in full_names:
+        name = i.split(" ")[0]
+        surname = i.split(" ")[1]
+        if name[0]==name[0].upper() and surname==surname.upper():
+            res_names.append(i)
+    return res_names
 
 
 def write_full_names(filename: str, lst: list) -> None:
@@ -41,7 +53,7 @@ def main() -> None:
     parser.add_argument('output_filename', type=str, help='Path to output file')
     args = parser.parse_args()
 
-    lst_full_names = find_full_names(args.input_filename)
+    lst_full_names = find_correct_names(find_full_names(args.input_filename))
     write_full_names(args.output_filename, lst_full_names)
 
 
