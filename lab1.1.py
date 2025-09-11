@@ -48,4 +48,18 @@ def get_full_records_by_name(name:str)->list[str]:
                 if re.search(name, record_name) :
                     found_records.append(record)
                     break
-    return found_records  
+    return found_records 
+
+def ritefile(found_records:list[str]) -> None:
+    """
+    функция для записи в файл
+    """
+    try:
+      file = open('data1.txt', 'w', encoding='utf-8')
+    except FileNotFoundError as exs:
+        print(f"Error: {exs}")
+        return None
+        
+    for exit_file in found_records:
+        file.write(exit_file + '\n\n')
+    return None
