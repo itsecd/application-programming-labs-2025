@@ -1,32 +1,16 @@
 # ВЫПОЛНИЛ ДОЛЖИКОВ ДМИТРИЙ 6212-100503D
 import re
+import calendar
 
 
 def is_valid_date(date: str) -> bool:
     """Check date"""
-    months = {
-        1: 31,
-        2: 28,
-        3: 31,
-        4: 30,
-        5: 31,
-        6: 30,
-        7: 31,
-        8: 31,
-        9: 30,
-        10: 31,
-        11: 30,
-        12: 31,
-    }
-    if not (
-        re.fullmatch(r"\d\d[/.-]\d\d[/.-]\d\d\d\d", date)
-        or re.fullmatch(r"\d[/.-]\d[/.-]\d\d\d\d", date)
-    ):
+    if not (re.fullmatch(r"\d{1,2}[/.-]\d{1,2}[/.-]\d{4}", date)):
         return False
     day, month, year = map(int, re.split(r"[/.-]+", date))
     if not 1 <= month <= 12:
         return False
-    elif not (1 <= day <= months[month] and 1900 <= year <= 2025):
+    elif not (1 <= day <= calendar.monthrange(year, month)[1] and 1900 <= year <= 2025):
         return False
     return True
 
@@ -34,12 +18,10 @@ def is_valid_date(date: str) -> bool:
 def is_valid_phone(phone: str) -> bool:
     """Check phone"""
     if not (
-        re.fullmatch(r"8 [(]\d\d\d[)] \d\d\d[\s-]\d\d[\s-]\d\d", phone)
-        or re.fullmatch(r"[+]7 [(]\d\d\d[)] \d\d\d[\s-]\d\d[\s-]\d\d", phone)
-        or re.fullmatch(r"[+]7 \d\d\d \d\d\d[\s-]\d\d[\s-]\d\d", phone)
-        or re.fullmatch(r"8 \d\d\d \d\d\d[\s-]\d\d[\s-]\d\d", phone)
-        or re.fullmatch(r"[+]7\d\d\d\d\d\d\d\d\d\d", phone)
-        or re.fullmatch(r"8\d\d\d\d\d\d\d\d\d\d", phone)
+        re.fullmatch(r"8 [(]?\d{3}[)]? \d{3}[\s-]\d{2}[\s-]\d{2}", phone)
+        or re.fullmatch(r"[+]7 [(]?\d{3}[)]? \d{3}[\s-]\d{2}[\s-]\d{2}", phone)
+        or re.fullmatch(r"[+]7\d{10}", phone)
+        or re.fullmatch(r"8\d{10}", phone)
     ):
         return False
     return True
