@@ -1,6 +1,7 @@
 import re
 import argparse
 from typing import List, Tuple
+from time import  localtime
 
 def read_file(filename: str) -> str:
     """
@@ -28,8 +29,36 @@ def normolize_date(date_of_birth: str) -> str:
 
     return normal_date
 
+def check_date(date_of_birth: str) -> bool:
+    """
+    проверка даты
+    """
+    date = normolize_date(date_of_birth)
 
+    penis = re.split(r'[.]', date) # ПОМЕНЯЙ ЕБЛАН
 
+    day = int(penis[0])
+    month = int(penis[1])
+    year = int(penis[2])
+
+    #проверка на адекватность даты
+    if not(1<= day <= 31) or not(1 <= month <= 12) or not(1900 <= year < 2026):
+        return False
+    # проверка на февраль
+    if month == 2 and day > 29:
+        return False
+    # проверка на адекватность даты в месяцах с 30 днями
+    if month in [4,6,9,11] and day > 30:
+        return False
+
+    return True
+
+def defining_the_age(date_of_birth: str) -> int:
+    date = normolize_date(date_of_birth)
+    now_year = localtime(date).tm_year
+    penis = re.split(r'[.]', date)  # ПОМЕНЯЙ ЕБЛАН
+    year = int(penis[2])
+    return now_year - year
 
 
 
