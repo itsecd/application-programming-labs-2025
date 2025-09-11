@@ -10,7 +10,6 @@ def read_file(filename: str) -> str:
     with open(filename,'r', encoding="utf-8") as file:
         return file.read()
 
-
 def extracting_last_name_date_of_birth(data:str) -> List[Tuple[str, str]]:
     """
     выделяю из всех данных только
@@ -54,11 +53,26 @@ def check_date(date_of_birth: str) -> bool:
     return True
 
 def defining_the_age(date_of_birth: str) -> int:
+    """
+    вычисление возраста
+    """
     date = normolize_date(date_of_birth)
     now_year = localtime(date).tm_year
+    now_day = localtime(date).tm_yday
+    now_month = localtime(date).tm_mon
     penis = re.split(r'[.]', date)  # ПОМЕНЯЙ ЕБЛАН
     year = int(penis[2])
-    return now_year - year
+    day = int(penis[0])
+    month = int(penis[1])
+
+    if(month < now_month):
+        if(day< now_day):
+            return now_year - year
+        else:
+            return now_year - year -1
+
+    else:
+        return now_year - year - 1
 
 
 
