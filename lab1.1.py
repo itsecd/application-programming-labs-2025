@@ -1,77 +1,85 @@
 import argparse
 import re
 
-def openfile()->list[str]:
+
+def parser_file():
+    """Функция для парсинга аргументов командной строки"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("file", type=str, help="Путь к файлу")
+    parser.add_argument("name", type=str, help="Имя для поиска")
+    return parser.parse_args()
+
+
+def read_file(filepath: str) -> str:
     """
     Функция для чтения из файла
-    С помощью argarce мы передаем имя файла как аргумент командной строки
-    Далее делаем проверку и закрываем файл
+    Возвращает содержимое файла как строку
     """
-    parser = argparse.ArgumentParser()  
-    parser.add_argument('file', type=str, help='file')  
-    args = parser.parse_args()
     try:
-        file = open(args.file, 'r', encoding='utf-8')
+        with open(filepath, "r", encoding="utf-8") as file:
+            text = file.read()
+        return text
     except FileNotFoundError as exs:
         print(f"Error: {exs}")
         return None
-    
-    text = file.read()
-    file.close()
-    return text
-def get_full_records_by_name(name:str)->list[str]:
+
+
+def get_full_records_by_name(name: str, filepath: str) -> list[str]:
     """
     Функция для проверки анкет по имени
     Сначала передаем имя которое ввел пользователь 'name'
     далее создаем список в котором будут храниться нужные анкеты
     проводим проверку с анкетами и функция возвращает список анкет
     """
-    text=openfile()
+    text = read_file(filepath)
     if text is None:
         return []
-    blocks = text.split('\n\n')
+
+    blocks = text.split("\n\n")
     records = []
     for block in blocks:
-      cleaned_block = block.strip()
-      if cleaned_block:
-        records.append(cleaned_block)
-    found_records=[]
+        cleaned_block = block.strip()
+        if cleaned_block:
+            records.append(cleaned_block)
+
+    found_records = []
     for record in records:
-        
         lines = record.splitlines()
         for line in lines:
-            if line.startswith('Имя:'):
-                parts = line.split(':', 1)
+            if line.startswith("Имя:"):
+                parts = line.split(":", 1)
                 record_name = parts[1]
-                record_name=record_name.strip()
+                record_name = record_name.strip()
                 record_name = record_name.lower()
-                if re.search(name, record_name) :
+                if re.search(name, record_name):
                     found_records.append(record)
                     break
-    return found_records 
+    return found_records
 
-def writefile(found_records:list[str]) -> None:
+
+def write_file(found_records: list[str]) -> None:
     """
     функция для записи в файл
     """
     try:
-      file = open('data1.txt', 'w', encoding='utf-8')
-    except FileNotFoundError as exs:
-        print(f"Error: {exs}")
-        return None
-        
-    for exit_file in found_records:
-        file.write(exit_file + '\n\n')
-    return None
-def main()->None:
+        with open("data1.txt", "w", encoding="utf-8") as file:
+            for exit_file in found_records:
+                file.write(exit_file + "\n\n")
+    except Exception as exs:
+        print(f"Error при записи: {exs}")
+
+
+def main() -> None:
     """
-    главная функция которая управляет кодом    нужна для запроса имени,вывода количества анкет"""
-    name=input('введите нужное имя:')
-    name=name.lower()    
-    found_records=get_full_records_by_name(name)
-    writefile(found_records)    
-    total=len(found_records)
-    print('Людей с именем ',name,'найдено ',total,'человек')   
-      
+    главная функция которая управляет кодом
+    """
+    args = parser_file()
+    name = args.name.lower()
+    found_records = get_full_records_by_name(name, args.file)
+    write_file(found_records)
+    total = len(found_records)
+    print("Людей с именем ", name, "найдено ", total, "человек")
+
+
 if __name__ == "__main__":
     main()
