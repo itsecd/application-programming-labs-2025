@@ -4,6 +4,7 @@ import argparse
 
 
 def date_check(date: str) -> bool:
+    """"правильность написания даты по валидным форматам"""
     if (
         re.fullmatch(r"\d\d[./-]\d\d[./-]\d\d\d\d", date)
         or re.fullmatch(r"\d[./-]\d[./-]\d\d\d\d", date)
@@ -23,6 +24,7 @@ def date_check(date: str) -> bool:
 
 
 def email_check(email: str) -> bool:
+    """"правильность написания почты по валидным форматам"""
     if email[email.find("@") + 1 : -1] in ["gmail.com", "mail.ru", "yandex.ru"]:
         if re.fullmatch(r"[A-Za-z0-9._%+-]{,64}", email[: email.find("@")]):
             return True
@@ -30,6 +32,7 @@ def email_check(email: str) -> bool:
 
 
 def phone_check(phone: str) -> bool:  #!! +7 или 8 в одну строку плохо работало
+    """"правильность написания номера телефона по валидным форматам"""
     if re.fullmatch(
         r"8\s?\(?\d{3}\)?\s?\d{3}[\s-]?\d{2}[\s-]?\d{2}", phone
     ) or re.fullmatch(r"\+7\s?\(?\d{3}\)?\s?\d{3}[\s-]?\d{2}[\s-]?\d{2}", phone):
@@ -38,6 +41,7 @@ def phone_check(phone: str) -> bool:  #!! +7 или 8 в одну строку �
 
 
 def town_check(town: str) -> bool:
+    """"правильность написания города по валидным форматам"""
     if re.fullmatch(
         r"г\.\s?[А-ЯЁ][а-яё]+|[А-ЯЁ][а-яё]+", town
     ) or re.fullmatch(r"[А-ЯЁ][а-яё]+|[А-ЯЁ][а-яё]+", town):
