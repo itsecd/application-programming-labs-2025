@@ -65,17 +65,30 @@ def sort_date(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
     """
 
     sorted_last_name_and_date_of_birth : List[Tuple[str, str]] = []
+    unformat_date: List[Tuple[str, str]] = []
+
     for last_name, date_of_birth in data:
         norm_date = normalize_date(date_of_birth)
         if check_date(norm_date):
-           sorted_last_name_and_date_of_birth.append((last_name, norm_date))
+           unformat_date.append((last_name, norm_date))
 
-    sorted_last_name_and_date_of_birth.sort(key=lambda x: x[1])
+    unformat_date.sort(key=lambda x: x[1])
 
-
-
+    for last_name, date_of_birth in unformat_date:
+        norm_format_date = return_format_date(date_of_birth)
+        sorted_last_name_and_date_of_birth.append((last_name, norm_format_date))
 
     return sorted_last_name_and_date_of_birth
+
+
+def return_format_date(YYYY_format: str) -> str:
+    """
+    возврат даты в подходящий формат DD-MM-YYYY
+    """
+    year, month, day = YYYY_format.split('-')
+    return f"{day}-{month}-{year}"
+
+
 
 a = read_file("data.txt")
 b = extracting_last_name_date_of_birth(a)
