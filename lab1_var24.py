@@ -32,42 +32,47 @@ def normalize_date(date_of_birth: str) -> str:
     """
     приведение даты к единому формату YYYY-MM-DD
     """
-    date = date_of_birth.strip() # удаляю пробелы по бокам
+    try:
+        date = date_of_birth.strip() # удаляю пробелы по бокам
 
-    normal_date = re.sub(r'[/.]', '-', date)
-    day, month, year = normal_date.split('-')
+        normal_date = re.sub(r'[/.]', '-', date)
+        day, month, year = normal_date.split('-')
 
-    day = day.zfill(2)
-    month = month.zfill(2)
+        day = day.zfill(2)
+        month = month.zfill(2)
 
-    return f"{year}-{month}-{day}"
+        return f"{year}-{month}-{day}"
+    except ValueError:
+        print(f"Неверный формат даты {date_of_birth}")
 
 def check_date(date: str) -> bool:
     """
     проверка даты
     """
+    try:
+        part_date = re.split(r'[-]', date)
 
-    part_date = re.split(r'[-]', date) 
+        if len(part_date[2]) != 2 or len(part_date[1]) !=2 or len(part_date[0]) != 4:
+            return False
 
-    if len(part_date[2]) != 2 or len(part_date[1]) !=2 or len(part_date[0]) != 4:
+
+        day = int(part_date[2])
+        month = int(part_date[1])
+        year = int(part_date[0])
+
+        # проверка на адекватность даты
+        if not(1<= day <= 31) or not(1 <= month <= 12) or not(1900 <= year < 2026):
+            return False
+        # проверка на февраль
+        if month == 2 and day > 29:
+            return False
+        # проверка на адекватность даты в месяцах с 30 днями
+        if month in [4,6,9,11] and day > 30:
+            return False
+
+        return True
+    except(ValueError, TypeError):
         return False
-
-
-    day = int(part_date[2])
-    month = int(part_date[1])
-    year = int(part_date[0])
-
-    #проверка на адекватность даты
-    if not(1<= day <= 31) or not(1 <= month <= 12) or not(1900 <= year < 2026):
-        return False
-    # проверка на февраль
-    if month == 2 and day > 29:
-        return False
-    # проверка на адекватность даты в месяцах с 30 днями
-    if month in [4,6,9,11] and day > 30:
-        return False
-
-    return True
 
 def sort_date(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
     """
