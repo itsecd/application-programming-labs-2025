@@ -3,13 +3,12 @@ import argparse
 from typing import List, Tuple
 
 
-
 def parse_arguments() -> argparse.Namespace:
     """
     Парсинг аргументов командной строки
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input_file", type=str,required=True, help="Имя входного файла")
+    parser.add_argument("-i", "--input_file", type=str, required=True, help="Имя входного файла")
     parser.add_argument("-o", "--output_file", type=str, required=True, help="Имя выходного файла")
     return parser.parse_args()
 
@@ -95,14 +94,12 @@ def sort_date(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
 
     return sorted_last_name_and_date_of_birth
 
-
 def return_format_date(YYYY_format: str) -> str:
     """
     возврат даты в подходящий формат DD-MM-YYYY
     """
     year, month, day = YYYY_format.split('-')
     return f"{day}-{month}-{year}"
-
 
 def format_in_output(data: List[Tuple[str, str]]) -> List[str]:
     """
@@ -143,7 +140,6 @@ def main() -> None:
 
     except Exception as e:
         print(f"Ошибка при выполнении программы: {e}")
-
 
 if __name__ == "__main__":
     main()
