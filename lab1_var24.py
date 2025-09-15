@@ -1,7 +1,17 @@
 import re
 import argparse
 from typing import List, Tuple
-from time import  localtime
+
+
+
+def parse_arguments() -> argparse.Namespace:
+    """
+    Парсинг аргументов командной строки
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_file", type=str,required=True, help="Имя входного файла")
+    parser.add_argument("-o", "--output_file", type=str, required=True, help="Имя выходного файла")
+    return parser.parse_args()
 
 def read_file(filename: str) -> str:
     """
@@ -15,7 +25,7 @@ def extracting_last_name_date_of_birth(data:str) -> List[Tuple[str, str]]:
     выделение из всех данных только
     Фамилии и дат рождения
     """
-    pattern = r'Фамилия:\s*([^\n]+)\s*(?:.*?\n)*?Дата рождения:\s*(\d{1,2}[./-]\d{1,2}[./-]\d{4})'
+    pattern = r'Фамилия:\s*([^\n0-9]+)\s*(?:.*?\n)*?Дата рождения:\s*(\d{1,2}[./-]\d{1,2}[./-]\d{4})'
     return re.findall(pattern, data, re.IGNORECASE)
 
 def normalize_date(date_of_birth: str) -> str:
@@ -37,15 +47,15 @@ def check_date(date: str) -> bool:
     проверка даты
     """
 
-    penis = re.split(r'[-]', date) # ПОМЕНЯЙ ЕБЛАН
+    part_date = re.split(r'[-]', date) 
 
-    if len(penis[2]) != 2 or len(penis[1]) !=2 or len(penis[0]) != 4:
+    if len(part_date[2]) != 2 or len(part_date[1]) !=2 or len(part_date[0]) != 4:
         return False
 
 
-    day = int(penis[2])
-    month = int(penis[1])
-    year = int(penis[0])
+    day = int(part_date[2])
+    month = int(part_date[1])
+    year = int(part_date[0])
 
     #проверка на адекватность даты
     if not(1<= day <= 31) or not(1 <= month <= 12) or not(1900 <= year < 2026):
@@ -89,16 +99,49 @@ def return_format_date(YYYY_format: str) -> str:
     return f"{day}-{month}-{year}"
 
 
+def format_in_output(data: List[Tuple[str, str]]) -> List[str]:
+    """
+    Перевод в конечный формат List
+    """
 
-a = read_file("data.txt")
-b = extracting_last_name_date_of_birth(a)
-c = sort_date(b)
-print(c)
+    data_output = []
+
+    for last_name, date_of_birth in data:
+        data_output.append(f"{last_name}: {date_of_birth}")
+    return data_output
+
+def write_to_file(filename: str, all_data: List[str]) -> None:
+    with open(filename, 'w', encoding="utf-8") as file:
+        for data in all_data:
+            file.write(data + '\n')
+
+def main() -> None:
+    """
+    основная функция программы
+    """
+
+    try:
+        args = parse_arguments()
+
+        all_data = read_file(args.input_file)
+
+        last_name_date = extracting_last_name_date_of_birth(all_data)
+
+        sort_last_name_date = sort_date(last_name_date)
+
+        list_sort_date = format_in_output(sort_last_name_date)
+
+        write_to_file(args.output_file, list_sort_date)
+
+    except FileNotFoundError:
+        print("ОШИБКА: файл не найден")
+
+    except Exception as e:
+        print(f"Ошибка при выполнении программы: {e}")
 
 
-
-
-
+if __name__ == "__main__":
+    main()
 
 
 
