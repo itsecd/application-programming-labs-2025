@@ -2,7 +2,7 @@ import argparse
 import re
 
 
-def parser_file():
+def parser_file() -> argparse.Namespace:
     """Функция для парсинга аргументов командной строки"""
     parser = argparse.ArgumentParser()
     parser.add_argument("file", type=str, help="Путь к файлу")
@@ -15,32 +15,31 @@ def read_file(filepath: str) -> str:
     Функция для чтения из файла
     Возвращает содержимое файла как строку
     """
-    try:
-        with open(filepath, "r", encoding="utf-8") as file:
-            text = file.read()
-        return text
-    except FileNotFoundError as exs:
-        print(f"Error: {exs}")
-        return None
+    with open(filepath, "r", encoding="utf-8") as file:
+        return file.read()
 
 
-def get_full_records_by_name(name: str, filepath: str) -> list[str]:
+def clean_records(filepath: str) -> list[str]:
     """
-    Функция для проверки анкет по имени
-    Сначала передаем имя которое ввел пользователь 'name'
-    далее создаем список в котором будут храниться нужные анкеты
-    проводим проверку с анкетами и функция возвращает список анкет
+    Разбивает текст на анкеты по двойному переносу строки
     """
     text = read_file(filepath)
-    if text is None:
-        return []
-
     blocks = text.split("\n\n")
     records = []
     for block in blocks:
         cleaned_block = block.strip()
         if cleaned_block:
             records.append(cleaned_block)
+    return records
+
+
+def get_full_records_by_name(name: str, records: list[str]) -> list[str]:
+    """
+    Функция для проверки анкет по имени
+    Сначала передаем имя которое ввел пользователь 'name'
+    далее создаем список в котором будут храниться нужные анкеты
+    проводим проверку с анкетами и функция возвращает список анкет
+    """
 
     found_records = []
     for record in records:
@@ -61,24 +60,27 @@ def write_file(found_records: list[str]) -> None:
     """
     функция для записи в файл
     """
-    try:
-        with open("data1.txt", "w", encoding="utf-8") as file:
-            for exit_file in found_records:
-                file.write(exit_file + "\n\n")
-    except Exception as exs:
-        print(f"Error при записи: {exs}")
+    with open("data1.txt", "w", encoding="utf-8") as file:
+        for record in found_records:
+            file.write(record + "\n\n")
 
 
 def main() -> None:
-    """
-    главная функция которая управляет кодом
-    """
     args = parser_file()
     name = args.name.lower()
-    found_records = get_full_records_by_name(name, args.file)
-    write_file(found_records)
-    total = len(found_records)
-    print("Людей с именем ", name, "найдено ", total, "человек")
+
+    try:
+        records = clean_records(args.file)
+        found_records = get_full_records_by_name(name, records)
+        write_file(found_records)
+        total = len(found_records)
+        print(f"Людей с именем '{name}' найдено {total} человек")
+    except FileNotFoundError as ex:
+        print(f"Ошибка: файл '{args.file}' не найден: {ex}")
+    except PermissionError as ex:
+        print(f"Ошибка записи в файл 'data1.txt': {ex}")
+    except Exception as ex:
+        print(f"Произошла ошибка: {ex}")
 
 
 if __name__ == "__main__":
