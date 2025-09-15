@@ -34,9 +34,18 @@ def read_file(file_path: str) -> str:
 
     Returns:
         str: Содержимое файла в виде строки.
+
+    Raises:
+        FileNotFoundError: Если входной файл не найден.
+        IOError: Если произошла ошибка при чтении файла.
     """
-    with open(file_path, "r", encoding="utf-8") as f:
-        return f.read()
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Ошибка: Файл '{file_path}' не найден")
+    except IOError as e:
+        raise IOError(f"Ошибка при чтении файла '{file_path}': {str(e)}")
 
 
 def write_file(file_path: str, data: List[str]) -> None:
@@ -46,32 +55,44 @@ def write_file(file_path: str, data: List[str]) -> None:
     Args:
         file_path (str): Путь к выходному файлу.
         data (List[str]): Список анкет для записи.
+
+    Raises:
+        IOError: Если произошла ошибка при записи файла.
     """
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write("\n\n".join(data))
+    try:
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write("\n\n".join(data))
+    except IOError as e:
+        raise IOError(f"Ошибка при записи в файл '{file_path}': {str(e)}")
 
 
 def main() -> None:
     """
     Основная функция программы.
 
-    Считывает имя входного файла из аргументов командной строки,
-    извлекает анкеты с корректными email и сохраняет их в файл
-    emails.txt.
+    Считывает имя входного и выходного файла из аргументов командной строки,
+    извлекает анкеты с корректными email и сохраняет их в указанный файл.
+
+    Raises:
+        SystemExit: Если переданы некорректные аргументы командной строки.
     """
-    if len(sys.argv) < 2:
-        print("Укажите имя входного файла, например: data.txt")
-        return
+    if len(sys.argv) < 3:
+        print("Использование: python script.py <входной_файл> <выходной_файл>")
+        sys.exit(1)
 
     input_file = sys.argv[1]
-    output_file = "emails.txt"
+    output_file = sys.argv[2]
 
-    content = read_file(input_file)
-    ankets_with_email = extract_ankets_with_email(content)
-    write_file(output_file, ankets_with_email)
+    try:
+        content = read_file(input_file)
+        ankets_with_email = extract_ankets_with_email(content)
+        write_file(output_file, ankets_with_email)
 
-    print(f"Найдено {len(ankets_with_email)} анкет с корректным email.")
-    print(f"Результат сохранён в файл: {output_file}")
+        print(f"Найдено {len(ankets_with_email)} анкет с корректным email.")
+        print(f"Результат сохранён в файл: {output_file}")
+    except (FileNotFoundError, IOError) as e:
+        print(f"Ошибка: {str(e)}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
