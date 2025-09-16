@@ -141,13 +141,11 @@ def process_ankets_data(data: list, target_name: str) -> tuple[int, str]:
 
 def main():
     """Основная функция программы"""
-    # Парсим аргументы
     args = parse_arguments()
     input_file = args.input_file
     target_name = args.name
     output_file = args.output_file
     
-    # Читаем данные из файла
     try:
         data = read_input_file(input_file)
     except Exception as e:
