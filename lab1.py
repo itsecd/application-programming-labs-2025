@@ -1,5 +1,6 @@
-﻿import re
+﻿import argparse
 from collections import Counter
+import re
 from typing import List, Tuple, Union
 
 
@@ -42,8 +43,14 @@ def find_most_common_code(codes: List[str]) -> Union[Tuple[str, int], None]:
 
 
 def main() -> None:
+
+    parser = argparse.ArgumentParser(description='Анализ кодов операторов')
+    parser.add_argument("input_file", type=str, help="Файл для чтения данных")
+    parser.add_argument("output_file", type=str, help="Файл для записи результата")
+    args = parser.parse_args()
+    
     try:
-        content = read_file_content('data.txt')
+        content = read_file_content(args.input_file)
         codes = extract_operator_codes(content)
         result = find_most_common_code(codes)
         
@@ -51,8 +58,14 @@ def main() -> None:
             code, count = result
             print(f"Самый частый код оператора: {code}")
             print(f"Повторений: {count}")
+         
+            with open(args.output_file, 'w', encoding='utf-8') as f:
+                f.write(f"Самый частый код оператора: {code}\n")
+                f.write(f"Повторений: {count}\n")
         else:
             print("Коды операторов не найдены")
+            with open(args.output_file, 'w', encoding='utf-8') as f:
+                f.write("Коды операторов не найдены\n")
             
     except FileNotFoundError as e:
         print(f"Ошибка: {e}")
