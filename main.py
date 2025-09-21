@@ -3,6 +3,9 @@ import argparse
 
 
 def correct_number(text):
+    """
+    Проверка совпадения номера по заданному шаблону.
+    """
     start_string = r"[а-яА-Я\sa-zA-Z]+: "
     pattern1 = start_string + r"(\+7|8)\d{10}"
     pattern2 = start_string + r"(\+7|8)( \(\d{3}\) )\d{3}[ -]{1}\d{2}[ -]\d{2}"
@@ -16,7 +19,10 @@ def correct_number(text):
         text)
 
 
-def read_file(file_path):
+def read_file(file_path) -> str:
+    """
+    Чтения файла, если это возможно.
+    """
     try:
         with open(file_path, "r", encoding="utf-8") as rfile:
             return rfile.read()
@@ -24,7 +30,15 @@ def read_file(file_path):
         raise
 
 
-def main():
+def result_output(count, path) -> None:
+    """
+    Вывод в консоль результата программы.
+    """
+    print(f"\nКоличество корректных номеров среди анкет: {count}")
+    print(f"Все подходящие анкеты записаны в \"{path}\"\n")
+
+
+def parse_args_console() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--read_file",
@@ -36,31 +50,31 @@ def main():
         "-wf",
         type=str,
         help="path to write file")
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    is_wfile = args.write_file is not None
+
+def main():
+    args = parse_args_console()
+
+    write_path = args.write_file if (
+        args.write_file is not None) else "result.txt"
 
     count_correct_numbers = 0
     if args.read_file is not None:
         text = read_file(args.read_file)
         text = text.splitlines()  # Превращаем текст в список строк
-        wfile = open(args.write_file, "w", encoding="utf-8")
-        for i in range(len(text)):  # Двигаемся по списку через индексы
-            if (correct_number(text[i])):  # Проверяем удовл. ли номер паттерну
-                count_correct_numbers += 1
-
-                if (is_wfile):  # Если указывали файл в аргументах, в который нужно записать
-                    wfile.write(str(count_correct_numbers) + ")\n")
-                    # Нужно отойти на 4 строчки назад и 1 вперед, чтобы сохр анкету
+        with open(write_path, "w", encoding="utf-8") as wfile:
+            for i in range(len(text)):  # Двигаемся по списку через индексы
+                if (correct_number(text[i])):  # Проверяем удовл. ли номер паттерну
+                    count_correct_numbers += 1
+                    # Нужно отойти на 4 строчки назад и 1 вперед, чтобы сохранить анкету
                     # с самого начала
+                    wfile.write("\n" + str(count_correct_numbers) + ")\n")
                     for x in range(-4, 2):
                         wfile.write(text[i + x] + '\n')
-                    wfile.write('\n')
-        wfile.close()
 
-    print("\nКоличество корректных номеров среди анкет: ", count_correct_numbers)
-    if (is_wfile):
-        print(f"Все подходящие анкеты записаны в \"{args.write_file}\"\n")
+
+        result_output(count_correct_numbers, write_path)
 
 
 if __name__ == "__main__":
