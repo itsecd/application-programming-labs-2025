@@ -1,5 +1,3 @@
-#Найдите анкеты людей, у которых указан номер телефона (в корректном формате).
-#Выведите их количество на экран и сохраните найденные анкеты в новый файл.
 import re
 import argparse
 
@@ -16,14 +14,24 @@ parser.add_argument("--read_file", "-rf", type=str, help = "file read name")
 parser.add_argument("--write_file", "-wf", type=str, help = "file write name")
 args = parser.parse_args()
 
+is_wfile = args.write_file is not None
+
 count_correct_numbers = 0
 if args.read_file is not None:
 	with open(args.read_file, "r", encoding="utf-8") as rfile:
 		text = rfile.read()
-	text = text.splitlines()
-
-	for i in range(len(text)):
-		if(correct_number(text[i])):
+	text = text.splitlines() # Превращаем текст в список строк
+	wfile = open(args.write_file, "w", encoding="utf-8")
+	for i in range(len(text)): # Двигаемся по списку через индексы
+		if(correct_number(text[i])): # Проверяем удовл. ли номер паттерну
 			count_correct_numbers+=1
 
-	print(count_correct_number)
+			if(is_wfile): # Если указывали файл в аргументах, в который нужно записать 
+				wfile.write(str(count_correct_numbers) + ")\n")
+				for x in range(-4,2):           #Нужно отойти на 4 строчки назад и 1 вперед, чтобы сохр анкету с самого начала
+					wfile.write(text[i+x]+'\n')
+				wfile.write('\n')
+	wfile.close()
+
+print("\nКоличество корректных номеров среди анкет: ",count_correct_numbers)
+if(is_wfile): print(f"Все подходящие анкеты записаны в \"{args.write_file}\"\n")	
