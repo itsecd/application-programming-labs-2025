@@ -16,13 +16,14 @@ parser.add_argument("--read_file", "-rf", type=str, help = "file read name")
 parser.add_argument("--write_file", "-wf", type=str, help = "file write name")
 args = parser.parse_args()
 
-count_correct_number = 0
+count_correct_numbers = 0
 if args.read_file is not None:
 	with open(args.read_file, "r", encoding="utf-8") as rfile:
 		text = rfile.read()
 	text = text.splitlines()
 
-	for line in text:
-		if (correct_number(line)):
-			count_correct_number+=1
+	for i in range(len(text)):
+		if(correct_number(text[i])):
+			count_correct_numbers+=1
+
 	print(count_correct_number)
