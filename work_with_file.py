@@ -21,4 +21,3 @@ def write_data(filename: str, data: list[str]) -> None:
                 f.write(data[i])
     except Exception as exc:
         print(f"Error: {exc}")
-    

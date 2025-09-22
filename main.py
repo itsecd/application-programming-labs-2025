@@ -4,6 +4,9 @@ import work_with_file
 
 
 def argument_parsing() -> list[str]:
+    """
+    Разделение аргументов, введённых пользователем в консоли
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('input_file', type=str, help='path to input file')
     parser.add_argument('output_file', type=str, help='path to output file')
@@ -12,11 +15,17 @@ def argument_parsing() -> list[str]:
 
 
 def data_process(data: str) -> list[str]:
+    """
+    Ищет анкеты женщин с именем на букву "А" из текста data и возвращает список анкет, удовл. условию.
+    """
     data_list = anketes.differentiate_by_anketes(data)
     return anketes.find_goal_anketes(data_list)
 
 
 def main():
+    """
+    Взаимодействие с пользователем и непосредственное выполнение главной задачи
+    """
     input_file, output_file = argument_parsing()
     data = work_with_file.read_file(input_file)
     result = data_process(data)
