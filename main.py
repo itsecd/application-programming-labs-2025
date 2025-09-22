@@ -58,9 +58,7 @@ def main():
         text = text.splitlines()  # Превращаем текст в список строк
         with open(write_path, "w", encoding="utf-8") as wfile:
             for i in range(len(text)):  # Двигаемся по списку через индексы
-                if (correct_number(
-                        text[i])):  # Проверяем удовл. ли номер паттерну
-                    print(type(correct_number(text[i])))
+                if (correct_number(text[i])):  # Проверяем удовл. ли номер паттерну
                     count_correct_numbers += 1
                     # Нужно отойти на 4 строчки назад и 1 вперед, чтобы сохранить анкету
                     # с самого начала
