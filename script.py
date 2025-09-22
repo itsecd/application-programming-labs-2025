@@ -1,53 +1,63 @@
-import sys
+import argparse
+from datetime import datetime
 import re
+import sys
 
 
 def read_file(file_path: str) -> list[str]:
     """Читает файл и делит на анкеты по пустой строке. Убирает старую нумерацию."""
-    with open(file_path, "r", encoding="utf-8") as file:
-        text = file.read().strip()
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            text = file.read().strip()
+    except Exception as e:
+        print(f"Ошибка при чтении файла '{file_path}': {e}")
+        sys.exit(1)
+
+    # убираем строки с нумерацией вида "1)", "23)" и т.п.
     text = re.sub(r"^\d+\)\s*$", "", text, flags=re.MULTILINE)
     return text.split("\n\n")
 
 
 def save_file(file_path: str, data: list[str]) -> None:
     """Сохраняет анкеты в файл с нумерацией (1), 2), 3)...)."""
-    with open(file_path, "w", encoding="utf-8") as file:
-        for i, profile in enumerate(data, start=1):
-            file.write(f"{i})\n{profile.strip()}\n\n")
+    try:
+        with open(file_path, "w", encoding="utf-8") as file:
+            for i, profile in enumerate(data, start=1):
+                file.write(f"{i})\n{profile.strip()}\n\n")
+    except Exception as e:
+        print(f"Ошибка при записи файла '{file_path}': {e}")
+        sys.exit(1)
 
 
 def profile_to_dict(profile: str) -> dict:
     """Парсит анкету в словарь {ключ: значение}."""
     result = {}
-    for line in profile.splitlines():
-        if ":" in line:
-            key, value = line.split(":", 1)
-            result[key.strip()] = value.strip()
+    try:
+        for line in profile.splitlines():
+            if ":" in line:
+                key, value = line.split(":", 1)
+                result[key.strip()] = value.strip()
+    except Exception as e:
+        print(f"Ошибка при обработке анкеты:\n{profile}\nПричина: {e}")
     return result
 
 
 
 def is_male_profile(fields: dict) -> bool:
-    """Проверяет, мужская ли анкета."""
+    """Проверяет, мужская ли анкета (строго)."""
     sex = fields.get("Пол", "").strip().lower()
-    return sex.startswith("м")  # М, м, Мужской, мужской
+    return sex in ("м", "мужской")
 
 
 def main() -> None:
-    if len(sys.argv) < 3:
-        print("Ошибка: укажите путь к входному и выходному файлу.")
-        print("Пример: python lab.py data.txt men_profiles.txt")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(
+        description="Фильтрация анкет: выбрать мужчин из списка"
+    )
+    parser.add_argument("input", help="Путь к входному файлу (например, data.txt)")
+    parser.add_argument("output", help="Путь к выходному файлу (например, men_profiles.txt)")
+    args = parser.parse_args()
 
-    input_file = sys.argv[1]
-    output_file = sys.argv[2]
-
-    try:
-        profiles = read_file(input_file)
-    except FileNotFoundError:
-        print(f"Ошибка: файл '{input_file}' не найден.")
-        sys.exit(1)
+    profiles = read_file(args.input)
 
     male_profiles: list[str] = []
     for profile in profiles:
@@ -55,12 +65,18 @@ def main() -> None:
         if not profile:
             continue
         fields = profile_to_dict(profile)
-        if fields and is_male_profile(fields):
-            male_profiles.append(profile)
+        if not fields:
+            continue
+        if "Пол" not in fields or "Фамилия" not in fields or "Имя" not in fields or "Дата рождения" not in fields\
+            or "Номер телефона или email" not in fields or "Город" not in fields:
+            continue
+        if not is_male_profile(fields):
+            continue
+        male_profiles.append(profile)
 
     print(f"Количество анкет мужчин: {len(male_profiles)}")
+    save_file(args.output, male_profiles)
 
-    save_file(output_file, male_profiles)
 
 if __name__ == "__main__":
     main()
