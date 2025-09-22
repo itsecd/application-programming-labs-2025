@@ -21,7 +21,7 @@ def main():
     data = work_with_file.read_file(input_file)
     result = data_process(data)
     work_with_file.write_data(output_file, result)
-    print(len(result))
+    print('Найдено подходящих анкет:', len(result))
 
 
 if __name__ == "__main__":
