@@ -35,17 +35,18 @@ def is_male_profile(fields: dict) -> bool:
 
 
 def main() -> None:
-    if len(sys.argv) < 2:
-        print("Ошибка: укажите путь к файлу с анкетами.")
-        print("Пример: python lab.py data.txt")
+    if len(sys.argv) < 3:
+        print("Ошибка: укажите путь к входному и выходному файлу.")
+        print("Пример: python lab.py data.txt men_profiles.txt")
         sys.exit(1)
 
-    file_path = sys.argv[1]
+    input_file = sys.argv[1]
+    output_file = sys.argv[2]
 
     try:
-        profiles = read_file(file_path)
+        profiles = read_file(input_file)
     except FileNotFoundError:
-        print(f"Ошибка: файл '{file_path}' не найден.")
+        print(f"Ошибка: файл '{input_file}' не найден.")
         sys.exit(1)
 
     male_profiles: list[str] = []
@@ -59,8 +60,7 @@ def main() -> None:
 
     print(f"Количество анкет мужчин: {len(male_profiles)}")
 
-    save_file("men_profiles.txt", male_profiles)
-
+    save_file(output_file, male_profiles)
 
 if __name__ == "__main__":
     main()
