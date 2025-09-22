@@ -1,5 +1,6 @@
-import anketes
 import argparse
+
+import anketes
 import work_with_file
 
 
