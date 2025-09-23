@@ -5,6 +5,7 @@ import argparse
 
 
 def read_file(filename: str) -> str | None:
+    """Чтение данных с файла с именем filename"""
     try:
         with open(filename, "r") as file:
             return file.read()
