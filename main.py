@@ -1,18 +1,20 @@
 import argparse
 import re
 
-
-def correct_number(text: str) -> re.Match:
+def correct_numbers(text: str) -> list:
     """
-    Проверка совпадения номера по заданному шаблону.
+    Извлекает анкеты с номерами телефона в заданных форматах.
     """
-
-    pattern1 = r"^Номер телефона или email: (\+7|8)\d{10}$"
-    pattern2 = r"^Номер телефона или email: (\+7|8)( \(\d{3}\) )\d{3}[ -]{1}\d{2}[ -]\d{2}$"
-    pattern3 = r"^Номер телефона или email: (\+7|8)( \d{3} )\d{3}[ -]{1}\d{2}[ -]\d{2}$"
-    return re.match(pattern1, text) or re.match(pattern2, text) or re.match(
-        pattern3, text)
-
+    pattern = (
+        r"\d+\)\n"
+        r"Фамилия: [А-ЯЁ][а-яё]+\n"
+        r"Имя: [А-ЯЁ][а-яё]+\n"
+        r"Пол: (?:Мужской|Женский|[МмЖж])\n"
+        r"Дата рождения: \d{2}[\./-]\d{2}[\./-]\d{4}\n"
+        r"Номер телефона или email: (?:\+7\s?(?:\d{3}|\(\d{3}\))[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}|8\s?(?:\d{3}|\(\d{3}\))[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2})\n"
+        r"Город: [А-ЯЁа-яё\s\.-]+"
+    )
+    return re.findall(pattern, text, re.MULTILINE)
 
 def read_file(file_path: str) -> str:
     """
@@ -54,22 +56,13 @@ def main():
 
     write_path = args.write_file if (args.write_file
                                      is not None) else "result.txt"
-
-    count_correct_numbers = 0
     if args.read_file is not None:
         text = read_file(args.read_file)
-        text = text.splitlines()  # Превращаем текст в список строк
-        with open(write_path, "w", encoding="utf-8") as wfile:
-            for i in range(len(text)):  # Двигаемся по списку через индексы
-                if (correct_number(text[i])):  # Проверяем удовл. ли номер паттерну
-                    count_correct_numbers += 1
-                    # Нужно отойти на 4 строчки назад и 1 вперед, чтобы сохранить анкету
-                    # с самого начала
-                    wfile.write("\n" + str(count_correct_numbers) + ")\n")
-                    for x in range(-4, 2):
-                        wfile.write(text[i + x] + '\n')
-
-        result_output(count_correct_numbers, write_path)
+        with open(write_path, "w", encoding="utf-8") as wfile: 
+            forms = correct_numbers(text)
+            for form in forms:
+                wfile.write(str(form) + "\n")
+        result_output(len(forms), write_path)
 
 
 if __name__ == "__main__":
