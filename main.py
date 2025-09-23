@@ -2,7 +2,7 @@ import argparse
 import re
 
 
-def correct_number(text) -> re.Match:
+def correct_number(text: str) -> re.Match:
     """
     Проверка совпадения номера по заданному шаблону.
     """
@@ -14,7 +14,7 @@ def correct_number(text) -> re.Match:
         pattern3, text)
 
 
-def read_file(file_path) -> str:
+def read_file(file_path: str) -> str:
     """
     Чтения файла, если это возможно.
     """
@@ -25,7 +25,7 @@ def read_file(file_path) -> str:
         raise
 
 
-def result_output(count, path) -> None:
+def result_output(count: int , path: str) -> None:
     """
     Вывод в консоль результата программы.
     """
@@ -34,6 +34,9 @@ def result_output(count, path) -> None:
 
 
 def parse_args_console() -> argparse.Namespace:
+    """
+    Парсинг параметров с консоли.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--read_file",
                         "-rf",
