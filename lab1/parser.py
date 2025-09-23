@@ -4,7 +4,7 @@ import re
 import argparse
 
 
-def read_file(filename):
+def read_file(filename: str) -> str | None:
     try:
         with open(filename, "r") as file:
             return file.read()
@@ -12,7 +12,8 @@ def read_file(filename):
         print("[!] File not found :(")
 
 
-def write_file(filename, data):
+def write_file(filename: str, data: list[str]):
+    """Запись данных в файл с именем filename"""
     count = 1
     with open(filename, "w+") as file:
         file.write("Всего: {}".format(len(data)) + "\n")
@@ -21,7 +22,8 @@ def write_file(filename, data):
             count = count + 1
 
 
-def args_parse():
+def args_parse() -> argparse.Namespace:
+    """Парсинг аргументов в список"""
     parser = argparse.ArgumentParser(
         prog="Data parser", description="Parsing data from file"
     )
@@ -30,18 +32,12 @@ def args_parse():
     return parser.parse_args()
 
 
-def parse_data(data):
+def parse_data(data: str) -> list[str]:
+    """Дробление данных в элементы списка, парсинг"""
     data = re.split(r"\d\)\s*", data, maxsplit=1)
     parts = [p.strip() for p in re.split(r"\n\d+\)\s*", data[1]) if p.strip()]
 
-    pattern = (
-        r"Фамилия:\s*(Иванов[а]*)\s*"
-        r"Имя:\s*([А-ЯЁ][а-яё\-]+)\s*"
-        r"Пол:\s*(Мужской|М|м|Женский|Ж|ж)\s*"
-        r"Дата рождения:\s*(\d{1,2}[./-]\d{1,2}[./-]\d{4})\s*"
-        r"Номер телефона или email:\s*((?:\+7|8)[\d\s()\-]{10,}|[A-Za-z0-9._%+-]+@(gmail\.com|yandex\.ru|mail\.ru))\s*"
-        r"Город:\s*([А-ЯЁа-яё\- ]+)"
-    )
+    pattern = r"Фамилия:\s*(Иванов[а]{0,1})\s*"
 
     result = []
 
@@ -53,7 +49,7 @@ def parse_data(data):
     return result
 
 
-def main():
+def main() -> None:
     args = args_parse()
     text = read_file(args.file)
     parsed = parse_data(text)
