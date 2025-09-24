@@ -5,16 +5,8 @@ def correct_numbers(text: str) -> list:
     """
     Извлекает анкеты с номерами телефона в заданных форматах.
     """
-    pattern = (
-        r"\d+\)\n"
-        r"Фамилия: [А-ЯЁ][а-яё]+\n"
-        r"Имя: [А-ЯЁ][а-яё]+\n"
-        r"Пол: (?:Мужской|Женский|[МмЖж])\n"
-        r"Дата рождения: \d{2}[\./-]\d{2}[\./-]\d{4}\n"
-        r"Номер телефона или email: (?:\+7\s?(?:\d{3}|\(\d{3}\))[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}|8\s?(?:\d{3}|\(\d{3}\))[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2})\n"
-        r"Город: [А-ЯЁа-яё\s\.-]+"
-    )
-    return re.findall(pattern, text, re.MULTILINE)
+    pattern = r"(\d+\)\n.*?Номер телефона или email: (?:\+7\s?(?:\d{3}|\(\d{3}\))[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}|8\s?(?:\d{3}|\(\d{3}\))[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2})\n.*?)\n"
+    return re.findall(pattern, text, re.DOTALL)
 
 def read_file(file_path: str) -> str:
     """
@@ -61,7 +53,9 @@ def main():
         with open(write_path, "w", encoding="utf-8") as wfile: 
             forms = correct_numbers(text)
             for form in forms:
+                
                 wfile.write(str(form) + "\n")
+
         result_output(len(forms), write_path)
 
 
