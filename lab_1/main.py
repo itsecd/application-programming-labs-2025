@@ -28,7 +28,7 @@ def args_parse() -> tuple[str, str]:
         raise Exception("The name of output file can't be None")
 
 
-def text_parse(text: str) -> list[str]:
+def forms_parse(text: str) -> list[str]:
     """
     Эта функция разделяет текст по заданному паттерну(по номеру анкет).
     Затем происходит парсинг анкет, которые удовлетворяют условию задания.
@@ -53,7 +53,7 @@ def text_parse(text: str) -> list[str]:
 def main() -> None:
     file, output = args_parse()
     text = read_file(file)
-    result = text_parse(text)
+    result = forms_parse(text)
     
     print(result)
 
