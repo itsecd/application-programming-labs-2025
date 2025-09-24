@@ -25,11 +25,38 @@ def args_parse() -> tuple[str, str]:
     if args.output is not None:
         return (args.input, args.output)
     else:
-        raise Exception("The name of ouput file can'b be None")
+        raise Exception("The name of output file can't be None")
+
+
+def text_parse(text: str) -> list[str]:
+    """
+    Эта функция разделяет текст по заданному паттерну(по номеру анкет).
+    Затем происходит парсинг анкет, которые удовлетворяют условию задания.
+    """
+    pattern = r'\d+\)\n'
+    forms = list(filter(None, re.split(pattern, text)))
+
+    result = []
+
+    for item in forms:
+        temp_list = list(filter(None, item.split("\n")))
+        pattern = r'Фамилия: [А-Я][а-я]*ов(а)?$'
+        
+        for line in temp_list:
+            if re.match(pattern, line.strip()):
+                result.append(item)
+                break        
+
+    return result 
 
 
 def main() -> None:
-    pass
+    file, output = args_parse()
+    text = read_file(file)
+    result = text_parse(text)
+    
+    print(result)
+
 
 if __name__ == "__main__":
     main()
