@@ -6,4 +6,5 @@ for line in lines:
         valid_lines.append(line)
 print(len(valid_lines))
 with open('result.txt', 'w', encoding='utf-8') as f:
-    f.writelines(valid_lines
+    f.writelines(valid_lines)
+
