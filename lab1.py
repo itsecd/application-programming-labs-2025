@@ -1,6 +1,6 @@
 ﻿import argparse
-from collections import Counter
 import re
+from collections import Counter
 from typing import List, Tuple, Union
 
 
@@ -25,7 +25,7 @@ def extract_operator_codes(content: str) -> List[str]:
     :param content: текст для анализа
     :return: список найденных кодов операторов
     """
-    pattern = r'[+78][\s\(]*(\d{3})'
+    pattern = r'(?<!\d)(?:\+7|8)[\s\-\(]*(\d{3})'
     return re.findall(pattern, content)
 
 
