@@ -39,15 +39,16 @@ def parse_args_console() -> argparse.Namespace:
     parser.add_argument("--write_file",
                         "-wf",
                         type=str,
+                        default="result.txt",
                         help="path to write file")
     return parser.parse_args()
 
 
 def main():
     args = parse_args_console()
-
-    write_path = args.write_file if (args.write_file
-                                     is not None) else "result.txt"
+    write_path = args.write_file
+    # write_path = args.write_file if (args.write_file
+    #                                  is not None) else "result.txt"
     if args.read_file is not None:
         text = read_file(args.read_file)
         with open(write_path, "w", encoding="utf-8") as wfile: 
