@@ -33,7 +33,7 @@ def read_file(file_path: str) -> str:
 
 def write_file(file_path: str, data: List[str]) -> None:
     """
-    Записывает список анкет в файл.
+    Функция для записи списка анкет в файл.
 
     Args:
         file_path (str): Путь к входному файлу
