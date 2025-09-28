@@ -2,35 +2,47 @@ import argparse
 import re
 
 def parse_arguments() -> str:
+    """
+    Парсинг аргумента из командной строки
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("input", type=str, help="input file path")
     args = parser.parse_args()
     return args.input
 
-def read_file(name:str) -> str:
-    print(f"Чтение файла {name}")
+def read_file(input_file:str) -> str:
+    """
+    Чтение файла input_file
+    """
+    print(f"Чтение файла {input_file}")
     try:
-        with open(name, "r", encoding="utf-8") as file:
+        with open(input_file, "r", encoding="utf-8") as file:
             return file.read()
     except FileNotFoundError:
-        raise FileNotFoundError(f"Файл {name} не найден.")
-    except Exception as e:
-        raise Exception(f"Ошибка при чтении: {e}")
+        raise FileNotFoundError(f"Файл {input_file} не найден.")
+    except Exception as exc:
+        raise Exception(f"Ошибка при чтении: {exc}")
 
-def write_file(name:str, ovas:list[str]) -> None:
+def write_file(output_file:str, ovas:list[str]) -> None:
+    """
+    Запись анкет из ovas в файл output_file
+    """
     try:
-        with open(name, "w", encoding="utf-8") as file:
+        with open(output_file, "w", encoding="utf-8") as file:
             file.write("\n\n".join(ovas))
-            print(f"Найденные анкеты сохранены в файл {name}")
-    except Exception as e:
-        raise Exception(f"Ошибка при записи: {e}")
+            print(f"Найденные анкеты сохранены в файл {output_file}")
+    except Exception as exc:
+        raise Exception(f"Ошибка при записи: {exc}")
 
 def find_ovas(data:str) -> list[str]:
-    people = re.split(r'\n\n', data)
+    """
+    Поиск анкет с фамилиями, заканчивающимися на ов(а)
+    """
+    profiles = re.split(r'\n\n', data)
     ovas = []
-    for person in people:
-        if re.search(r'Фамилия: \w+ова?\n', person):
-            ovas.append(person)
+    for profile in profiles:
+        if re.search(r'Фамилия: \w+ова?\n', profile):
+            ovas.append(profile)
     return ovas
 
 def main() -> None:
@@ -41,8 +53,8 @@ def main() -> None:
         print(f"Найдено {len(ovas)} анкет людей, чьи фамилии заканчиваются на 'ов(а)'")
         if ovas:
             write_file("ovas_profiles.txt", ovas)
-    except Exception as e:
-        print(f"Возникла ошибка: {e}")
+    except Exception as exc:
+        print(f"Возникла ошибка: {exc}")
 
 if __name__ == "__main__":
     main()
