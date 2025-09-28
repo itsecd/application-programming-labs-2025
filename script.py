@@ -25,7 +25,7 @@ def read_file(file_path: str) -> str:
         raise FileNotFoundError(f"Файл '{file_path}' не найден")
     except PermissionError:
         raise PermissionError(f"Нет прав для чтения файла '{file_path}'")
-    except UnboundLocalError:
+    except UnicodeDecodeError:
         raise UnicodeDecodeError(
             "Ошибка кодировки файла."
         )
