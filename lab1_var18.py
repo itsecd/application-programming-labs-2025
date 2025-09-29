@@ -1,135 +1,214 @@
 import re
-import sys
-from datetime import datetime
+import argparse
+from pathlib import Path
+from typing import List, Tuple
 
-def read_file(file_path: str) -> str:
-    """Чтение содержимого файла"""
+
+def read_file(file_path: Path) -> str:
+    """
+    Чтение содержимого файла.
+    
+    Args:
+        file_path: Путь к файлу для чтения
+        
+    Returns:
+        Содержимое файла в виде строки
+        
+    Raises:
+        FileNotFoundError: Если файл не найден
+        IOError: При ошибках чтения файла
+    """
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             return file.read()
     except FileNotFoundError:
-        print(f"Ошибка: Файл {file_path} не найден")
-        sys.exit(1)
+        raise FileNotFoundError(f"Файл {file_path} не найден")
     except Exception as e:
-        print(f"Ошибка при чтении файла: {e}")
-        sys.exit(1)
+        raise IOError(f"Ошибка при чтении файла {file_path}: {e}")
 
-def save_to_file(file_path: str, content: str):
-    """Сохранение содержимого в файл"""
-    try:
-        with open(file_path, 'w', encoding='utf-8') as file:
-            file.write(content)
-        print(f"Результат сохранен в файл: {file_path}")
-    except Exception as e:
-        print(f"Ошибка при сохранении файла: {e}")
+
+def save_to_file(file_path: Path, content: str) -> None:
+    """
+    Сохранение содержимого в файл.
+    
+    Args:
+        file_path: Путь к файлу для сохранения
+        content: Содержимое для сохранения
+    """
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write(content)
+
+
+def is_likely_email(value: str) -> bool:
+    """
+    Определяет, похоже ли значение на email.
+    
+    Args:
+        value: Значение для проверки
+        
+    Returns:
+        True если значение похоже на email, иначе False
+    """
+    return bool(re.search(r'[a-zA-Z]', value))
+
 
 def is_valid_phone(phone: str) -> bool:
-    """Проверка валидности номера телефона"""
-    # Удаляем все пробелы, скобки, дефисы для упрощения проверки
-    cleaned_phone = re.sub(r'[\s\(\)\-]', '', phone)
+    """
+    Проверка валидности номера телефона.
     
-    # Проверка на 11 цифр и начало с 8 или +7
+    Args:
+        phone: Номер телефона для проверки
+        
+    Returns:
+        True если номер телефона валиден, иначе False
+    """
+    phone = phone.strip()
+    cleaned_phone = re.sub(r'[\s\(\)\-\.]', '', phone)
+    
     if not re.match(r'^(8|\+7)\d{10}$', cleaned_phone):
         return False
     
-    # Проверка формата с разделителями
     phone_patterns = [
-        r'^8\s?\(\d{3}\)\s?\d{3}[\-\s]?\d{2}[\-\s]?\d{2}$',  # 8 (012) 345-67-89
-        r'^8\s?\d{3}[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$',  # 8 012 345-67-89
-        r'^8\d{10}$',  # 80123456789
-        r'^\+7\d{10}$'  # +70123456789
+        r'^8\s?\(\d{3}\)\s?\d{3}[\-\s]?\d{2}[\-\s]?\d{2}$',
+        r'^8\s?\d{3}[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$',
+        r'^8\d{10}$',
+        r'^8\s?\d{3}\s?\d{3}\s?\d{2}\s?\d{2}$',
+        r'^\+7\s?\(\d{3}\)\s?\d{3}[\-\s]?\d{2}[\-\s]?\d{2}$',
+        r'^\+7\s?\d{3}[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$',
+        r'^\+7\d{10}$',
+        r'^\+7\s?\d{3}\s?\d{3}\s?\d{2}\s?\d{2}$',
     ]
     
     return any(re.match(pattern, phone) for pattern in phone_patterns)
 
-def parse_profiles(content: str) -> list:
-    """Разбор анкет из текста"""
-    profiles = []
-    current_profile = []
+
+def parse_profiles(content: str) -> List[List[str]]:
+    """
+    Разбор анкет из текста.
     
-    for line in content.split('\n'):
-        line = line.strip()
-        if line and not line.startswith('#'):  # Пропускаем пустые строки и комментарии
-            current_profile.append(line)
-            # Если собрали 6 строк - это полная анкета
-            if len(current_profile) == 6:
-                profiles.append(current_profile)
-                current_profile = []
+    Args:
+        content: Текст для разбора
+        
+    Returns:
+        Список анкет, где каждая анкета - список строк
+    """
+    profiles = []
+    lines = [line.strip() for line in content.split('\n') if line.strip()]
+    
+    i = 0
+    while i < len(lines):
+        if re.match(r'^\d+\)$', lines[i]):
+            profile = lines[i:i+7]
+            if len(profile) == 7:
+                profiles.append(profile)
+            i += 7
+        else:
+            i += 1
     
     return profiles
 
-def find_invalid_phones(profiles: list) -> list:
-    """Поиск анкет с некорректными номерами телефонов"""
+
+def find_invalid_phones(profiles: List[List[str]]) -> List[List[str]]:
+    """
+    Поиск анкет с некорректными номерами телефонов.
+    
+    Args:
+        profiles: Список анкет для проверки
+        
+    Returns:
+        Список анкет с некорректными телефонами
+    """
     invalid_profiles = []
     
     for profile in profiles:
-        if len(profile) >= 5:  # Проверяем, что есть поле с телефоном/email
-            phone_email_field = profile[4]  # 5-е поле (индекс 4)
-            
-            # Проверяем, является ли поле номером телефона (а не email)
-            if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', phone_email_field):
-                # Это не email, значит проверяем как телефон
-                if not is_valid_phone(phone_email_field):
+        for line in profile:
+            if line.startswith('Номер телефона или email:'):
+                value = line.split(':', 1)[1].strip()
+                
+                if is_likely_email(value):
+                    break
+                elif not is_valid_phone(value):
                     invalid_profiles.append(profile)
+                break
     
     return invalid_profiles
 
-def display_profiles(profiles: list, title: str):
-    """Вывод анкет на экран"""
-    print(f"\n{title}")
+
+def display_invalid_profiles(profiles: List[List[str]]) -> None:
+    """Вывод анкет с некорректными телефонами на экран."""
+    print("\nАНКЕТЫ С НЕКОРРЕКТНЫМИ НОМЕРАМИ ТЕЛЕФОНОВ:")
     print("=" * 60)
     
     for i, profile in enumerate(profiles, 1):
-        print(f"Анкета #{i}:")
-        for j, field in enumerate(profile):
-            field_names = ["Фамилия", "Имя", "Пол", "Дата рождения", "Телефон/Email", "Город"]
-            if j < len(field_names):
-                print(f"  {field_names[j]}: {field}")
-        print("-" * 40)
+        print(f"АНКЕТА #{i}:")
+        for field in profile:
+            print(f"  {field}")
+        print("-" * 60)
 
-def main():
-    # Проверка аргументов командной строки
-    if len(sys.argv) != 2:
-        print("Использование: python script.py <имя_файла>")
-        print("Пример: python script.py data.txt")
-        sys.exit(1)
+
+def process_profiles(input_file: Path, output_file: Path) -> Tuple[int, int, int]:
+    """
+    Основная функция обработки профилей.
     
-    filename = sys.argv[1]
-    output_filename = "valid_data.txt"
-    
-    # Чтение файла
-    print(f"Чтение файла: {filename}")
-    content = read_file(filename)
-    
-    # Разбор анкет
+    Args:
+        input_file: Путь к входному файлу
+        output_file: Путь к выходному файлу
+        
+    Returns:
+        Кортеж (всего_анкет, некорректных_анкет, валидных_анкет)
+    """
+    content = read_file(input_file)
     profiles = parse_profiles(content)
-    print(f"Найдено анкет: {len(profiles)}")
-    
-    # Поиск анкет с некорректными телефонами
     invalid_profiles = find_invalid_phones(profiles)
+    valid_profiles = [p for p in profiles if p not in invalid_profiles]
     
     if invalid_profiles:
-        # Вывод найденных анкет с некорректными телефонами
-        display_profiles(invalid_profiles, "АНКЕТЫ С НЕКОРРЕКТНЫМИ НОМЕРАМИ ТЕЛЕФОНОВ:")
+        display_invalid_profiles(invalid_profiles)
         
-        # Создание списка валидных анкет (исключаем невалидные)
-        valid_profiles = [profile for profile in profiles if profile not in invalid_profiles]
+        print("\nДЕТАЛИ НАЙДЕННЫХ ОШИБОК:")
+        for i, profile in enumerate(invalid_profiles, 1):
+            for line in profile:
+                if line.startswith('Номер телефона или email:'):
+                    phone = line.split(':', 1)[1].strip()
+                    print(f"{i}. Некорректный номер телефона: {phone}")
+                    break
         
-        # Сохранение валидных анкет в новый файл
-        valid_content = ""
-        for profile in valid_profiles:
-            valid_content += "\n".join(profile) + "\n\n"
-        
-        save_to_file(output_filename, valid_content)
-        
-        print(f"\nСтатистика:")
-        print(f"Всего анкет: {len(profiles)}")
-        print(f"Некорректных анкет: {len(invalid_profiles)}")
-        print(f"Валидных анкет сохранено: {len(valid_profiles)}")
+        valid_content = "\n\n".join("\n".join(p) for p in valid_profiles)
+        save_to_file(output_file, valid_content)
     else:
+        save_to_file(output_file, content)
         print("Анкет с некорректными номерами телефонов не найдено.")
-        # Сохраняем все анкеты, так как все валидны
-        save_to_file(output_filename, content)
+    
+    return len(profiles), len(invalid_profiles), len(valid_profiles)
+
+
+def main() -> None:
+    """Основная функция программы."""
+    parser = argparse.ArgumentParser(
+        description='Проверка анкет на корректность номеров телефонов'
+    )
+    parser.add_argument('input_file', type=Path, help='Путь к входному файлу с анкетами')
+    parser.add_argument('output_file', type=Path, help='Путь к выходному файлу')
+    
+    args = parser.parse_args()
+    
+    try:
+        print(f"Чтение файла: {args.input_file}")
+        total, invalid, valid = process_profiles(args.input_file, args.output_file)
+        
+        print(f"\nСТАТИСТИКА ОБРАБОТКИ:")
+        print(f"Всего анкет: {total}")
+        print(f"Некорректных: {invalid}")
+        print(f"Валидных: {valid}")
+        print(f"Результат сохранен в: {args.output_file}")
+        
+    except FileNotFoundError as e:
+        print(f"Ошибка: {e}")
+    except IOError as e:
+        print(f"Ошибка ввода-вывода: {e}")
+    except Exception as e:
+        print(f"Неожиданная ошибка: {e}")
+
 
 if __name__ == "__main__":
     main()
