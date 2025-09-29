@@ -40,6 +40,21 @@ def create_list_of_profiles(lines_from_file: list[str]) -> list[list[str]]:
             profile.clear()
     return list_of_profiles
 
+def filter_profiles(last_name_pattern: re.Pattern, list_of_profiles: list[list[str]]) -> list[list[str]]:
+    """
+    Формирование списка анкет, удовлетворяющих валидному формату фамилии
+    :param last_name_pattern: регулярное выражение для фамилии
+    :param list_of_profiles: список анкет
+    :return: список анкет, удовлетворяющих валидному формату фамилии
+    """
+    matching_profiles = []
+    for profile in list_of_profiles:
+        match_last_name_value = re.match(r'Фамилия:\s*(.+)', profile[1])
+        last_name = match_last_name_value.group(1).strip()
+        if last_name_pattern.match(last_name):
+            matching_profiles.append(profile)
+    return matching_profiles
+
 def main() -> None:
     # Получение имени файла с анкетами из командной строки
     file_name = parse_command_line_arguments()
@@ -49,7 +64,13 @@ def main() -> None:
     
     # Формирование списка анкет
     list_of_profiles = create_list_of_profiles(lines)
-    print(list_of_profiles)
+    
+    # Определение регулярного выражения для фамилии
+    last_name_pattern = re.compile(r'^[А-Я][а-я]*(ов|ова)$')
+
+    # Формирование списка анкет, удовлетворяющих валидному формату фамилии
+    matching_profiles = filter_profiles(last_name_pattern, list_of_profiles)
+    print(matching_profiles)
 
 if __name__ == "__main__":
     main()
