@@ -24,13 +24,32 @@ def read_file(filename: str) -> list:
         lines = file.readlines()
         return lines
 
+def create_list_of_profiles(lines_from_file: list[str]) -> list[list[str]]:
+    """
+    Формирование списка анкет
+    :param lines_from_file: Список строк, прочитанных из файла с анкетами
+    :return: Список анкет
+    """
+    list_of_profiles = []
+    profile = []
+    for num_str in lines_from_file:
+        if num_str != "\n":
+            profile.append(num_str)
+        if len(profile) == 7:
+            list_of_profiles.append(profile.copy())
+            profile.clear()
+    return list_of_profiles
+
 def main() -> None:
     # Получение имени файла с анкетами из командной строки
     file_name = parse_command_line_arguments()
 
     # Чтение файла по строчно
     lines = read_file(file_name)
-    print(lines)
+    
+    # Формирование списка анкет
+    list_of_profiles = create_list_of_profiles(lines)
+    print(list_of_profiles)
 
 if __name__ == "__main__":
     main()
