@@ -1,6 +1,6 @@
 import argparse
 import re
-
+import sys
 
 def parse_command_line_arguments() -> str:
     """
@@ -9,9 +9,11 @@ def parse_command_line_arguments() -> str:
     """
     parser = argparse.ArgumentParser(exit_on_error=False)
     parser.add_argument("input_file", type=str, help = "File_name")
-    args = parser.parse_args()
-    return args.input_file
-
+    try:
+        args = parser.parse_args()
+        return args.input_file
+    except argparse.ArgumentError as e:
+        raise ValueError(f"Ошибка при разборе аргументов командной строки: {e}")
 
 def read_file(filename: str) -> list:
     """
@@ -19,10 +21,16 @@ def read_file(filename: str) -> list:
     :param filename: имя файла
     :return: список строк файла
     """
-
-    with open(filename, "r") as file:
-        lines = file.readlines()
-        return lines
+    try:
+        with open(filename, "r") as file:
+            lines = file.readlines()
+            return lines
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Ошибка: Файл '{filename}' не найден.")
+    except IOError as e:
+        raise IOError(f"Ошибка при чтении файла '{filename}': {e}")
+    except Exception as e:
+        raise Exception(f"Непредвиденная ошибка при чтении файла '{filename}': {e}")
 
 def create_list_of_profiles(lines_from_file: list[str]) -> list[list[str]]:
     """
@@ -39,6 +47,7 @@ def create_list_of_profiles(lines_from_file: list[str]) -> list[list[str]]:
             list_of_profiles.append(profile.copy())
             profile.clear()
     return list_of_profiles
+
 
 def filter_profiles(last_name_pattern: re.Pattern, list_of_profiles: list[list[str]]) -> list[list[str]]:
     """
@@ -73,25 +82,44 @@ def write_in_file(matching_profiles: list[list[str]]) -> None:
 
 def main() -> None:
     # Получение имени файла с анкетами из командной строки
-    file_name = parse_command_line_arguments()
+    try:
+        file_name = parse_command_line_arguments()
 
-    # Чтение файла по строчно
-    lines = read_file(file_name)
-    
-    # Формирование списка анкет
-    list_of_profiles = create_list_of_profiles(lines)
-    
-    # Определение регулярного выражения для фамилии
-    last_name_pattern = re.compile(r'^[А-Я][а-я]*(ов|ова)$')
+        # Чтение файла по строчно
+        lines = read_file(file_name)
 
-    # Формирование списка анкет, удовлетворяющих валидному формату фамилии
-    matching_profiles = filter_profiles(last_name_pattern, list_of_profiles)
-    
-    # Вывод количества найденных анкет
-    print(f"Найдено: {len(matching_profiles)} человек с фамилиями, оканчивающимися на 'ов' или 'ова'.")
+        # Формирование списка анкет
+        list_of_profiles = create_list_of_profiles(lines)
 
-    # Запись найденных анкет в новый файл
-    write_in_file(matching_profiles)
+        # Определение регулярного выражения для фамилии
+        last_name_pattern = re.compile(r'^[А-Я][а-я]*(ов|ова)$')
 
+        # Формирование списка анкет, удовлетворяющих валидному формату фамилии
+        matching_profiles = filter_profiles(last_name_pattern, list_of_profiles)
+
+        # Вывод количества найденных анкет
+        print(f"Найдено: {len(matching_profiles)} человек с фамилиями, оканчивающимися на 'ов' или 'ова'.")
+
+        # Запись найденных анкет в новый файл
+        write_in_file(matching_profiles)
+
+    except ValueError as e:
+        print(f"Ошибка запуска: {e}")
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"Ошибка файла: {e}")
+        sys.exit(1)
+    except IOError as e:
+        print(f"Ошибка ввода/вывода: {e}")
+        sys.exit(1)
+    except TypeError as e:
+        print(f"Ошибка типа данных во время обработки: {e}")
+        sys.exit(1)
+    except AttributeError as e:
+        print(f"Ошибка обработки данных анкеты (возможно, неверный формат строки): {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Произошла непредвиденная критическая ошибка: {e}")
+        sys.exit(1)
 if __name__ == "__main__":
     main()
