@@ -4,18 +4,18 @@ import argparse
 
 def parse_console () -> argparse.Namespace:
     """
- Ïàðñåð äëÿ àðãóìåíòîâ â êîíñîëè
+ ÐŸÐ°Ñ€ÑÐµÑ€ Ð´Ð»Ñ Ð°Ñ€Ð³ÑƒÐ¼ÐµÐ½Ñ‚Ð¾Ð² Ð² ÐºÐ¾Ð½ÑÐ¾Ð»Ð¸
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("--read_file", type=str, help="×òåíèå ôàéëà èç êîíñîëè")
-    parser.add_argument("--write_file", type=str, helr="Çàïèñü íîâîãî ôàéëà")
+    parser.add_argument("--r_file", type=str, help="Ð§Ñ‚ÐµÐ½Ð¸Ðµ Ñ„Ð°Ð¹Ð»Ð° Ð¸Ð· ÐºÐ¾Ð½ÑÐ¾Ð»Ð¸")
+    parser.add_argument("--w_file", type=str, help="Ð—Ð°Ð¿Ð¸ÑÑŒ Ð½Ð¾Ð²Ð¾Ð³Ð¾ Ñ„Ð°Ð¹Ð»Ð°")
     args = parser.parse_args()
     return args
 
 
 def correct_numbers(text: str) -> list:
     """
- Èçâëåêàåò àíêåòû ñ êîððåêòíûìè íîìåðàìè òåëåôîíîâ
+ Ð˜Ð·Ð²Ð»ÐµÐºÐ°ÐµÑ‚ Ð°Ð½ÐºÐµÑ‚Ñ‹ Ñ ÐºÐ¾Ñ€Ñ€ÐµÐºÑ‚Ð½Ñ‹Ð¼Ð¸ Ð½Ð¾Ð¼ÐµÑ€Ð°Ð¼Ð¸ Ñ‚ÐµÐ»ÐµÑ„Ð¾Ð½Ð¾Ð²
     """
     profiles=re.split(r'\n(?=\d+\)\s*\n)', text)
     pattern= r'(?:\+7|8)[\s\-]?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}'
@@ -29,25 +29,38 @@ def correct_numbers(text: str) -> list:
 
 def read_file(text: str) -> str:
     """
- ×èòàåò ñîäåðæèìîå ôàéëà
+ Ð§Ð¸Ñ‚Ð°ÐµÑ‚ ÑÐ¾Ð´ÐµÑ€Ð¶Ð¸Ð¼Ð¾Ðµ Ñ„Ð°Ð¹Ð»Ð°
     """
     try:
         with open(text, 'r', encoding = 'utf-8') as file:
             return file.read()
     except FileNotFoundError:
-        print("Îøèáêà. Äàííûé ôàéë íå íàéäåí")
+        print("ÐžÑˆÐ¸Ð±ÐºÐ°. Ð”Ð°Ð½Ð½Ñ‹Ð¹ Ñ„Ð°Ð¹Ð» Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½")
         return ""
 
 
 
-def write_file(text: str, profiles: list) -> None: 
+def write_file(new_text: str, profiles: list) -> None: 
     """
- Çàïèñûâàåò íàéäåííûå àíêåòû â íîâûé ôàéë
+ Ð—Ð°Ð¿Ð¸ÑÑ‹Ð²Ð°ÐµÑ‚ Ð½Ð°Ð¹Ð´ÐµÐ½Ð½Ñ‹Ðµ Ð°Ð½ÐºÐµÑ‚Ñ‹ Ð² Ð½Ð¾Ð²Ñ‹Ð¹ Ñ„Ð°Ð¹Ð»
     """
     try:
-        with open(text, 'w', encoding = 'utf-8') as file:
+        with open(new_text, 'w', encoding = 'utf-8') as file:
             for profile in profiles:
                 file.write(profile + "\n\n")
+            print(f'Ð£ÑÐ¿ÐµÑˆÐ½Ð¾ Ð½Ð°Ð¹Ð´ÐµÐ½Ð½Ñ‹Ñ… Ð°Ð½ÐºÐµÑ‚: {len(profiles)}')
+            print(f'Ð—Ð°Ð¿Ð¸ÑÐ°Ð½Ñ‹ Ð² Ñ„Ð°Ð¹Ð»: {new_text}')
     except Exception as e:
-        print("Îøèáêà ïðè ÷òåíèè ôàéëà.")
+        print("ÐžÑˆÐ¸Ð±ÐºÐ° Ð¿Ñ€Ð¸ Ñ‡Ñ‚ÐµÐ½Ð¸Ð¸ Ñ„Ð°Ð¹Ð»Ð°.")
 
+
+
+
+def main() -> None:
+    args = parse_console()
+    text = read_file(args.r_file)
+    correct_profiles = correct_numbers(text)
+    write_file(args.w_file, correct_profiles)
+    
+if __name__=="__main__":
+    main()
