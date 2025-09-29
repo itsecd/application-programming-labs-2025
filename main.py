@@ -55,6 +55,22 @@ def filter_profiles(last_name_pattern: re.Pattern, list_of_profiles: list[list[s
             matching_profiles.append(profile)
     return matching_profiles
 
+def write_in_file(matching_profiles: list[list[str]]) -> None:
+    """
+    Запись найденных анкет в файл
+    :param matching_profiles: список анкет, удовлетворяющих валидному формату фамилии
+    :return: ничего
+    """
+    try:
+        with open("New file.txt", 'w', encoding='utf-8') as file:
+            for profile in matching_profiles:
+                file.write("".join(profile) + "\n")
+        print(f"Результат сохранен: Анкеты найденных людей сохранены в файл New file.")
+    except IOError as e:
+        raise IOError(f"Ошибка при записи файла 'New file.txt': {e}")
+    except Exception as e:
+        raise Exception(f"Непредвиденная ошибка при записи файла 'New file.txt': {e}")
+
 def main() -> None:
     # Получение имени файла с анкетами из командной строки
     file_name = parse_command_line_arguments()
@@ -70,7 +86,12 @@ def main() -> None:
 
     # Формирование списка анкет, удовлетворяющих валидному формату фамилии
     matching_profiles = filter_profiles(last_name_pattern, list_of_profiles)
-    print(matching_profiles)
+    
+    # Вывод количества найденных анкет
+    print(f"Найдено: {len(matching_profiles)} человек с фамилиями, оканчивающимися на 'ов' или 'ова'.")
+
+    # Запись найденных анкет в новый файл
+    write_in_file(matching_profiles)
 
 if __name__ == "__main__":
     main()
