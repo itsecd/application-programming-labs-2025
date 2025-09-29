@@ -3,13 +3,13 @@
 import re 
 import argparse
 
-def is_name_correct(text: str)->bool:
+def is_name_correct(name: str)->bool:
     """
     Имя должно начинаться на заглавную А и состоять только из букв.
     """
     return re.fullmatch(r'А[а-яё]*', name) is not None
 
-def is_female(text: str)->bool:
+def is_female(gender: str)->bool:
     """
     Пол женский
     """
@@ -45,4 +45,16 @@ def save_forms(forms: list[list[str]], path: str = "filtered_forms.txt") -> None
         for a in forms:
             f.write("\n".join(a) + "\n\n")
 
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("filename")
+    args = parser.parse_args()
 
+    forms = read_forms(args.filename)
+    correct = [a for a in forms if form_is_correct(a)]
+
+    print(len(correct))
+    save_forms(correct)
+
+if __name__ == "__main__":
+    main()
