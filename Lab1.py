@@ -1,6 +1,7 @@
 import argparse
 import re
 
+
 def parse_arguments() -> str:
     """
     Парсинг аргумента из командной строки
@@ -9,6 +10,7 @@ def parse_arguments() -> str:
     parser.add_argument("input", type=str, help="input file path")
     args = parser.parse_args()
     return args.input
+
 
 def read_file(input_file:str) -> str:
     """
@@ -23,6 +25,7 @@ def read_file(input_file:str) -> str:
     except Exception as exc:
         raise Exception(f"Ошибка при чтении: {exc}")
 
+
 def write_file(output_file:str, ovas:list[str]) -> None:
     """
     Запись анкет из ovas в файл output_file
@@ -33,6 +36,7 @@ def write_file(output_file:str, ovas:list[str]) -> None:
             print(f"Найденные анкеты сохранены в файл {output_file}")
     except Exception as exc:
         raise Exception(f"Ошибка при записи: {exc}")
+
 
 def find_ovas(data:str) -> list[str]:
     """
@@ -45,6 +49,7 @@ def find_ovas(data:str) -> list[str]:
             ovas.append(profile)
     return ovas
 
+
 def main() -> None:
     try:
         input_file = parse_arguments()
@@ -56,5 +61,7 @@ def main() -> None:
     except Exception as exc:
         print(f"Возникла ошибка: {exc}")
 
+
 if __name__ == "__main__":
     main()
+
