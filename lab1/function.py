@@ -1,8 +1,9 @@
 import argparse
-import re
 import io
+import re
 
-def readfile(filename: str) -> str:
+
+def read_file(filename: str) -> str:
     """
     Reading file for his path
     """
@@ -16,31 +17,24 @@ def readfile(filename: str) -> str:
         print(f"Sorry, {filename} dont found!!!")
         return ""
 
+
 def is_correct(date: str) -> bool:
     """
     check date for correctness
     """
     if not re.fullmatch(
-            r'(0?[0-9]|[12][0-9]|[3][01])[./-]+(0?[0-9]|[1][012])[./-]+'
+            r'(0?[1-9]|[12][0-9]|[3][01])[./-]+(0?[1-9]|[1][012])[./-]+'
             r'([1][9][0-9]{2}|[2][0][01][0-9]|[2][0][2][0-5])', date):
             return False
     else:
             return True
 
-def print_men(mens: list[str], index:int) -> None:
-    """
-    data of one people output to cmd
-    """
-    for i in range(index,index+8):
-            print(mens[i])
 
-def to_file(file: io.TextIOWrapper, index: int, mens: list[str]) -> None:
+def to_file(file: io.TextIOWrapper, men: str) -> None:
     """
     data of one people output to file
     """
-    for i in range(index, index + 8):
-            file.write(mens[i])
-            file.write("\n")
+    file.write(men)
     file.write("\n")
 
 

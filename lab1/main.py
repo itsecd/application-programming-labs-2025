@@ -1,17 +1,19 @@
+import re
+
 import function
+
 
 def main():
     filepath = function.get_args()
-    text = function.readfile(filepath)
-    mens = text.split("\n")
-    if mens[len(mens)-1] != "":
-        mens.append("")
+    text = function.read_file(filepath)
+    mens = text.split("\n\n")
     file = open("correct_date.txt", "w")
-    for i in range(0,len(mens),8):
-        if not function.is_correct(mens[i+4][15:]):
-            function.print_men(mens,i)
+    for men in mens:
+        if not function.is_correct(re.search(r'\d+[./\t-]\d+[./\t-]\d+', men).group()):
+            print(men)
         else:
-            function.to_file(file,i,mens)
+            function.to_file(file, men)
+    file.close()
 
 
 if __name__ == "__main__":
