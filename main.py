@@ -12,16 +12,18 @@ from typing import List
 def parse_arguments() -> argparse.Namespace:
     """
     Парсинг аргументов командной строки
+    Возвращает объект с двумя полями:
+    1.input_file: путь к входному файлу с анкетными данными
+    2.output: путь к выходному файлу со стандартизированными данным
     """
     parser = argparse.ArgumentParser(description='Обработка анкетных данных')
     parser.add_argument("input_file", type=str, help="Имя входного файла")
     parser.add_argument("-o", "--output", type=str, default="result.txt", help="Имя выходного файла")
     return parser.parse_args()
 
-
 def read_file(filename: str) -> str:
     """
-    Чтение содержимого файла
+    Чтение и возврат всего содержимого файла
     """
     try:
         with open(filename, 'r', encoding="utf-8") as file:
@@ -32,15 +34,15 @@ def read_file(filename: str) -> str:
 
 def extract_profiles(data: str) -> List[List[str]]:
     """
-    Извлечение профилей из данных
+    Разбор исходных данных на отдельные профили с анкетными данными
     """
     profiles = []
-    #разделяю по шаблону на "1)", "2)", "3)" и т.д.
+    # Разделяем по шаблону "1)", "2)", "3)" и т.д.
     blocks = re.split(r'\n\s*\d+\)\s*\n', data)
     
     for block in blocks:
         if block.strip():
-            profile = extract_profile_data(block)
+            profile = extract_profile_data(block)  
             if profile:
                 profiles.append(profile)
     
@@ -49,7 +51,7 @@ def extract_profiles(data: str) -> List[List[str]]:
 
 def extract_profile_data(block: str) -> List[str]:
     """
-    Извлечение данных одного профиля из блока
+    Извлечение структурированных данных из текстового блока одного профиля
     """
     lines = [line.strip() for line in block.split('\n') if line.strip()]
     
@@ -79,7 +81,7 @@ def extract_profile_data(block: str) -> List[str]:
 
 def process_contact(contact: str) -> str:
     """
-    Обработка и стандартизация контакта
+    Валидация и стандартизация контакта
     """
     if not contact or contact == '-':
         return '-'
@@ -157,10 +159,8 @@ def process_name(name: str) -> str:
     """
     if not name or name == '-':
         return '-'
-    
     if name and name[0].islower():
-        #если первая буква маленькая, делаем ее заглавной
-        return name[0].upper() + name[1:]
+        return name.capitalize()
     elif name and name[0].isupper():
         return name
     
@@ -176,9 +176,9 @@ def process_gender(gender: str) -> str:
     
     gender_lower = gender.lower()
     
-    if any(word in gender_lower for word in ['муж', 'м', 'male', 'm']):
+    if any(word in gender_lower for word in ['муж', 'м']):
         return 'Мужской'
-    elif any(word in gender_lower for word in ['жен', 'ж', 'female', 'f']):
+    elif any(word in gender_lower for word in ['жен', 'ж']):
         return 'Женский'
     
     return '-'
