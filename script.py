@@ -1,3 +1,4 @@
+import argparse
 import re
 import sys
 from typing import List
@@ -147,14 +148,22 @@ def main() -> None:
     Обрабатывает аргументы CLI, находит и удаляет анкеты с некорректыми email
     """
     try:
-        if len(sys.argv) < 3:
-            print("Использование:"
-                  " python script.py <входной-файл> <выходной-файл>")
-            return
+        parser = argparse.ArgumentParser()
 
-        input_file = sys.argv[1]
-        output_file = sys.argv[2]
-        content = read_file(input_file)
+        parser.add_argument(
+        'input_file',
+        type=str,
+        help='Путь к входному файлу с анкетами'
+    )
+
+        parser.add_argument(
+        'output_file',
+        type=str,
+        help='Путь к выходному файлу для сохранения результатов'
+    )
+
+        args = parser.parse_args()
+        content = read_file(args.input_file)
         invalid_ankets = extract_ankets_with_invalid_email(content)
 
         print("Анкеты с некорректным email:")
@@ -167,9 +176,9 @@ def main() -> None:
             f"\nНайдено {len(invalid_ankets)} анкет с некорректным email.")
         cleaned_ankets = remove_ankets_with_invalid_email(
             content, invalid_ankets)
-        write_file(output_file, cleaned_ankets)
+        write_file(args.output_file, cleaned_ankets)
         print(f"\nУдалено {len(invalid_ankets)} анкет с некорректным  email.")
-        print(f"Сохранено {len(cleaned_ankets)} анкет в файл: {output_file}")
+        print(f"Сохранено {len(cleaned_ankets)} анкет в файл: {args.output_file}")
     except FileNotFoundError as e:
         print(f"Ошибка {e}")
         sys.exit(1)
