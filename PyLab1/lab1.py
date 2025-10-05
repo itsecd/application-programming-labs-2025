@@ -3,15 +3,13 @@ import func
 
 
 def main() -> None:
-    filename = func.get_args()
-    text = func.intput_file(filename)
+    filenames = func.get_args()
+    text = func.intput_file(filenames[0])
     people = text.split("\n\n")
-    new_file = open("new_data.txt", "w")
+    new_file = open(filenames[1], "w")
     for human in people:
-        if not func.is_correct_name(human):
-            human = func.data_change_name(human)
-        if not func.is_correct_surname(human):
-            human = func.data_change_surname(human)
+        if func.is_correct_name_or_surname(human)>0:
+            human = func.data_change_surname_and_name(human)
         func.output_file(new_file, human)
     new_file.close()
 

@@ -5,20 +5,24 @@ import re
 
 def get_args() -> str:
     """
-    keep filename of terminal
+    keep filenames of terminal
     """
+    filenames=[]
     parser = argparse.ArgumentParser()
-    parser.add_argument("filename", type=str)
+    parser.add_argument("old_filename", type=str)
+    parser.add_argument("new_filename", type=str)
     args = parser.parse_args()
-    return args.filename
+    filenames.append(args.old_filename)
+    filenames.append(args.new_filename)
+    return filenames
 
 
 def intput_file(filename: str) -> str:
     """
-    parsing first file
+    parsing file
     """
     try:
-        file = open(filename, "r")
+        file = open(filename, "r", encoding="utf-8")
         print(f"File {filename} ready to work")
         text = file.read()
         file.close()
@@ -28,43 +32,26 @@ def intput_file(filename: str) -> str:
         return ""
 
 
-def is_correct_name(data: str) -> bool:
+def is_correct_name_or_surname(data: str) -> int:
     """
-    cheking name of one human
+    cheking name and surname of one human
     """
-    name = r"Имя: [А-Я][а-я]*"
-    if re.search(name, data):
-        return True
-    return False
-
-
-def is_correct_surname(data: str) -> bool:
-    """
-    cheking surname of one human
-    """
+    cnt=0
     surname = r"Фамилия: [А-Я][а-я]*"
-    if re.search(surname, data):
-        return True
-    return False
+    name = r"Имя: [А-Я][а-я]*"
+    if not re.search(name, data):
+        cnt+=1
+    if not re.search(surname, data):
+        cnt+=1
+    return cnt
 
 
-def data_change_surname(human: str) -> str:
+def data_change_surname_and_name(human: str) -> str:
     """
-    correction surname of one human
+    correction surname and name of one human
     """
     human = human.split("\n")
     human[1] = human[1].title()  # заглавление первой буквы фамилии
-    answer = ""
-    for str in human:
-        answer += (str+"\n")
-    return answer
-
-
-def data_change_name(human: str) -> str:
-    """
-    correction name of one human
-    """
-    human = human.split("\n")
     human[2] = human[2].title()  # заглавление первой буквы имени
     answer = ""
     for str in human:
