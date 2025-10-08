@@ -9,6 +9,7 @@ def parse_args() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('path', type=str, help='Path to file (Путь к файлу)')
+    parser.add_argument('-o', '--output',type=str,default='good_file.txt',help='Output filename (Имя файла для сохранения)')
     return parser.parse_args()
 
 
@@ -66,7 +67,7 @@ def main() -> None:
         for trash in form_without_mail:
             print("\n" + trash)
 
-        save_forms_to_file(form_with_mail, "good_file.txt")
+        save_forms_to_file(form_with_mail, args.output)
 
         print(type(args))
     except FileNotFoundError as error:
