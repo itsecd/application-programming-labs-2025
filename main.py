@@ -25,6 +25,21 @@ def is_leap_year(year: int) -> bool:
     days_in_month = [31, 29 if is_leap_year(year) else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     return 1 <= day <= days_in_month[month - 1] if 1 <= month <= 12 else False
 
+def split_file(text: str) -> list[str]:
+    return re.split(r'\n\s*\n+', text.strip())
+
+def extract_born_in_21st_century(forms: list[str]) -> list[str]:
+    pattern = r'\b(\d{1,2}).(\d{1,2}).(20\d{2})\b'
+    result = []
+    for form in forms:
+        match = re.search(pattern, form)
+        if match:
+            day, month, year = map(int, match.groups())
+            if correct_date(day, month, year):
+                result.append(form)
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Извлечение анкет людей, родившихся в 21 веке, из файла data.txt и сохранение их в новый файл."
