@@ -13,6 +13,12 @@ def read_file(filename: str) -> str | None:
         print(f"Ошибка при чтении файла: {e}")
         return None
 
+def correct_date(day: int, month: int, year: int) -> bool:
+    if not (2001 <= year <= 2025):
+        return False
+    if not (1 <= month <= 12):
+        return False 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Извлечение анкет людей, родившихся в 21 веке, из файла data.txt и сохранение их в новый файл."
