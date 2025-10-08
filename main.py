@@ -19,6 +19,12 @@ def correct_date(day: int, month: int, year: int) -> bool:
     if not (1 <= month <= 12):
         return False 
 
+def is_leap_year(year: int) -> bool:
+    return (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)
+
+    days_in_month = [31, 29 if is_leap_year(year) else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    return 1 <= day <= days_in_month[month - 1] if 1 <= month <= 12 else False
+
 def main():
     parser = argparse.ArgumentParser(
         description="Извлечение анкет людей, родившихся в 21 веке, из файла data.txt и сохранение их в новый файл."
