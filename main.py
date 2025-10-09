@@ -1,197 +1,106 @@
-def factor(parlst: list) -> bool:
+import re
+import argparse
 
-    if name(parlst[0]):
-        if name(parlst[1]):
-            if gender(parlst[2]):
-                if city(parlst[5]):
-                    if date(parlst[3]):
-                        if num_mail(parlst[4]):
-                            return True
-
-    return False
+def factor(human: list) -> bool:
+    return  name(human[0]) & name(human[1]) & gender(human[2]) & city(human[5]) & date(human[3]) & num_mail(human[4])
 
 def name(text: str) -> bool:
-    """
-        проверка фамилии и имени
-    """
-    try:
-        text = text.split(' ')[1]
-    except:
-        print("Ошибка 2! Введен файл неправильного вида!")
-    return text[0].upper() == text[0]
+    if re.fullmatch(r'[А-Я]',text.split(' ')[1][0]):
+        return True
+    return False
 
 def gender(text: str) -> bool:
-    """
-        проверка пола
-    """
-    try:
-        text = text.split(' ')[1]
-    except:
-        print("Ошибка 3! Введен файл неправильного вида!")
-    return text in ["м","М","ж","Ж","мужской","Мужской","женский","Женский",]
+    if re.fullmatch(r'(М|м|Мужской|мужской|Ж|ж|Женский|женский)', text.split(' ')[1]):
+        return True
+    return False
 
 def date(text: str) -> bool:
-    """
-        проверка даты рождения
-    """
-    try:
-        text = text.split(' ')[2]
-    except:
-        print("Ошибка 4! Введен файл неправильного вида!")
+    text = text[15:]
+    if re.fullmatch(r'(\d{1,2}(/\d{1,2}/|-\d{1,2}-|\.\d{1,2}\.)20[012][012345])', text):
+        text = re.split(r'[-/.]', text)
+        day, month, year = int(text[0]), int(text[1]), int(text[2])
 
-    # разделение по знакам
-    if '.' in text:
-        text = text.split('.')
-    elif '-' in text:
-        text = text.split('-')
-    elif '/' in text:
-        text = text.split('/')
-    else:
-        return False
+        # месяца
+        if month > 12:
+            return False
 
-    # года
-    if int(text[2]) < 2000:
-        return False
+        # дни
+        d31 = [1, 3, 5, 7, 8, 10, 12]
+        d30 = [4, 6, 9, 11]
 
-    # месяца
-    if int(text[1]) < 0 or int(text[1]) > 12:
-        return False
+        if month in d31 and day > 31:
+            return False
+        if month in d30 and day > 30:
+            return False
+        if month == 2 and day > 28:
+            return False
+        if month == 2 and (year % 4 == 0 or year % 100 == 0) and day > 29:
+            return False
 
-    # дни
-    d31 = [1,3,5,7,8,10,12]
-    d30 = [4,6,9,11]
-    if int(text[0]) < 0:
-        return False
-    if int(text[1]) in d31 and int(text[0]) > 31:
-        return False
-    if int(text[1]) in d30 and int(text[0]) > 30:
-        return False
-    if int(text[1]) == 2 and int(text[0]) > 28:
-        return False
-
-    #сегодня
-    if int(text[0]) > 29 and int(text[1]) == 9 and int(text[2]) == 2025:
-        return False
-    if int(text[1]) > 9 and int(text[2]) == 2025:
-        return False
-    if int(text[2]) > 2025:
-        return False
-    return True
+        return True
+    return False
 
 def num_mail(text: str) -> bool:
-    """
-        проверка номера телефона или почты
-    """
-
-    try:
-        text = "".join(text.split(' ')[4:])
-    except:
-        print("Ошибка 5! Введен файл неправильного вида!")
-
-    # почта
-    if '@' in text:
-        text = text.split('@')
-        alt_text = text[0].lower()
-        alph = "qwertyuiopasdfghjklzxcvbnm1234567890_%+-"
-        if len(text) != 2 or not text[1] in ["gmail.com", "mail.ru", "yandex.ru"] or len(text[0]) > 64:
-            return False
-        for i in range(0,len(alt_text)):
-            if not alt_text[i] in alph:
-                return False
-
-    # номер телефона
-    elif text[0] in ['8','+']:
-
-        # проверка на символ -
-        if text.count('-') > 0:
-            if text.count('-') != 2:
-                return False
-            elif text[-3] != '-' or text[-6] != '-':
-                return False
-
-        # проверка на ()
-        if text.count('(') != text.count(')'):
-            return False
-        if text.count('(') > 0:
-
-            if text.count('(') != 1:
-                return False
-
-            if text[0] == '8' and (text[1] != '(' or text[5] != ')'):
-                return False
-            elif text[0] == '+' and (text[2] != '(' or text[6] != ')'):
-                return False
-
-        # проверка на кол-во цифр
-        c = 0
-        for i in range(0,len(text)):
-            if text[i].isdigit():
-                c+=1
-        if c != 11:
-            return False
-    else:
-        return False
-
-    return True
+    text = text[26:]
+    numb_pat = r'(\+7|8)(\s?\d{3}\s?|\s\(\d{3}\)\s)\d{3}(\s?\d{2}\s?|-\d{2}-)\d{2}'
+    email_pat = r'[a-zA-Z\d\-.+%_]{1,64}@(yandex\.ru|gmail\.com|mail\.ru)'
+    if re.fullmatch(numb_pat, text) or re.fullmatch(email_pat, text):
+        return True
+    return False
 
 def city(text: str) -> bool:
-    """
-        проверка города
-    """
+    text = text[7:]
+    if re.search(r'(г\.\s[А-Я][а-я]+|[А-Я][а-я]+)', text):
+        return True
+    return False
 
-    try:
-        text = text.split(' ')[1:]
-    except:
-        print("Ошибка 6! Введен файл неправильного вида!")
-    if text[0] == "г.":
-        text = text[1:]
-    return text[0][0].upper() == text[0][0]
+def read_new_file(filename: str) -> list[str]:
+    with open(filename, "r", encoding="utf-8") as data:
+        return data.readlines()
+
+def write_new_file(filename: str, string: str) -> None:
+    with open(filename, "w", encoding="utf-8") as data:
+        data.write(string)
+
+def fill_blanks(counter: int, questionaty: list[str]) -> str:
+    result = ""
+    result += str(counter) + ')' + '\n'
+    for l in questionaty:
+        result += l + "\n"
+    result += '\n'
+    return result
+
+def most_work(whole_text: list[str], write_file_name: str) -> int:
+    result_work = ""; blank = []; number = 0
+    for line in whole_text:
+        if line == '\n' or not line:
+            if factor(blank):
+                number += 1
+                result_work += fill_blanks(number,blank)
+            blank = []
+            continue
+        if re.fullmatch(r'\d+\)\n', line):
+            continue
+        blank.append(line.strip())
+    write_new_file(write_file_name, result_work)
+    return number
 
 def main():
+    parser = argparse.ArgumentParser(description='Фильтрация файла с анкетами')
+    parser.add_argument('input_file', type=str, help='Имя входного файла')
+    parser.add_argument('output_file', type=str, help='Имя получаемого файла')
 
-    result = 0
+    args = parser.parse_args()
 
-    read_file_name = input("введите названия читаемого файла: ")
-    try:
-        data = open(read_file_name, "r", encoding="utf-8")
-        data.close()
-    except:
+    if args.input_file != "data.txt":
         print("Ошибка в вводе имени читаемого файла!")
         return
 
-    write_file_name = input("введите названия записываемого файла: ")
-    try:
-        data = open(write_file_name, "r", encoding="utf-8")
-        data.close()
-    except:
-        print("Ошибка в вводе имени записываемого файла!")
-        return
+    all_lines = read_new_file(args.input_file)
 
-    with open(read_file_name, "r", encoding="utf-8") as data, open(write_file_name, 'w', encoding="utf-8") as new_data:
-        while True:
-            full_line = ""
-            while True:
-                line = data.readline()
-                if not line or line == '\n':
-                    break
-                full_line += '|' + line.strip()
+    mass = most_work(all_lines, args.output_file)
 
-            lst = full_line.split('|')
-
-            try:
-                lst = lst[2:]
-            except:
-                print("Ошибка 1! Введен файл неправильного вида!")
-
-            if factor(lst):
-                result += 1
-                new_data.writelines([str(result), ")\n", lst[0], '\n', lst[1], '\n', lst[2], '\n', lst[3], '\n', lst[4], '\n', lst[5], "\n\n"])
-
-            if not line:
-                break
-
-    print("количество людей родившихся в 21 веке:", result)
-
+    print(mass)
 
 if __name__ == "__main__":
     main()
