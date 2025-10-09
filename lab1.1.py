@@ -10,13 +10,15 @@ def parser_file() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def read_file(filepath: str) -> str:
+def read_file(filepath: str) -> str | None:
     """
     Функция для чтения из файла
-    Возвращает содержимое файла как строку
     """
-    with open(filepath, "r", encoding="utf-8") as file:
-        return file.read()
+    try:
+        with open(filepath, "r", encoding="utf-8") as file:
+            return file.read()
+    except FileNotFoundError as ex:
+        raise FileNotFoundError(f"файл '{filepath}' не найден: {ex}")
 
 
 def clean_records(filepath: str) -> list[str]:
@@ -45,24 +47,27 @@ def get_full_records_by_name(name: str, records: list[str]) -> list[str]:
     for record in records:
         lines = record.splitlines()
         for line in lines:
-            if line.startswith("Имя:"):
-                parts = line.split(":", 1)
-                record_name = parts[1]
-                record_name = record_name.strip()
-                record_name = record_name.lower()
-                if re.search(name, record_name):
+            match = re.match(r"^Имя:\s*(.+)", line)
+            if match:
+                record_name = match.group(1).strip()
+                if record_name.lower() == name.lower():
                     found_records.append(record)
-                    break
+                break
+
     return found_records
 
 
 def write_file(found_records: list[str]) -> None:
     """
     функция для записи в файл
+
     """
-    with open("data1.txt", "w", encoding="utf-8") as file:
-        for record in found_records:
-            file.write(record + "\n\n")
+    try:
+        with open("data1.txt", "w", encoding="utf-8") as file:
+            for record in found_records:
+                file.write(record + "\n\n")
+    except PermissionError:
+        raise ("Недостаточно прав для выполнения оперции")
 
 
 def main() -> None:
@@ -75,10 +80,6 @@ def main() -> None:
         write_file(found_records)
         total = len(found_records)
         print(f"Людей с именем '{name}' найдено {total} человек")
-    except FileNotFoundError as ex:
-        print(f"Ошибка: файл '{args.file}' не найден: {ex}")
-    except PermissionError as ex:
-        print(f"Ошибка записи в файл 'data1.txt': {ex}")
     except Exception as ex:
         print(f"Произошла ошибка: {ex}")
 
