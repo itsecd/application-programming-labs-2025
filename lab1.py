@@ -8,12 +8,18 @@ def parse_args() -> argparse.Namespace:
     Получает путь к файлу
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('path', type=str, help='Path to file (Путь к файлу)')
-    parser.add_argument('-o', '--output',type=str,default='good_file.txt',help='Output filename (Имя файла для сохранения)')
+    parser.add_argument("path", type=str, help="Path to file (Путь к файлу)")
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        default="good_file.txt",
+        help="Output filename (Имя файла для сохранения)",
+    )
     return parser.parse_args()
 
 
-def read_file(path : str) -> str:
+def read_file(path: str) -> str:
     """
     Чтение из файла
     """
@@ -22,7 +28,6 @@ def read_file(path : str) -> str:
             return file.read()
     except FileNotFoundError:
         raise FileNotFoundError(f"Файл не найден: {path}")
-    
 
 
 def split_forms(data: str) -> list[str]:
@@ -37,8 +42,10 @@ def filter_forms_by_email(forms: list[str]) -> tuple[list[str], list[str]]:
     Деление на почты
     """
     try:
-        email_pattern = r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
-        with_email = [form for form in forms if re.search(email_pattern, form)]
+        email_pattern = r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"
+        with_email = [
+            form for form in forms if re.search(email_pattern, form)
+        ]  # генератор списков
         without_email = [form for form in forms if not re.search(email_pattern, form)]
         return with_email, without_email
     except re.error as error:
@@ -69,16 +76,10 @@ def main() -> None:
 
         save_forms_to_file(form_with_mail, args.output)
 
-        print(type(args))
-    except FileNotFoundError as error:
-        print(f"Ошибка {error}", file=sys.stderr)
-        sys.exit(1)
-    except PermissionError as error:
-        print(f"Ошибка доступа к файлу: {error}", file=sys.stderr)
-        sys.exit(1)
-    except Exception as error:
+    except Exception as error: 
         print(f"Произошла ошибка: {error}", file=sys.stderr)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
