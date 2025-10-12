@@ -1,38 +1,57 @@
 import re
 
-#TODO add argparse instead of 'data.txt'
-with open('data.txt', 'r', encoding='utf-8') as file:
-    content = file.readlines()
+def read_file(path: str) -> str:
+    """
+    Read file and return it's content
+    """
+    try:
+        with open(path, 'r', encoding='utf-8') as file:
+            return file.read()
+    except FileNotFoundError as err:
+        raise FileNotFoundError(err)
 
-    lst1 = []
+def split_candidates(data: str) -> list[str]:
+    """
+    Split data to list of candidates
+    """
+    candidates = re.split(r'\n{2}', data)
+    return candidates
 
-    #TODO figure how not to add not fully populated dict
-    tmp_dct = {}
-    for line in content:
-        match = re.search(r"^\d+", line)
-        if match:
-            tmp_dct.update({"ID": match.group()})
-        match = re.findall(r"Фамилия:\s+([А-ЯЁ]+[а-яё]+)", line)
-        if match:
-            tmp_dct.update({"Фамилия": match[0]})
-        match = re.findall(r"Имя:\s+([А-ЯЁ]+[а-яё]+)", line)
-        if match:
-            tmp_dct.update({"Имя": match[0]})
-        match = re.findall(r"Пол:\s+(М$|м$|Мужской$|мужской$|Ж$|ж$|Женский$|женский$)", line)
-        if match:
-            tmp_dct.update({"Пол": match[0]})
+def find_candidates_by_phone_number(candidates: list[str], code: str) -> list[str]:
+    """
+    Find candidates with matching phone code
+    :param candidates: list of candidates
+    :param code: phone code
+    :return: list of fulfilling candidates
+    """
+    found_candidates = []
+    #TODO add checking for valid forms of phone number
+    pattern = f'{code}'
 
-        #TODO add age, mobile, city
-        match = re.findall(r"Дата рождения:\s+(\d{})", line)
-        if match:
-            tmp_dct.update({"Дата рождения": match[0]})
+    for candidate in candidates:
+        if re.search(pattern, candidate):
+            found_candidates.append(candidate)
 
-        match = re.fullmatch("\n", line)
-        if match:
-            lst1.append(tmp_dct.copy())
-            tmp_dct.clear()
+    return found_candidates
 
-    for line in lst1:
-        print(line)
+    #var7: Найдите всех людей, чьи телефоны имеют код города 927. Выведите их количество на экран и сохраните их анкеты в новый файл.
 
-    #TODO var7: Найдите всех людей, чьи телефоны имеют код города 927. Выведите их количество на экран и сохраните их анкеты в новый файл.
+def main() -> None:
+    """
+    Main function
+    """
+    try:
+        #TODO add func to read path from args
+        path_file = "data.txt"
+        data = read_file(path_file)
+        candidates = split_candidates(data)
+        fulfilling_candidates = find_candidates_by_phone_number(candidates, "927")
+        for item in fulfilling_candidates:
+            print(item)
+        print(f"Number of fulfilling candidates: {len(fulfilling_candidates)}")
+        #TODO add func to save fulfilling_candidates to file
+    except Exception as err:
+        print(f"Error while working with file: {err}")
+
+if __name__ == "__main__":
+    main()
