@@ -3,6 +3,8 @@ import random
 import argparse
 import requests
 from bs4 import BeautifulSoup
+from typing import List
+import re
 
 
 CSV_HEADER = ["genre", "abs_path", "real_path", "url", ]
@@ -41,3 +43,20 @@ def get_html(url) -> str:
     if resp.ok:
         return resp.text
         
+
+def mp3_parse(html) -> List[str]:
+    """
+    получаю ссылки на скачивание песни
+    """
+    soup = BeautifulSoup(html, 'html.parser')
+    urls = []
+    for tag in soup.select('a[href$=".mp3"]'):
+        urls.append(tag['href'])
+    return urls
+
+def random_urls(urls) -> List[str]:
+    """
+    получаю n случайных ссылок на скачивание
+    """
+    n = random.randint(1, len(urls))
+    return random.sample(urls, n)
