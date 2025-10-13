@@ -1,4 +1,14 @@
 import re
+import argparse
+
+def parse_arguments() -> argparse.Namespace:
+    """
+    Adds and parses command-line arguments
+    """
+    parser = argparse.ArgumentParser(description="Search candidates by phone code")
+    parser.add_argument('filename', help='File to search in')
+    parser.add_argument('--output', '-o', help='File to save in search result')
+    return parser.parse_args()
 
 def read_file(path: str) -> str:
     """
@@ -7,8 +17,18 @@ def read_file(path: str) -> str:
     try:
         with open(path, 'r', encoding='utf-8') as file:
             return file.read()
-    except FileNotFoundError as err:
-        raise FileNotFoundError(err)
+    except IOError as err:
+        raise IOError(f"Wasn't able to read file at {path}: {err}")
+
+def write_file(path: str, data: list[str]) -> None:
+    """
+    Write data in file
+    """
+    try:
+        with open(path, 'w', encoding='utf-8') as file:
+            file.write('\n\n'.join(data))
+    except IOError as err:
+        raise IOError(f"Wasn't able to write file at {path}: {err}")
 
 def split_candidates(data: str) -> list[str]:
     """
@@ -41,15 +61,19 @@ def main() -> None:
     Main function
     """
     try:
-        #TODO add func to read path from args
-        path_file = "data.txt"
-        data = read_file(path_file)
+        args = parse_arguments()
+        data = read_file(args.filename)
         candidates = split_candidates(data)
         fulfilling_candidates = find_candidates_by_phone_number(candidates, "927")
-        for item in fulfilling_candidates:
-            print(item)
-        print(f"Number of fulfilling candidates: {len(fulfilling_candidates)}")
-        #TODO add func to save fulfilling_candidates to file
+        if fulfilling_candidates:
+            for item in fulfilling_candidates:
+                print(item)
+            print(f"Number of fulfilling candidates: {len(fulfilling_candidates)}")
+            if args.output:
+                write_file(args.output, fulfilling_candidates)
+                print(f"Successfully write output to: {args.output}")
+        else:
+            print("No fulfilling candidates!")
     except Exception as err:
         print(f"Error while working with file: {err}")
 
