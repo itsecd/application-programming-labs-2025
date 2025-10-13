@@ -36,8 +36,6 @@ def normalize_date(date_str: str) -> str:
         try:
             dt = datetime.strptime(date_str, fmt)
             if 1900 <= dt.year <= 2024:
-                # Проверка корректности самой даты (например, 31.02 —
-                # недопустимо)
                 try:
                     datetime.strptime(dt.strftime("%d.%m.%Y"), "%d.%m.%Y")
                     return dt.strftime("%d.%m.%Y")
