@@ -4,7 +4,7 @@ import argparse
 import requests
 from bs4 import BeautifulSoup
 from typing import List
-import re
+
 
 
 CSV_HEADER = ["genre", "abs_path", "real_path", "url", ]
@@ -54,9 +54,18 @@ def mp3_parse(html) -> List[str]:
         urls.append(tag['href'])
     return urls
 
+
+
 def random_urls(urls) -> List[str]:
     """
     получаю n случайных ссылок на скачивание
     """
     n = random.randint(1, len(urls))
     return random.sample(urls, n)
+
+def download_mp3(urls, path) -> None:
+    resp = requests.get(url)
+    resp.raise_for_status()
+    with open(dest_path, 'wb') as file:
+        file.write(resp.content)
+
