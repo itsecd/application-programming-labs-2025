@@ -45,12 +45,18 @@ def find_candidates_by_phone_number(candidates: list[str], code: str) -> list[st
     :return: list of fulfilling candidates
     """
     found_candidates = []
-    #TODO add checking for valid forms of phone number
-    pattern = f'{code}'
+    pattern = r"^(\+7|8)\s?(\(\d{3}\)|\d{3})\s?\d{3}[-\s]?\d{2}[-\s]?\d{2}$"
 
     for candidate in candidates:
-        if re.search(pattern, candidate):
-            found_candidates.append(candidate)
+        match = re.search(r"Номер телефона или email:\s*(.*)", candidate)
+        if not match:
+            continue
+        valid_number = match.group(1).strip()
+        if re.fullmatch(pattern, valid_number):
+            simple_code = re.sub(r"\D", "", valid_number)
+            city_code = simple_code[1:4]
+            if city_code == code:
+                found_candidates.append(candidate)
 
     return found_candidates
 
