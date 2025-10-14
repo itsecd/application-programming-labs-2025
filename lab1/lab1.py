@@ -1,6 +1,8 @@
-import re
 import argparse
 import collections
+import re
+
+
 
 
 def read_from_file(filename):
