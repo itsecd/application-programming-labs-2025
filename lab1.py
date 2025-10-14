@@ -8,14 +8,14 @@ def read_file(filename: str) -> str:
     Чтение файла для дальнейшей работы с ним
     """
     try:
-        file = open(filename, "r")
-        print(f"File {filename} is parsed!")
-        text = file.read()
-        file.close()
-        return text
-    except FileNotFoundError:
-        print(f"Sorry, {filename} dont found!!!")
+      with open(filename, 'r') as file:
+            dannye=file.read()
+            print(f"Файл '{filename}' успешно открыт")
+            return dannye
+    except Exception as e:
+        print(f"Ошибка при открытии файла '{filename}': {e}")
         return ""
+
 
 
 def create_file(output_filename, content="", encoding="utf-8"):
@@ -33,48 +33,33 @@ def create_file(output_filename, content="", encoding="utf-8"):
         return False
 
 
-def process_and_sort_names(filename):
+def extract_and_sort_names(filename):
     """
-    Читает файл с данными, сортирует записи и преобразует к формату 'Фамилия И.'
-
+    Извлекает фамилии и имена из текста, форматирует их в 'Фамилия И.'
+    и сортирует в алфавитном порядке
+    
     """
-    result = []
-
-    with open(filename, 'r') as file:
-        content = file.read()
-
-    # Разделяем на отдельные записи
-    records = content.split('\n\n')
-
-    for record in records:
-        if not record.strip():
-            continue
-
-        lines = record.strip().split('\n')
-        surname = ""
-        name = ""
-
-        for line in lines:
-            if line.startswith('Фамилия:'):
-                surname = line.replace('Фамилия:', '').strip()
-            elif line.startswith('Имя:'):
-                name = line.replace('Имя:', '').strip()
-
-        # Приводим к правильному регистру
-        if surname:
-            surname = surname.capitalize()
-        if name:
-            name = name.capitalize()
-
-        # Форматируем в "Фамилия И."
-        if surname and name:
-            formatted_name = f"{surname} {name[0]}."
-            result.append(formatted_name)
-
-    # Сортируем по фамилии, затем по имени
-    result.sort()
-
-    return result
+    # Регулярное выражение для поиска фамилий и имен
+    pattern = r'Фамилия:\s*([^\n]+)\s*\nИмя:\s*([^\n]+)'
+    
+    # Поиск всех совпадений
+    matches = re.findall(pattern, filename, re.IGNORECASE)
+    
+    # Обработка и форматирование имен
+    formatted_names = []
+    for surname, name in matches:
+        # Приведение к правильному регистру: первая буква заглавная, остальные строчные
+        surname_proper = surname.strip().title()
+        name_proper = name.strip().title()
+        
+        # Форматирование в "Фамилия И."
+        formatted_name = f"{surname_proper} {name_proper[0]}."
+        formatted_names.append(formatted_name)
+    
+    # Сортировка в алфавитном порядке
+    formatted_names.sort()
+    
+    return formatted_names
 
 
 def list_to_string(lst, separator=''):
@@ -85,16 +70,16 @@ def list_to_string(lst, separator=''):
     return separator.join(str(item) for item in lst)
 
 
-def split_by_dot_newline(sorted_names):
+def split_by_dot_newline(formatted_names):
     """
     Разделяет строку по точке и записывает каждый элемент с новой строки
 
     """
-    if not sorted_names:
+    if not formatted_names:
         return ""
 
     # Разделяем по точке и убираем пустые элементы
-    parts = [part.strip() for part in sorted_names.split('.') if part.strip()]
+    parts = [part.strip() for part in formatted_names.split('.') if part.strip()]
 
     # Соединяем с переносами строк
     return '\n'.join(part + '.' for part in parts)
@@ -116,10 +101,8 @@ def get_args() -> str:
 def main() -> None:
     filepath, output_filename = get_args()
     text = read_file(filepath)
-    out_file = print()
-    sorted_names = process_and_sort_names('data.txt')
-    sort = list_to_string(sorted_names)
-
+    formatted_names = extract_and_sort_names(text)
+    sort = list_to_string(formatted_names)
     ofile = create_file(output_filename, split_by_dot_newline(sort))
 
 
