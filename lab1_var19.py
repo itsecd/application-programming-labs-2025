@@ -3,11 +3,13 @@ import re
 from pathlib import Path
 from typing import List, Pattern, Optional, Tuple
 
+
 def build_email_regex(allowed_domains: List[str]) -> Pattern[str]:
     """Создаёт регулярное выражение для проверки корректности email."""
     dom_part = "|".join(re.escape(d) for d in allowed_domains)
     pattern = rf"^[A-Za-z0-9._%+\-]{{1,64}}@(?:{dom_part})$"
     return re.compile(pattern, re.IGNORECASE)
+
 
 def arg_parse() -> argparse.Namespace:
     """Парсинг аргументов командной строки."""
@@ -21,6 +23,7 @@ def arg_parse() -> argparse.Namespace:
 
     return parser.parse_args()
 
+
 def read_file(path: Path, encoding: str) -> str:
     """Читает текст из файла. Возвращает содержимое в виде строки."""
     try:
@@ -28,11 +31,13 @@ def read_file(path: Path, encoding: str) -> str:
     except FileNotFoundError:
         raise SystemExit(f"[!] Файл не найден: {path} ")
 
+
 def write_file(path: Path, records: List[str], encoding: str) -> None:
     """Записывает список анкет в файл."""
     text ="\n\n".join(records) + ("\n" if records else "")
     path.write_text(text, encoding=encoding)
     print(f"[+] Результат без некорректных email сохранён: {path}")
+
 
 def split_records(text: str) -> List[str]:
     """Разделяет исходный текст на отдельные анкеты."""
@@ -60,6 +65,7 @@ def split_records(text: str) -> List[str]:
 
     return records
 
+
 def extract_contact(record_text: str) -> Optional[str]:
     """
     Извлечь значение поля 'Номер телефона или email: ...' из анкеты.
@@ -72,7 +78,9 @@ def extract_contact(record_text: str) -> Optional[str]:
             return m.group(1).strip()
     return None
 
+
 def process_records(records: List[str], email_re: Pattern[str]) ->Tuple[List[str], List[Tuple[str, str]]]:
+    """Обработка записей и классификация по действительным/недействительным email."""
     kept, invalid = [], []
     for rec in records:
         contact = extract_contact(rec)
@@ -105,6 +113,7 @@ def main()-> None:
         print()
 
     write_file(Path(args.output), kept_records, args.encoding)
+
 
 if __name__ == "__main__":
     main()
