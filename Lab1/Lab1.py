@@ -27,8 +27,10 @@ def valid_date(card: str) -> bool:
     month = date.group(3)
     year = date.group(4)
     try:
-        datetime.strptime(f"{day}.{month}.{year}", '%d.%m.%Y')
-        return True
+        date = datetime.strptime(f"{day}.{month}.{year}", '%d.%m.%Y')
+        if date.year >= 1900:
+            return True
+        return False
     except ValueError:
         return False
 
@@ -85,4 +87,5 @@ def main():
     cards = get_cards(data)
     oldest_and_youngest(cards)
 if __name__ == "__main__":
+
     main()
