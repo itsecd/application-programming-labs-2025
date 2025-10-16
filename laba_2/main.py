@@ -1,14 +1,12 @@
 import argparse
+import re
+import time
+from typing import Tuple, List, Dict, Iterator, Union
+import os
+
 from bs4 import BeautifulSoup
 import csv
 import requests
-
-
-import re
-import time
-from requests.auth import HTTPProxyAuth
-from typing import Tuple, List, Dict, Iterator, Union
-import os
 
 URL_BASE = 'https://mixkit.co/free-stock-music/instrument/piano/'
 HEADERS = {
@@ -17,6 +15,7 @@ HEADERS = {
 
 MAX_FILENAME_LENGTH = 100
 
+
 def sanitize_filename(name: str, max_length: int = MAX_FILENAME_LENGTH) -> str:
     """
     Очищает строку name от запрещённых символов в файловой системе
@@ -24,6 +23,7 @@ def sanitize_filename(name: str, max_length: int = MAX_FILENAME_LENGTH) -> str:
     """
     cleaned = re.sub(r'[<>:"/\\|?*]', '_', name)
     return cleaned[:max_length]
+
 
 class FilePathIterator(Iterator[str]):
     def __init__(self, source: Union[str, os.PathLike]):
@@ -57,14 +57,21 @@ class FilePathIterator(Iterator[str]):
         return path
 
 def parser_t() -> Tuple[str, str]:
+    """
+    Позволяет через консоль запускать код с аргументами
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('source', type=str,
                         help='Путь к папке для загрузки музыки')
     parser.add_argument('output_file', type=str,
                         help='Путь к CSV-файлу для сохранения результата')
-    return parser.parse_args().source, parser.parse_args().output_file
+    return parser.parse_args().source, parser.parse_args().output_file + ".csv"
+
 
 def get_total_pages() -> int:
+    """
+    Реализует подсчет страниц
+    """
     resp = requests.get(URL_BASE, headers=HEADERS)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
@@ -100,7 +107,7 @@ def extract_tracks_from_page(page_num: int) -> List[Dict[str, str]]:
     return tracks
 
 
-def download_single_track(track: Dict[str, str], dest_dir: str, page_num: int) -> None:
+def download_single_track(track: Dict[str, str], dest_dir: str, page_num: int) -> str:
     """
     Скачивает один трек по track['link'] и сохраняет в dest_dir.
     """
@@ -117,15 +124,17 @@ def download_single_track(track: Dict[str, str], dest_dir: str, page_num: int) -
         f.write(resp.content)
     print(f"Скачан: {path}")
 
+    return path
 
-def parser_with_pagination(source: str, csv_path: str):
+
+def parser_with_pagination(source: str, csv_path: str) -> None:
     """Главная функция: координирует парсинг и скачивание."""
     os.makedirs(source, exist_ok=True)
-    new_file = not os.path.exists(csv_path)
+    is_file_exists = os.path.exists(csv_path)
 
     with open(csv_path, 'a', encoding='utf-8', newline='') as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=['text', 'link'])
-        if new_file:
+        writer = csv.DictWriter(csv_file, fieldnames=['text', 'absolute_path', 'relative_path'])
+        if not is_file_exists:
             writer.writeheader()
 
         total_pages = get_total_pages()
@@ -137,8 +146,16 @@ def parser_with_pagination(source: str, csv_path: str):
 
             for track in tracks:
                 try:
-                    download_single_track(track, source, page)
-                    writer.writerow({'text': track['name'], 'link': track['link']})
+                    local_path = download_single_track(track, source, page)
+
+                    abs_path = os.path.abspath(local_path)
+                    rel_path = os.path.relpath(local_path, start=source)
+
+                    writer.writerow({
+                        'text': track['name'],
+                        'absolute_path': abs_path,
+                        'relative_path': rel_path
+                    })
                     csv_file.flush()
                 except Exception as e:
                     print(f"Ошибка скачивания {track['name']}: {e}")
