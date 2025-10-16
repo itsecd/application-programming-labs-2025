@@ -15,14 +15,14 @@ class FileIterator:
     """
     def __init__(self, paths: List[str]) -> None:
         self.paths: List[str] = paths
-        self.index: int = 0
+        self.index = 0
 
     def __iter__(self) -> Iterator[str]:
         return self
 
     def __next__(self) -> str:
         if self.index < len(self.paths):
-            result: str = self.paths[self.index]
+            result = self.paths[self.index]
             self.index += 1
             return result
         else:
@@ -54,7 +54,7 @@ def append_to_csv(csv_path: str, genre: str, abs_path: str, real_path: str, url:
     Добавляет строку в CSV-файл
     """
     with open(csv_path, 'a', encoding="utf-8", newline="") as file:
-        writer: csv.writer = csv.writer(file)
+        writer = csv.writer(file)
         writer.writerow([genre, abs_path, real_path, url])
 
 
@@ -69,7 +69,7 @@ def get_html(url: str) -> str:
     """
     Получает HTML страницы
     """
-    headers: dict = {'User-Agent': 'Mozilla/5.0'}
+    headers = {'User-Agent': 'Mozilla/5.0'}
     resp: requests.Response = requests.get(url, headers=headers)
     resp.raise_for_status()
     return resp.text
@@ -83,10 +83,10 @@ def mp3_parse(html: str) -> List[str]:
     urls: List[str] = []
     for script in soup.find_all('script', type='application/ld+json'):
         try:
-            data: dict = json.loads(script.string or '')
+            data = json.loads(script.string or '') 
         except json.JSONDecodeError:
             continue
-        js: str = json.dumps(data)
+        js= json.dumps(data)
         found: List[str] = re.findall(r'https://assets\.mixkit\.co/[^\s"]+\.mp3', js)
         urls.extend(found)
     return list(dict.fromkeys(urls))
@@ -98,7 +98,7 @@ def random_urls(urls: List[str]) -> List[str]:
     """
     if not urls:
         return []
-    n: int = random.randint(1, len(urls))
+    n = random.randint(1, len(urls))
     return random.sample(urls, n)
 
 
@@ -107,7 +107,7 @@ def download_mp3(url: str, path: str) -> None:
     Скачивает MP3-файл по URL
     """
     try:
-        resp: requests.Response = requests.get(url, timeout=(5, 30), stream=True)
+        resp = requests.get(url, timeout=(5, 30), stream=True)
         resp.raise_for_status()
         with open(path, 'wb') as f:
             for chunk in resp.iter_content(8192):
@@ -123,7 +123,7 @@ def process_genre(genre: str, output_dir: str, csv_path: str) -> None:
     """
     print(f"Обрабатываем жанр: {genre}")
     html: str = get_html(generate_url(genre))
-    print(f"HTML получен, длина: {len(html)} символов")
+   
 
     urls: List[str] = mp3_parse(html)
     print(f"Найдено ссылок: {len(urls)}")
