@@ -1,0 +1,4 @@
+Домен: количество
+gmail.com: 6
+mail.ru: 6
+yandex.ru: 2
