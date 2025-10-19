@@ -1,5 +1,6 @@
 import argparse
 import re
+from datetime import datetime
 
 
 def parse_console() -> argparse.Namespace:
@@ -13,23 +14,35 @@ def parse_console() -> argparse.Namespace:
     return args
 
 
+def is_valid_real_date(date_str: str) -> bool:
+    """
+    Проверяет, является ли дата реально существующей
+    """
+    pattern = r'^\s*(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(19[0-9]{2}|20[0-1][0-9]|202[0-5])\s*$'
+    if not re.match(pattern, date_str):
+        return False
+    
+    try:
+        
+        date_str_clean = date_str.strip()
+        datetime.strptime(date_str_clean, '%d.%m.%Y')
+        return True
+    except ValueError:
+        return False
+
+
 def find_incorrect_birthdates(text: str) -> tuple[list, list]:
     """
     Находит анкеты с некорректными датами рождения и разделяет их
     Возвращает: (анкеты_с_некорректными_датами, анкеты_с_корректными_датами)
     """
-    # Разделяем текст на анкеты
     profiles = re.split(r'\n(?:\d+\)\s*\n)', text)
-    
-    # Паттерн для корректной даты рождения: DD.MM.YYYY
-    # Допускает даты от 01.01.1900 до 31.12.2024
-    pattern = r'\b(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(19[0-9]{2}|20[0-1][0-9]|202[0-4])\b'
     
     incorrect_profiles = []
     correct_profiles = []
     
     for profile in profiles:
-        if not profile.strip():  # Пропускаем пустые анкеты
+        if not profile.strip(): 
             continue
             
         # Ищем дату рождения в анкете
@@ -37,8 +50,8 @@ def find_incorrect_birthdates(text: str) -> tuple[list, list]:
         
         if date_match:
             date_str = date_match.group(1).strip()
-            # Проверяем формат даты
-            if re.match(pattern, date_str):
+            # Проверяем реальность даты
+            if is_valid_real_date(date_str):
                 correct_profiles.append(profile)
             else:
                 incorrect_profiles.append(profile)
@@ -50,17 +63,11 @@ def find_incorrect_birthdates(text: str) -> tuple[list, list]:
 
 
 def read_file(filename: str) -> str:
-    """
-    Читает содержимое файла
-    """
     with open(filename, 'r', encoding='utf-8') as file:
         return file.read()
 
 
 def write_file(filename: str, profiles: list) -> None:
-    """
-    Записывает анкеты в файл
-    """
     with open(filename, 'w', encoding='utf-8') as file:
         for i, profile in enumerate(profiles, 1):
             file.write(f"{i})\n{profile}\n\n")
