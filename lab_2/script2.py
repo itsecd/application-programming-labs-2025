@@ -219,3 +219,47 @@ def create_annotation_csv(image_dir, csv_path):
     return len(files_info)
 
 
+def main():
+    """Точка входа команды. Управляет загрузкой и аннотацией"""
+    parser = argparse.ArgumentParser(description='Скачивание изображений через icrawler')
+    parser.add_argument('--keyword', type=str, default='cat', help='Ключевое слово поиска')
+    parser.add_argument('--num_images', type=int, default=50, help='Количество изображений (50-1000)')
+    parser.add_argument('--min_size', type=int, nargs=2, default=[200, 200], metavar=('W', 'H'))
+    parser.add_argument('--max_size', type=int, nargs=2, default=[5000, 5000], metavar=('W', 'H'))
+    parser.add_argument('--save_dir', type=str, default='./images', help='Папка для сохранения')
+    parser.add_argument('--csv_path', type=str, default='./annotation.csv', help='CSV файл аннотации')
+    args = parser.parse_args()
+
+    if not (50 <= args.num_images <= 1000):
+        print("Ошибка: количество изображений должно быть от 50 до 1000")
+        return
+
+    download_images(args.keyword, args.num_images, tuple(args.min_size), tuple(args.max_size), args.save_dir)
+    total_files = create_annotation_csv(args.save_dir, args.csv_path)
+
+    if total_files == 0:
+        print("\nНе удалось скачать изображения. Попробуйте изменить параметры.")
+        return
+
+    print("\nДемонстрация итератора")
+    iterator_csv = ImagePathIterator(args.csv_path)
+    print(f"Из CSV: {len(iterator_csv)} файлов, первые 5:")
+    for i, path in enumerate(iterator_csv):
+        if i >= 5:
+            break
+        print(f"{i + 1}. {Path(path).name}")
+
+    iterator_dir = ImagePathIterator(args.save_dir)
+    print(f"\nИз каталога: {len(iterator_dir)} файлов, первые 3:")
+    for i, path in enumerate(iterator_dir):
+        if i >= 3:
+            break
+        print(f"{i + 1}. {Path(path).name}")
+
+    print("\nЗавершено успешно.")
+
+
+if __name__ == '__main__':
+    main()
+
+
