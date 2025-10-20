@@ -2,6 +2,7 @@ import argparse
 import csv
 import os
 import time
+import random
 from pathlib import Path
 from icrawler.builtin import BingImageCrawler
 from PIL import Image
@@ -29,14 +30,12 @@ class ImageIterator:
 
     """Класс становится итерируемым для его дальнейшего использования"""
     def __iter__(self):
-        
         self.counter = 0
         return self
     
 
     """Выдает следующий путь к картинке из списка, пока пути не кончатся"""
     def __next__(self):
-        
         if self.counter < len(self.paths):
             path = self.paths[self.counter]
             self.counter += 1
@@ -62,13 +61,35 @@ def parse_date_ranges(date_args):
     return ranges
 
 
-"""Подготовка папки для скачивания изображений"""
+"""Распределение случайного количества изображений по диапазонам"""
+def distribute_images_randomly(date_ranges):
+    total_images = random.randint(50, 1000)
+    num_ranges = len(date_ranges)
+    
+    
+    images_per_range = [1] * num_ranges
+    
+    """Распределяем оставшиеся изображения случайным образом"""
+    remaining_images = total_images - num_ranges
+    
+    for _ in range(remaining_images):
+        range_index = random.randint(0, num_ranges - 1)
+        images_per_range[range_index] += 1
+    
+    return total_images, images_per_range
+
+
+"""Скачивание изображений для каждого диапазона дат"""
 def download_bear_images(date_ranges, output_dir):
     os.makedirs(output_dir, exist_ok=True)
     
+    """"Распределяем случайное количество изображений по диапазонам"""
+    total_images, images_per_range = distribute_images_randomly(date_ranges)
+    
     print(f"Скачивание изображений медведей...")
     print(f"Количество диапазонов дат: {len(date_ranges)}")
-    print(f"Цель: 50-1000 изображений")
+    print(f"Общее количество изображений: {total_images}")
+    print(f"Распределение по диапазонам: {images_per_range}")
     
     if os.path.exists(output_dir):
         for file in Path(output_dir).rglob('*'):
@@ -77,7 +98,6 @@ def download_bear_images(date_ranges, output_dir):
             except:
                 pass
     
-
     """Запросы для поиска медведей"""
     bear_keywords = [
         "brown bear ursus arctos wildlife",
@@ -87,83 +107,74 @@ def download_bear_images(date_ranges, output_dir):
         "ursus bear species animal"
     ]
     
-    total_downloaded = 0
-    max_attempts_per_range = 3 
-
-
-    """Скачивание изображений для каждого диапазона дат"""
+    all_downloaded_paths = []
+    
+    """Скачивание для каждого диапазона дат"""
     for range_idx, (start_date, end_date) in enumerate(date_ranges):
+        images_for_this_range = images_per_range[range_idx]
+        
         print(f"\n=== Диапазон {range_idx + 1}: {start_date} - {end_date} ===")
+        print(f"Цель: {images_for_this_range} изображений")
         
         range_dir = os.path.join(output_dir, f"range_{range_idx + 1}")
         os.makedirs(range_dir, exist_ok=True)
         
-        for attempt in range(max_attempts_per_range):
-            if total_downloaded >= 1000:  
-                break
-                
-            keyword = bear_keywords[attempt % len(bear_keywords)]
+        keyword = bear_keywords[range_idx % len(bear_keywords)]
+        search_query = f"{keyword} after:{start_date} before:{end_date}"
+        
+        print(f"Поисковый запрос: '{keyword}'")
+        
+        try:
+            crawler = BingImageCrawler(
+                storage={'root_dir': range_dir},
+                downloader_threads=2
+            )
             
-            if total_downloaded < 50:
-                to_download = 100
-            elif total_downloaded < 500:
-                to_download = 200
-            else:
-                to_download = min(1000 - total_download, 200)
+            crawler.crawl(keyword=search_query, max_num=images_for_this_range + 10)
             
-            search_query = f"{keyword} after:{start_date} before:{end_date}"
+            time.sleep(2)
             
-            print(f"  Попытка {attempt + 1}: '{keyword}'")
-            print(f"  Скачиваем: {to_download} изображений")
+            range_files = []
+            for file_path in Path(range_dir).rglob('*'):
+                if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png']:
+                    range_files.append(str(file_path.resolve()))
             
-            try:
-                crawler = BingImageCrawler(
-                    storage={'root_dir': range_dir},
-                    downloader_threads=2
-                )
-                
-                crawler.crawl(keyword=search_query, max_num=to_download)
-                
-                """Считаю общее количество файлов во всех диапазонах"""
-                current_files = []
-                for file_path in Path(output_dir).rglob('*'):
-                    if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png']:
-                        current_files.append(str(file_path.resolve()))
-                
-                total_downloaded = len(current_files)
-                print(f"  Всего скачано: {total_downloaded}")
-                
-                if total_downloaded >= 50 and attempt >= 1 and total_downloaded >= 300:
+            actual_downloaded = len(range_files)
+            print(f"Скачано для диапазона {range_idx + 1}: {actual_downloaded} изображений")
+            
+            all_downloaded_paths.extend(range_files)
+            
+        except Exception as e:
+            print(f"Ошибка при скачивании для диапазона {range_idx + 1}: {e}")
+    
+    """Если общее количество превысило нужное, обрезаю до нужного количества"""
+    if len(all_downloaded_paths) > total_images:
+        
+        files_to_keep = []
+        ranges_used = set()
+        
+        """Собираю по одному файлу из каждого диапазона пока не наберем нужное количество"""
+        while len(files_to_keep) < total_images:
+            for range_idx in range(len(date_ranges)):
+                if len(files_to_keep) >= total_images:
                     break
                 
-                time.sleep(3)
-                
-            except Exception as e:
-                print(f"  Ошибка: {e}")
-                time.sleep(5)
+                range_files = [f for f in all_downloaded_paths if f"range_{range_idx + 1}" in f and f not in files_to_keep]
+                if range_files:
+                    files_to_keep.append(range_files[0])
         
-        
-        if total_downloaded >= 1000:
-            break
-    
-    """Собираю все файлы из всех диапазонов"""
-    final_files = []
-    for file_path in Path(output_dir).rglob('*'):
-        if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png']:
-            final_files.append(str(file_path.resolve()))
-    
-    
-    if len(final_files) > 1000:
-        files_to_delete = final_files[1000:]
+        """Удаляю лишние файлы"""
+        files_to_delete = set(all_downloaded_paths) - set(files_to_keep)
         for path in files_to_delete:
             try:
                 os.remove(path)
             except:
                 pass
-        final_files = final_files[:1000]
-        print(f"Удалено лишних: {len(files_to_delete)}")
+        
+        all_downloaded_paths = files_to_keep
+        print(f"Удалено лишних файлов: {len(files_to_delete)}")
     
-    return final_files
+    return all_downloaded_paths
 
 
 """Создает CSV файл аннотации"""
@@ -182,7 +193,7 @@ def create_annotation_csv(image_paths, annotation_file, output_dir):
 """Обрабатывает аргументы и запускает весь процесс"""
 def main():
     parser = argparse.ArgumentParser(
-        description='Скачивание 50-1000 изображений медведей по диапазонам дат'
+        description='Скачивание 50-1000 изображений медведей по диапазонам дат со случайным распределением'
     )
     parser.add_argument(
         '--output_dir', 
@@ -197,7 +208,7 @@ def main():
     parser.add_argument(
         '--date_ranges', 
         required=True,
-        help='Диапазоны дат через запятую: start1-end1,start2-end2 (например: 2023-01-01-2023-03-31,2023-04-01-2023-06-30,2023-07-01-2023-09-30)'
+        help='Диапазоны дат через запятую: start1-end1,start2-end2 (например: 2023-01-01-2023-03-31,2023-04-01-2023-06-30)'
     )
     
     args = parser.parse_args()
