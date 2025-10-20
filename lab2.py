@@ -63,7 +63,7 @@ def download_bear_images(start_date, end_date, output_dir):
     
     print(f"Скачивание изображений медведей...")
     print(f"Диапазон дат: {start_date} - {end_date}")
-    print(f"Цель: 50-100 изображений")
+    print(f"Цель: 50-1000 изображений")
     
     if os.path.exists(output_dir):
         for file in Path(output_dir).rglob('*'):
@@ -83,20 +83,22 @@ def download_bear_images(start_date, end_date, output_dir):
     ]
     
     total_downloaded = 0
-    max_attempts = 5  
+    max_attempts = 10  
 
 
-    """Этот блок скачивает изображения с контролем количества (50-100 штук)"""
+    """Этот блок скачивает изображения с контролем количества (50-1000 штук)"""
     for attempt in range(max_attempts):
-        if total_downloaded >= 100:  
+        if total_downloaded >= 1000:  
             break
             
         keyword = bear_keywords[attempt % len(bear_keywords)]
         
         if total_downloaded < 50:
-            to_download = 60
+            to_download = 100  
+        elif total_downloaded < 500:
+            to_download = 200  
         else:
-            to_download = 100 - total_download
+            to_download = 1000 - total_download  
         
         search_query = f"{keyword} after:{start_date} before:{end_date}"
         
@@ -121,7 +123,7 @@ def download_bear_images(start_date, end_date, output_dir):
             
             if total_downloaded >= 50:
                 print(f"Достигнут минимум 50 изображений")
-                if attempt >= 2:  
+                if attempt >= 5 and total_downloaded >= 500:  
                     break
             
             time.sleep(3)
@@ -135,14 +137,14 @@ def download_bear_images(start_date, end_date, output_dir):
         if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png']:
             final_files.append(str(file_path.resolve()))
     
-    if len(final_files) > 100:
-        files_to_delete = final_files[100:]
+    if len(final_files) > 1000:
+        files_to_delete = final_files[1000:]
         for path in files_to_delete:
             try:
                 os.remove(path)
             except:
                 pass
-        final_files = final_files[:100]
+        final_files = final_files[:1000]
         print(f"Удалено лишних: {len(files_to_delete)}")
     
     return final_files
@@ -163,7 +165,7 @@ def create_annotation_csv(image_paths, annotation_file, output_dir):
 
 """Обрабатывает аргументы и запускает весь процесс"""
 def main():
-    parser = argparse.ArgumentParser(description='Скачивание 50-100 изображений медведей по диапазону дат')
+    parser = argparse.ArgumentParser(description='Скачивание 50-1000 изображений медведей по диапазону дат')
     parser.add_argument('--output_dir', required=True,help='Папка для сохранения изображений')
     parser.add_argument('--annotation_file', required=True, help='CSV файл аннотации')
     parser.add_argument('--date_range', required=True, help='Диапазон дат: start-end (например: 2023-01-01-2023-12-31)')
