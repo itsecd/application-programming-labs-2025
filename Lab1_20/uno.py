@@ -13,12 +13,14 @@ def parse_console() -> argparse.Namespace:
     args = parser.parse_args()
     return args
 
+def get_current_year():
+    return datetime.now().year
 
 def is_valid_real_date(date_str: str) -> bool:
     """
     Проверяет, является ли дата реально существующей
     """
-    pattern = r'^\s*(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(19[0-9]{2}|20[0-1][0-9]|202[0-5])\s*$'
+    pattern = r'^\s*(0?[1-9]|[12][0-9]|3[01])[/\-\.](0?[1-9]|1[0-2])[/\-\.](19\d{2}|20[0-9]{2}|' + str(get_current_year()) + r')\s*$'
     if not re.match(pattern, date_str):
         return False
     
@@ -122,3 +124,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+#python D:\application-programming-labs-2025\Lab1_20\uno.py D:\application-programming-labs-2025\Lab1_20\data.txt D:result.txt
