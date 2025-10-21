@@ -20,12 +20,22 @@ def is_valid_real_date(date_str: str) -> bool:
     """
     Проверяет, является ли дата реально существующей
     """
-    pattern = r'^\s*(0?[1-9]|[12][0-9]|3[01])[/\-\.](0?[1-9]|1[0-2])[/\-\.](19\d{2}|20[0-9]{2}|' + str(get_current_year()) + r')\s*$'
+    # Сначала проверяем базовый формат даты
+    pattern = r'^\s*(0?[1-9]|[12][0-9]|3[01])[/\-\.](0?[1-9]|1[0-2])[/\-\.](19\d{2}|20[0-9]{2})\s*$'
     if not re.match(pattern, date_str):
         return False
     
+    year_match = re.search(r'(\d{4})\s*$', date_str)
+    if not year_match:
+        return False
+    
+    year = int(year_match.group(1))
+    current_year = get_current_year()
+    
+    if year < 1900 or year > current_year:
+        return False
+    
     try:
-        
         date_str_clean = date_str.strip()
         datetime.strptime(date_str_clean, '%d.%m.%Y')
         return True
