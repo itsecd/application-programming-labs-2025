@@ -5,19 +5,29 @@ import argparse
 
 
 def read_file(filename: str) -> str | None:
+    """
+    Читает содержимое файла.
+    """
     try:
-        with open(filename, "r") as file:
+        with open(filename, "r", encoding='utf-8') as file:
             return file.read()
     except FileNotFoundError:
         print("File not found")
 
 
 def write_file(filename: str, data: list[str]):
+    """
+    Записывает данные в файл с нумерацией.
+    """
     with open(filename, "w+", encoding='utf-8') as file:
         for i, dat in enumerate(data, 1):
             file.write(f"{i})\n{dat}\n\n")
 
+
 def args_parse() -> argparse.Namespace:
+    """
+    Парсит аргументы командной строки.
+    """
     parser = argparse.ArgumentParser(
         prog="Data parser", description="Parsing data from file"
     )
@@ -25,7 +35,11 @@ def args_parse() -> argparse.Namespace:
     parser.add_argument("-o", "--output", type=str, help="Output file")
     return parser.parse_args()
 
+
 def parse_data(data: str) -> list[str]:
+    """
+    Парсит и сортирует данные анкет.
+    """
     parts = [p.strip() for p in re.split(r'\n\d+\)\s*', data) if p.strip()]
     
     questionnaires = []
@@ -44,11 +58,13 @@ def parse_data(data: str) -> list[str]:
                 'text': part
             })
     
-    sorted_questionnaires = sorted(questionnaires, 
-                                 key=lambda x: (x['last_name'].lower(), 
-                                              x['first_name'].lower()))
+    sorted_questionnaires = sorted(
+        questionnaires, 
+        key=lambda x: (x['last_name'].lower(), x['first_name'].lower())
+    )
     
     return [q['text'] for q in sorted_questionnaires]
+
 
 def main():
     args = args_parse()
@@ -69,6 +85,7 @@ def main():
     else:
         for i, dat in enumerate(parsed_data, 1):
             print(f"{i})\n{dat}\n")
+
 
 if __name__ == "__main__":
     main()
