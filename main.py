@@ -41,19 +41,22 @@ def main() -> None:
         print(f"Ошибка в формате дат: {e}")
         return
     
-    """Распределение изображений"""
-    distributor = ImageDistributor()
-    total_images, images_per_range = distributor.distribute_with_user_input(len(date_ranges))
-    
-    """Скачивание изображений"""
-    downloader = BearImageDownloader()
-    image_paths = downloader.download_images(date_ranges, images_per_range, args.output_dir)
-    
-    """Создание аннотации"""
-    create_annotation_csv(image_paths, args.annotation_file, args.output_dir)
-    
-    """Демонстрация результатов"""
-    _display_results(image_paths, args.annotation_file)
+    try:
+        """Распределение изображений"""
+        distributor = ImageDistributor()
+        total_images, images_per_range = distributor.distribute_with_user_input(len(date_ranges))
+        
+        """Скачивание изображений"""
+        downloader = BearImageDownloader()
+        image_paths = downloader.download_images(date_ranges, images_per_range, args.output_dir)
+        
+        """Создание аннотации"""
+        create_annotation_csv(image_paths, args.annotation_file, args.output_dir)
+        
+        """Демонстрация результатов"""
+        _display_results(image_paths, args.annotation_file)
+    except Exception as e:
+        print(f"Произошла ошибка при выполнении основной логики: {e}")
 
 
 def _display_results(image_paths: list, annotation_file: str) -> None:
@@ -77,6 +80,8 @@ def _display_results(image_paths: list, annotation_file: str) -> None:
     for i, path in enumerate(iterator):
         if i < 5:
             print(f"  {Path(path).name}")
+        else:
+            break
 
 
 if __name__ == '__main__':

@@ -6,7 +6,7 @@ class ImageDistributor:
     """Класс для распределения количества изображений по диапазонам дат."""
     
     def __init__(self, min_images: int = 50, max_images: int = 1000) -> None:
-        """Инициализирую распределитель изображений"""
+        """Инициализирует распределитель изображений"""
         self.min_images = min_images
         self.max_images = max_images
     
@@ -22,17 +22,32 @@ class ImageDistributor:
         
         images_per_range = [1] * num_ranges
         
-        """Распределение оставшиеся изображения случайным образом"""
+        
         remaining_images = total_images - num_ranges
         
-        for _ in range(remaining_images):
-            range_index = random.randint(0, num_ranges - 1)
-            images_per_range[range_index] += 1
+        if remaining_images > 0:
+            
+            weights = [random.random() for _ in range(num_ranges)]
+            total_weight = sum(weights)
+            
+            for i in range(num_ranges):
+                share = int(remaining_images * weights[i] / total_weight)
+                images_per_range[i] += share
+            
+            
+            distributed_so_far = sum(images_per_range) - num_ranges
+            remaining_after_distribution = remaining_images - distributed_so_far
+            
+            if remaining_after_distribution > 0:
+                """Случайно распределяет оставшиеся изображения"""
+                indices = random.sample(range(num_ranges), remaining_after_distribution)
+                for idx in indices:
+                    images_per_range[idx] += 1
         
         return total_images, images_per_range
     
     def distribute_with_user_input(self, num_ranges: int) -> Tuple[int, List[int]]:
-        """Распределяю изображения с запросом количества у пользователя
+        """Распределяет изображения с запросом количества у пользователя
             num_ranges: Количество диапазонов дат"""
         while True:
             try:
@@ -42,7 +57,9 @@ class ImageDistributor:
                 target_count = int(user_input)
                 
                 if self.min_images <= target_count <= self.max_images:
-                    return self.distribute_images(num_ranges, target_count)
+                    """Прямой вызов без рекурсии, просто возврат результата"""
+                    total_images, distribution = self.distribute_images(num_ranges, target_count)
+                    return total_images, distribution
                 else:
                     print(f"Пожалуйста, введите число от {self.min_images} до {self.max_images}")
             except ValueError:

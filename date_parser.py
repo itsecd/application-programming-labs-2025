@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 
 def parse_date_ranges(date_args: str) -> List[Tuple[str, str]]:
-    """Разбираю строку диапазонов на начальные и конечные даты"""
+    """Разбирает строку диапазонов на начальные и конечные даты"""
     ranges: List[Tuple[str, str]] = []
     range_strings = date_args.split(',')
     

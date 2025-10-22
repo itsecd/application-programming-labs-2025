@@ -173,7 +173,7 @@ class BearImageDownloader:
         return downloaded_files[:needed]
     
     def _clean_directory(self, directory: str) -> None:
-        """Очищаю директорию"""
+        """Очищает директорию"""
         if os.path.exists(directory):
             for file in Path(directory).rglob('*'):
                 try:
@@ -182,12 +182,11 @@ class BearImageDownloader:
                     pass
     
     def _get_existing_images(self, directory: str) -> List[str]:
-        """Возвращаю список изображений в директории"""
+        """Возвращает список изображений в директории"""
         images = []
         for file_path in Path(directory).rglob('*'):
             if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png']:
                 try:
-                    
                     if os.path.getsize(file_path) > 5120:
                         images.append(str(file_path.resolve()))
                 except OSError:

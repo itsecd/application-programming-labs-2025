@@ -20,26 +20,26 @@ class ImageIterator:
             raise ValueError("Источник должен быть CSV файлом или папкой")
     
     def _load_from_csv(self, csv_path: str) -> None:
-        """Загружаю пути к изображениям из CSV файла"""
+        """Загружает пути к изображениям из CSV файла"""
         with open(csv_path, 'r', encoding='utf-8') as file:
             reader = csv.DictReader(file)
             for row in reader:
                 self.paths.append(row['absolute_path'])
     
     def _load_from_directory(self, directory: str) -> None:
-        """Загружаю пути к изображениям из директории"""
+        """Загружает пути к изображениям из директории"""
         image_extensions = ['.jpg', '.jpeg', '.png']
         for file_path in Path(directory).rglob('*'):
             if file_path.suffix.lower() in image_extensions:
                 self.paths.append(str(file_path))
     
     def __iter__(self) -> Iterator[str]:
-        """Возвращаю итератор"""
+        """Возвращает итератор"""
         self.counter = 0
         return self
     
     def __next__(self) -> str:
-        """Возвращаю следующий путь к изображению"""
+        """Возвращает следующий путь к изображению"""
         if self.counter < len(self.paths):
             path = self.paths[self.counter]
             self.counter += 1
