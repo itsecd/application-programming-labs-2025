@@ -26,8 +26,7 @@ class BearImageDownloader:
         self, 
         date_ranges: List[Tuple[str, str]], 
         images_per_range: List[int],
-        output_dir: str
-    ) -> List[str]:
+        output_dir: str) -> List[str]:
         """Скачивает изображения медведей с гарантией минимума 50."""
         os.makedirs(output_dir, exist_ok=True)
         self._clean_directory(output_dir)
@@ -37,7 +36,6 @@ class BearImageDownloader:
         
         all_images = []
         
-
         for range_idx, (start_date, end_date) in enumerate(date_ranges):
             target_count = images_per_range[range_idx]
             
@@ -55,7 +53,6 @@ class BearImageDownloader:
             print(f"Скачано: {len(downloaded)}")
             print(f"Общий прогресс: {len(all_images)}/{total_target}")
         
-        """ГАРАНТИЯ: если меньше 50, докачиваем до 50"""
         if len(all_images) < 50:
             print(f"\nВНИМАНИЕ: Скачано только {len(all_images)} изображений")
             print("Докачиваем до 50...")
@@ -112,7 +109,6 @@ class BearImageDownloader:
                     
                     time.sleep(1)
                     
-                    
                     current_files = self._get_existing_images(output_dir)
                     new_files = [f for f in current_files if f not in existing_files]
                     
@@ -137,7 +133,7 @@ class BearImageDownloader:
         downloaded_files = []
         existing_files = set()
         
-        """Более общие запросы для докачивания"""
+
         general_keywords = [
             "bear",
             "brown bear", 
@@ -187,7 +183,7 @@ class BearImageDownloader:
         for file_path in Path(directory).rglob('*'):
             if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png']:
                 try:
-                    if os.path.getsize(file_path) > 5120:
+                    if os.path.getsize(file_path) > 0:
                         images.append(str(file_path.resolve()))
                 except OSError:
                     continue
