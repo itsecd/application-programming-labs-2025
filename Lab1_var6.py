@@ -6,16 +6,14 @@ import platform
 import argparse
 
 def parse_args():
-    """Парсит аргументы командной строки и возвращает имя входного файла."""
     parser = argparse.ArgumentParser(
         description="Находит всех людей с фамилиями, оканчивающимися на 'ов' или 'ова', и сохраняет их анкеты."
     )
-    parser.add_argument('filename', type=str, help='Имя входного файла с анкетами')
+    parser.add_argument('filename')
     args = parser.parse_args()
     return args.filename
 
 def read_file(filename: str) -> str:
-    """Читает содержимое файла. В случае ошибки — пробрасывает исключение."""
     try:
         with open(filename, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -39,7 +37,7 @@ def parse_entries(content: str) -> list[dict]:
         if not line:
             continue
 
-        if re.match(r'^\d+\)', line):  # Начало новой анкеты "перехват 1),2)ююю"
+        if re.match(r'^\d+\)', line):  # Начало новой анкеты "перехват 1),2) и т.д"
             if current_entry:
                 entries.append(current_entry)
             current_entry = {}
@@ -99,24 +97,18 @@ def main():
     filename=parse_args()
     
     try:
-        # Чтение файла
         content = read_file(filename)
 
-        # Парсинг анкет
         entries = parse_entries(content)
 
-        # Фильтрация по фамилии
         filtered_entries = filter_by_surname(entries)
         
-        # Вывод количества
         count = len(filtered_entries)
         print("Однофамильцев:", count)
 
-        # Сохранение результата
         output_file = 'filtered_data.txt'
         save_entries_to_file(filtered_entries, output_file)
 
-        # Открытие файла
         print(f"Анкеты сохранены в {output_file}.")
         open_file(output_file)
 
