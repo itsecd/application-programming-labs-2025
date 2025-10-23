@@ -1,10 +1,7 @@
 import csv
 import os
 import random
-<<<<<<< HEAD
 import argparse
-=======
->>>>>>> ecb2d5b02d3c90b6b2f17529fc5882ff1536c1e3
 from icrawler.builtin import BingImageCrawler
 
 
@@ -14,7 +11,6 @@ def icrawler(dirname: str, num_val: int, max_val: list[int], min_val: list[int])
     по кодовому слову fish
     """
     bing_crawler = BingImageCrawler(storage={'root_dir': dirname}, downloader_threads=1, feeder_threads=1, parser_threads=1)
-<<<<<<< HEAD
     bing_crawler.downloader.retry_num = 1
     bing_crawler.crawl(keyword='fish', max_num=num_val, max_size=max_val, min_size=min_val)
 
@@ -24,19 +20,6 @@ def inputer():
     Принимает пользовательский ввод максимального
     и минимального размера картинки
     """
-=======
-    bing_crawler.downloader.retry_num = 1 
-    bing_crawler.crawl(keyword='fish', max_num=num_val, max_size=max_val, min_size=min_val)
-
-
-def task_icrawler(max_num: int, dirname: str)->None:
-    """
-    просит запрос от пользователя и выполняет функцию
-    icrawler исходя из этих запросов
-    """
-    if max_num < 50 or max_num > 1000:
-        raise ValueError("Error. Value is not correct.")
->>>>>>> ecb2d5b02d3c90b6b2f17529fc5882ff1536c1e3
     list_max = []
     list_min = []
     while True:
@@ -52,19 +35,12 @@ def task_icrawler(max_num: int, dirname: str)->None:
 
             list_max.append([max_height, max_width])
             list_min.append([min_height, min_width])
-<<<<<<< HEAD
         else:
             print("Ошибка: минимальные размеры должны быть меньше максимальных и все размеры > 0 ")
-=======
-            break
-        print("Ошибка: минимальные размеры должны быть меньше максимальных и все размеры > 0 ")
-
->>>>>>> ecb2d5b02d3c90b6b2f17529fc5882ff1536c1e3
 
         flag = int(input("Хотите продолжить? 0 если нет, иначе да "))
         if flag == 0:
             break
-<<<<<<< HEAD
     return list_max, list_min
 
 
@@ -78,11 +54,6 @@ def task_icrawler(max_num: int, dirname: str):
     list_max, list_min = inputer()
     for i in range (len(list_max)):
         icrawler(dirname, max_num//len(list_max), list_max[i], list_min[i])
-=======
-
-    for i in range (len(list_max)):
-        icrawler(dirname, random.randint(1, 1000//len(list_max)), list_max[i], list_min[i])
->>>>>>> ecb2d5b02d3c90b6b2f17529fc5882ff1536c1e3
 
 
 def get_paths(dirpath: str)->list[list[str]]:
@@ -92,17 +63,11 @@ def get_paths(dirpath: str)->list[list[str]]:
     if not os.path.exists(dirpath):
         return []
 
-<<<<<<< HEAD
     dir_path = os.getcwd()
     paths = []
     for file in os.listdir(dirpath):
         real_path = os.path.join(dirpath, file)
         paths.append([os.path.abspath(real_path), os.path.relpath(real_path, dir_path)])
-=======
-    paths = [[]]
-    for file in os.listdir(dirpath):
-        paths.append([os.path.abspath(file), os.path.relpath(file, os.getcwd())])
->>>>>>> ecb2d5b02d3c90b6b2f17529fc5882ff1536c1e3
     return paths
 
 
@@ -110,11 +75,8 @@ def go_to_csv(filename: str, data: list[str])->None:
     """
     записывает строки из списка в csv файле
     """
-<<<<<<< HEAD
     head =  [['Абсолбтный путь, Относительный путь']]
     data = head + data
-=======
->>>>>>> ecb2d5b02d3c90b6b2f17529fc5882ff1536c1e3
     if not filename.endswith('.csv'):
         filename += '.csv'
     with open(filename, "w", newline='', encoding = 'utf-8') as file:
@@ -143,7 +105,6 @@ class MyIterator:
         return line
 
 def main():
-<<<<<<< HEAD
     parser = argparse.ArgumentParser(description="Извлечение данных из файла на основе шаблонов.")
     parser.add_argument("--directory", "-d", default="image", type=str, help="Путь к дирректории.")
     parser.add_argument("--csvfile", "-c", default="data.csv", type=str, help="Путь к файлу для записи результата.")
@@ -151,22 +112,13 @@ def main():
     args = parser.parse_args()
 
 
-    #task_icrawler(args.count, args.directory)
+    task_icrawler(args.count, args.directory)
 
     path_list = get_paths(args.directory)
 
     go_to_csv(args.csvfile, path_list)
 
     iter = MyIterator(args.csvfile)
-=======
-    task_icrawler(100, "image")
-
-    path_list = get_paths("image")
-
-    go_to_csv("data", path_list)
-
-    iter = MyIterator("data.csv")
->>>>>>> ecb2d5b02d3c90b6b2f17529fc5882ff1536c1e3
     for i in iter:
         print(i, end = "")
 
