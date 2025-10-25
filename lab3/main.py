@@ -11,6 +11,51 @@ def read_audio(file_path):
     return data, samplerate
 
 
+def quadratic_interp(signal, factor):
+    """
+    quadratic interp
+    берется исходный массив индексов и расширяется в factor раз
+    для трех соседних точек вычисляется уравнение параболы,
+    на сонове него между этими точками вставляются дополнительные сэмплы
+    """
+    if factor <= 0:
+        raise ValueError("factor must be > 0")
+
+    n_samples = int(len(signal) * factor)
+    old_indices = np.arange(len(signal))
+    new_indices = np.linspace(0, len(signal) - 1, n_samples)
+
+    if signal.ndim == 1:
+        new_signal = np.zeros(n_samples)
+        channels = 1
+    else:
+        channels = signal.shape[1]
+        new_signal = np.zeros((n_samples, channels))
+
+    for i, x in enumerate(new_indices):
+        x1 = int(np.floor(x))
+        x0 = max(x1 - 1, 0)
+        x2 = min(x1 + 1, len(signal) - 1)
+
+        if channels == 1:
+            y0, y1, y2 = signal[x0], signal[x1], signal[x2]
+            t = x - x0
+            a = y0 / 2 - y1 + y2 / 2
+            b = -y0 + y1 - a
+            c = y0
+            new_signal[i] = a * t**2 + b * t + c
+        else:
+            for ch in range(channels):
+                y0, y1, y2 = signal[x0, ch], signal[x1, ch], signal[x2, ch]
+                t = x - x0
+                a = y0 / 2 - y1 + y2 / 2
+                b = -y0 + y1 - a
+                c = y0
+                new_signal[i, ch] = a * t**2 + b * t + c
+
+    return new_signal
+
+
 def change_speed_linear(signal, factor):
     """
     linear interp
@@ -81,8 +126,11 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     file_path = os.path.join(output_dir, f"{args.input}_linear.mp3")
+    file_path_q = os.path.join(output_dir, f"{args.input}_q.mp3")
     mod_track = change_speed_linear(data, args.factor)
+    mod_q = quadratic_interp(data, args.factor)
     save_audio(file_path, mod_track, sr)
+    save_audio(file_path_q, mod_q, sr)
     plot_audio(data, mod_track, sr, args.factor, "linear", os.path.join(output_dir, f"{args.input}_linear_plot.png"))
 
 
