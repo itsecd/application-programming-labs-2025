@@ -72,6 +72,7 @@ def change_speed_linear(signal, factor):
     new_indices = np.linspace(0, len(signal) - 1, n_samples)
 
     if signal.ndim == 1:
+        # linear interp y = { (y1 - y0)/(x1 - x0) } * (x - x0) + y0
         new_signal = np.interp(new_indices, old_indices, signal)
     else:
         new_signal = np.zeros((n_samples, signal.shape[1]))
@@ -81,26 +82,26 @@ def change_speed_linear(signal, factor):
     return new_signal
 
 
-def plot_audio(original, modified, samplerate, factor, method, file_path):
+def plot_audio(original, modified, samplerate, factor, method, filename):
     time_orig = np.linspace(0, len(original)/samplerate, len(original))
     time_mod = np.linspace(0, len(modified)/samplerate, len(modified))
 
-    plt.figure(figsize=(13,7))
+    plt.figure(figsize=(12,6))
     plt.subplot(2,1,1)
     plt.title("input audio")
     plt.plot(time_orig, original)
     plt.xlabel("time (с)")
-    plt.ylabel("Amplitude")
+    plt.ylabel("amplitude")
 
     plt.subplot(2,1,2)
     plt.title(f"{method} interpolation, factor={factor}")
     plt.plot(time_mod, modified, color='orange')
     plt.xlabel("time (с)")
-    plt.ylabel("Amplitude")
+    plt.ylabel("amplitude")
 
     plt.tight_layout()
-    plt.savefig(file_path)
-    print(f"picture save: {file_path}")
+    plt.savefig(filename)
+    print(f"picture save: {filename}")
     plt.close()
 
 
@@ -113,27 +114,32 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", required=True, help="path/to/input/track/file")
     parser.add_argument("-o", "--output", default="./result", help="path/to/output/track")
+    parser.add_argument("--linear", action="store_true", default=True, help="use linear interp")
+    parser.add_argument("--quadratic", action="store_true", help="use quadratic interp")
     parser.add_argument("--factor", type=float, default=2.0, help="speed factor (f.e. 2 = x2 slower)")
     return parser.parse_args()
 
 
 def main():
-    args = parse_args() 
+    args = parse_args()
 
     data, sr = read_audio(args.input)
 
     output_dir = args.output
     os.makedirs(output_dir, exist_ok=True)
 
-    file_path = os.path.join(output_dir, f"{args.input}_linear.mp3")
-    file_path_q = os.path.join(output_dir, f"{args.input}_q.mp3")
-    mod_track = change_speed_linear(data, args.factor)
-    mod_q = quadratic_interp(data, args.factor)
-    save_audio(file_path, mod_track, sr)
-    save_audio(file_path_q, mod_q, sr)
-    plot_audio(data, mod_track, sr, args.factor, "linear", os.path.join(output_dir, f"{args.input}_linear_plot.png"))
+    if args.linear and not args.quadratic:
+        linear_file = os.path.join(output_dir, f"{args.input}_linear.wav")
+        lin = change_speed_linear(data, args.factor) 
+        save_audio(linear_file, lin, sr)
+        plot_audio(data, lin, sr, args.factor, "linear", os.path.join(output_dir, f"{args.input}_linear_plot.png"))
+
+    if args.quadratic:
+        quadratic_file = os.path.join(output_dir, f"{args.input}_quadratic.wav")
+        quad = quadratic_interp(data, args.factor)
+        save_audio(quadratic_file, quad, sr)
+        plot_audio(data, quad, sr, args.factor, "quadratic", os.path.join(output_dir, f"{args.input}_quadratic_plot.png"))
 
 
 if __name__ == "__main__":
     main()
-
