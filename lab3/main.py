@@ -123,6 +123,10 @@ def parse_args():
 def main():
     args = parse_args()
 
+    if not os.path.isfile(args.input):
+        print(f"erorr: file '{args.input}' not found!")
+        return
+
     data, sr = read_audio(args.input)
 
     output_dir = args.output
