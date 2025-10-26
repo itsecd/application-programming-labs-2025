@@ -29,7 +29,7 @@ def make_annotation_file(filename_annotation: str, filename_imagesdata: str) -> 
             writer.writerow([path_full, path])
 
 
-class SimpleIterator:
+class Path_Iterator:
     def __init__(self, source):
         if os.path.isfile(source):
             with open(source, newline='', encoding='utf-8') as file:
@@ -37,7 +37,10 @@ class SimpleIterator:
                 self.items = [row for row in reader]
                 self.counter = 0
         else:
-            self.items = os.listdir(source)
+            for f in source:
+                path_full = os.path.abspath(f)
+                path = os.path.join(source, f)
+                self.items.append([path_full,path])
             self.counter = 0
 
     def __iter__(self):
@@ -69,7 +72,7 @@ def main() -> None:
         filename_imagesdata, filename_annotation = parsing()
         download_images(filename_imagesdata)
         make_annotation_file(filename_annotation, filename_imagesdata)
-        for path in SimpleIterator(filename_annotation):
+        for path in Path_Iterator(filename_annotation):
             print(path)
     except Exception as exp:
         print(exp)
@@ -77,3 +80,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
