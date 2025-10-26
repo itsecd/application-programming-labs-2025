@@ -17,7 +17,7 @@ class FileIterator:
         self.paths: List[str] = paths
         self.index = 0
 
-    def __iter__(self) -> Iterator[str]:
+    def __iter__(self) :
         return self
 
     def __next__(self) -> str:
@@ -33,9 +33,9 @@ def parse_args() -> argparse.Namespace:
     """
     Парсинг командной строки
     """
-    parser: argparse.ArgumentParser = argparse.ArgumentParser()
-    parser.add_argument('--output_dir', required=True, help='Папка для сохранения всех треков')
-    parser.add_argument('--csv_path', required=True, help='Путь к выходному CSV-файлу')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--output_dir', help='Папка для сохранения всех треков')
+    parser.add_argument('--csv_path',  help='Путь к выходному CSV-файлу')
     return parser.parse_args()
 
 
@@ -43,7 +43,7 @@ def csv_init(csv_path: str) -> None:
     """
     Создаёт CSV-файл с заголовком
     """
-    csv_header: List[str] = ["genre", "abs_path", "real_path", "url"]
+    csv_header = ["genre", "abs_path", "real_path", "url"]
     with open(csv_path, 'w', encoding="utf-8", newline="") as file:
         writer: csv.writer = csv.writer(file)
         writer.writerow(csv_header)
@@ -87,7 +87,7 @@ def mp3_parse(html: str) -> List[str]:
         except json.JSONDecodeError:
             continue
         js= json.dumps(data)
-        found: List[str] = re.findall(r'https://assets\.mixkit\.co/[^\s"]+\.mp3', js)
+        found = re.findall(r'https://assets\.mixkit\.co/[^\s"]+\.mp3', js)
         urls.extend(found)
     return list(dict.fromkeys(urls))
 
@@ -122,23 +122,29 @@ def process_genre(genre: str, output_dir: str, csv_path: str) -> None:
     Обрабатывает один жанры
     """
     print(f"Обрабатываем жанр: {genre}")
-    html: str = get_html(generate_url(genre))
-   
+    html = get_html(generate_url(genre))
+
 
     urls: List[str] = mp3_parse(html)
     print(f"Найдено ссылок: {len(urls)}")
     if not urls:
         print("Ссылки не найдены!")
-        return
+        return      
 
     select_urls: List[str] = random_urls(urls)
     print(f"Выбрано для скачивания: {len(select_urls)} ссылок")
 
-    iterator: FileIterator = FileIterator(select_urls)
+    iterator = FileIterator(select_urls)
     for url in iterator:
-        filename: str = f"{genre}_{os.path.basename(url)}"
-        abs_p: str = os.path.join(output_dir, filename)
-        real_path: str = os.path.relpath(abs_p, start=output_dir)
+        filename = f"{genre}_{os.path.basename(url)}"
+           
+        real_path = os.path.join(output_dir, filename)
+        
+        
+        abs_p = os.path.abspath(real_path)
+
+
+
         print(f"Скачиваем: {url}")
         download_mp3(url, abs_p)
         append_to_csv(csv_path, genre, abs_p, real_path, url)
@@ -148,11 +154,11 @@ def main() -> None:
     """
     Основная функция программы
     """
-    args: argparse.Namespace = parse_args()
+    args = parse_args()
     csv_init(args.csv_path)
     os.makedirs(args.output_dir, exist_ok=True)
 
-    genres: List[str] = ['country', 'funk', 'classical']
+    genres = ['country', 'funk', 'classical']
     for genre in genres:
         process_genre(genre, args.output_dir, args.csv_path)
 
