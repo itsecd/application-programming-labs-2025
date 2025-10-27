@@ -19,17 +19,28 @@ def read_file(input_file: str) -> str:
     except Exception as exc:
         raise Exception(f"Error reading file: {exc}")
 
-def find_927_phones(content: str) -> list:
-    pattern = r'(?:\+7|8)[\s\(\-]*927'
-    return re.findall(pattern, content)
+def extract_profiles_with_927(data: str) -> list[str]:
+
+    profiles = re.split(r'\n\n', data)
+    profiles_with_927 = []
+    
+    for profile in profiles:
+        if re.search(r'(?:\+7|8)[\s\(\-]*927', profile):
+            profiles_with_927.append(profile)
+    
+    return profiles_with_927
 
 def main() -> None:
     try:
         input_file = parse_arguments()
         data = read_file(input_file)
 
-        phones = find_927_phones(data)
-        print(f"Found {len(phones)} phone numbers with area code 927")
+        profiles = extract_profiles_with_927(data)
+        print(f"Found {len(profiles)} people with area code 927")
+        
+        if profiles:
+            for i, profile in enumerate(profiles, 1):
+                print(profile, end='\n\n')
         
     except FileNotFoundError as e:
         print(f"File error: {e}")
