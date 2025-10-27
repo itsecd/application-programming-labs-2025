@@ -19,11 +19,17 @@ def read_file(input_file: str) -> str:
     except Exception as exc:
         raise Exception(f"Error reading file: {exc}")
 
+def find_927_phones(content: str) -> list:
+    pattern = r'(?:\+7|8)[\s\(\-]*927'
+    return re.findall(pattern, content)
+
 def main() -> None:
     try:
         input_file = parse_arguments()
         data = read_file(input_file)
-        print(data)
+
+        phones = find_927_phones(data)
+        print(f"Found {len(phones)} phone numbers with area code 927")
         
     except FileNotFoundError as e:
         print(f"File error: {e}")
