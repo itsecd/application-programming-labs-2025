@@ -30,6 +30,14 @@ def extract_profiles_with_927(data: str) -> list[str]:
     
     return profiles_with_927
 
+def write_file(output_file: str, profiles: list[str]) -> None:
+    try:
+        with open(output_file, "w", encoding="utf-8") as file:
+            file.write("\n\n".join(profiles))
+            print(f"Found profiles saved to {output_file}")
+    except Exception as exc:
+        raise Exception(f"Error saving file: {exc}")
+
 def main() -> None:
     try:
         input_file = parse_arguments()
@@ -39,8 +47,7 @@ def main() -> None:
         print(f"Found {len(profiles)} people with area code 927")
         
         if profiles:
-            for i, profile in enumerate(profiles, 1):
-                print(profile, end='\n\n')
+            write_file("927_area_code_people.txt", profiles) 
         
     except FileNotFoundError as e:
         print(f"File error: {e}")
