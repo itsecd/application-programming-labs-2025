@@ -184,7 +184,7 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-Добавил import re во второй строке - теперь ошибки не должно быть! ✅
+
 
 Запускай:
 
@@ -273,4 +273,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 
