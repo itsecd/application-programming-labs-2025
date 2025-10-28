@@ -58,6 +58,14 @@ def extract_gender_entries(lines, target_gender='Мужской'):
     return entry_count, male_entries
 
 
+def count_male_entries(entries):
+    """
+    Считает количество анкет мужчин в списке
+    """
+
+    return len(entries)
+
+
 def main():
     """
     Главная функция
@@ -67,7 +75,8 @@ def main():
         args = parse_arguments()
         lines = read_file(args.filename)
         count, entries = extract_gender_entries(lines, 'Мужской')
-        print(f"Найдено мужских анкет: {count}")
+        male_count = count_male_entries(entries)
+        print(f"Количество мужских анкет: {male_count}")
     except Exception as e:
         print(f"Ошибка: {e}")
 
