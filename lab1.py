@@ -29,6 +29,35 @@ def parse_arguments():
     return parser.parse_args()
 
 
+def extract_gender_entries(lines, target_gender='Мужской'):
+    """
+    Находит анкеты по полу и считает их
+    """
+
+    male_entries = []
+    current_entry = []
+    is_male = False
+    entry_count = 0
+
+    for line in lines:
+        if not line:
+            if current_entry and is_male:
+                male_entries.append('\n'.join(current_entry))
+                entry_count += 1
+            current_entry = []
+            is_male = False
+        else:
+            current_entry.append(line)
+            if re.search(r'^Пол:\s*' + re.escape(target_gender), line):
+                is_male = True
+
+    if current_entry and is_male:
+        male_entries.append('\n'.join(current_entry))
+        entry_count += 1
+
+    return entry_count, male_entries
+
+
 def main():
     """
     Главная функция
@@ -37,7 +66,8 @@ def main():
     try:
         args = parse_arguments()
         lines = read_file(args.filename)
-        print(f"Файл {args.filename} успешно прочитан")
+        count, entries = extract_gender_entries(lines, 'Мужской')
+        print(f"Найдено мужских анкет: {count}")
     except Exception as e:
         print(f"Ошибка: {e}")
 
