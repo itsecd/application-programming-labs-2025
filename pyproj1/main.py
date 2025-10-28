@@ -23,7 +23,7 @@ def gender(text: str) -> bool:
 def date(text: str) -> bool:
     text = text.split(' ')[2:]
     text = ' '.join(text)
-    if re.fullmatch(r'(\d{1,2}(/\d{1,2}/|-\d{1,2}-|\.\d{1,2}\.)20[012][012345])', text):
+    if re.fullmatch(r'(\d{1,2}(/\d{1,2}/|-\d{1,2}-|\.\d{1,2}\.)20\d{2})', text):
         text = re.split(r'[-/.]', text)
         day, month, year = int(text[0]), int(text[1]), int(text[2])
 
@@ -54,7 +54,8 @@ def date(text: str) -> bool:
 
 
 def num_mail(text: str) -> bool:
-    text = text[26:]
+    text = text.split(' ')[4:]
+    text = ' '.join(text)
     numb_pat = r'(\+7|8)(\s?\d{3}\s?|\s\(\d{3}\)\s)\d{3}(\s?\d{2}\s?|-\d{2}-)\d{2}'
     email_pat = r'[a-zA-Z\d\-.+%_]{1,64}@(yandex\.ru|gmail\.com|mail\.ru)'
     if re.fullmatch(numb_pat, text) or re.fullmatch(email_pat, text):
@@ -63,35 +64,21 @@ def num_mail(text: str) -> bool:
 
 
 def city(text: str) -> bool:
-    text = text[7:]
+    text = text.split(' ')[1:]
+    text = ' '.join(text)
     if re.search(r'(г\.\s[А-Я][а-я]+|[А-Я][а-я]+)', text):
         return True
     return False
 
 
 def read_new_file(filename: str) -> list[str]:
-    try:
-        with open(filename, "r", encoding="utf-8") as data:
-            return data.readlines()
-    except FileNotFoundError:
-        print(f"Ошибка: Файл '{filename}' не найден.")
-        return []
-    except UnicodeDecodeError:
-        print(f"Ошибка: Некорректная кодировка в файле '{filename}'.")
-        return []
-    except Exception as e:
-        print(f"Неожиданная ошибка при чтении файла: {e}")
-        return []
+    with open(filename, "r", encoding="utf-8") as data:
+        return data.readlines()
 
 
 def write_new_file(filename: str, string: str) -> None:
-    try:
-        with open(filename, "w", encoding="utf-8") as data:
-            data.write(string)
-    except PermissionError:
-        print(f"Ошибка: Нет прав на запись в файл '{filename}'.")
-    except Exception as e:
-        print(f"Неожиданная ошибка при записи в файл: {e}")
+    with open(filename, "w", encoding="utf-8") as data:
+        data.write(string)
 
 
 def fill_blanks(counter: int, questionaty: list[str]) -> str:
@@ -107,40 +94,42 @@ def most_work(whole_text: list[str], write_file_name: str) -> int:
     result_work = ""
     blank = []
     number = 0
-    try:
-        for line in whole_text:
-            if line == '\n' or not line:
-                if blank and factor(blank):
-                    number += 1
-                    result_work += fill_blanks(number, blank)
-                blank = []
-                continue
-            if re.fullmatch(r'\d+\)\n', line):
-                continue
-            blank.append(line.strip())
-        write_new_file(write_file_name, result_work)
-        return number
-    except Exception as e:
-        print(f"Ошибка при обработке анкет: {e}")
-        return 0
+    for line in whole_text:
+        if line == '\n' or not line:
+            if blank and factor(blank):
+                number += 1
+                result_work += fill_blanks(number, blank)
+            blank = []
+            continue
+        if re.fullmatch(r'\d+\)\n', line):
+            continue
+        blank.append(line.strip())
+    write_new_file(write_file_name, result_work)
+    return number
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Фильтрация файла с анкетами')
-    parser.add_argument('input_file', type=str, help='Имя входного файла')
-    parser.add_argument('output_file', type=str, help='Имя получаемого файла')
+    try:
+        parser = argparse.ArgumentParser(description='Фильтрация файла с анкетами')
+        parser.add_argument('input_file', type=str, help='Имя входного файла')
+        parser.add_argument('output_file', type=str, help='Имя получаемого файла')
 
-    args = parser.parse_args()
+        args = parser.parse_args()
 
-    all_lines = read_new_file(args.input_file)
+        all_lines = read_new_file(args.input_file)
 
-    mass = most_work(all_lines, args.output_file)
+        mass = most_work(all_lines, args.output_file)
 
-    print(mass)
+        print(mass)
 
+    except FileNotFoundError:
+        print(f"Ошибка: Читаемый файл не найден.")
+        return []
+    except UnicodeDecodeError:
+        print(f"Ошибка: Некорректная кодировка в читаемом файле.")
+        return []
+    except PermissionError:
+        print(f"Ошибка: Нет прав на запись в файла.")
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"Неожиданная ошибка: {e}")
+    main()
