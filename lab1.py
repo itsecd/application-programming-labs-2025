@@ -19,14 +19,25 @@ def read_file(filename):
         raise Exception(f"Ошибка при чтении файла: {e}")
 
 
+def parse_arguments():
+    """
+    Парсит аргументы командной строки
+    """
+
+    parser = argparse.ArgumentParser(description='Анализ анкет по полу')
+    parser.add_argument('filename', help='Имя файла с анкетами')
+    return parser.parse_args()
+
+
 def main():
     """
     Главная функция
     """
 
     try:
-        lines = read_file("анкеты.txt")
-        print("Файл успешно прочитан")
+        args = parse_arguments()
+        lines = read_file(args.filename)
+        print(f"Файл {args.filename} успешно прочитан")
     except Exception as e:
         print(f"Ошибка: {e}")
 
