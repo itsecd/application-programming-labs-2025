@@ -26,6 +26,8 @@ def parse_arguments():
 
     parser = argparse.ArgumentParser(description='Анализ анкет по полу')
     parser.add_argument('filename', help='Имя файла с анкетами')
+    parser.add_argument('-o', '--output', default='male_entries.txt', 
+                       help='Имя файла для сохранения результатов')
     return parser.parse_args()
 
 
@@ -66,6 +68,22 @@ def count_male_entries(entries):
     return len(entries)
 
 
+def save_results(entries, output_filename):
+    """
+    Сохраняет анкеты в файл
+    """
+
+    try:
+        with open(output_filename, 'w', encoding='utf-8') as file:
+            for i, entry in enumerate(entries, 1):
+                file.write(f"Анкета #{i}:\n")
+                file.write(entry)
+                file.write("\n\n" + "="*50 + "\n\n")
+        print(f"Анкеты сохранены в файл: {output_filename}")
+    except Exception as e:
+        raise Exception(f"Ошибка при сохранении файла: {e}")
+
+
 def main():
     """
     Главная функция
@@ -77,6 +95,10 @@ def main():
         count, entries = extract_gender_entries(lines, 'Мужской')
         male_count = count_male_entries(entries)
         print(f"Количество мужских анкет: {male_count}")
+        if male_count > 0:
+            save_results(entries, args.output)
+        else:
+            print("Мужские анкеты не найдены, файл не создан.")
     except Exception as e:
         print(f"Ошибка: {e}")
 
