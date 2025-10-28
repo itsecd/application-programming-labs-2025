@@ -2,13 +2,17 @@ import csv
 import os
 import random
 import re
+
 import requests
 
 from bs4 import BeautifulSoup
 
 
 class AudioIterator:
+    """Class for iterating through the music list"""
+
     def __init__(self, source):
+        """Constructor that creates an iterator based on csv or listing directory"""
         self.paths = []
 
         if isinstance(source, str):
@@ -25,9 +29,11 @@ class AudioIterator:
         self.index = 0
 
     def __iter__(self):
+        """Get current iterator"""
         return self
 
     def __next__(self):
+        """Get next iteration step"""
         if self.index < len(self.paths):
             path = self.paths[self.index]
             self.index += 1
@@ -36,11 +42,16 @@ class AudioIterator:
 
 
 class AudioParser:
+    """Class for parsing a website and downloading music"""
 
     def __init__(self, download_dir, annotation_file):
+        """Constructor that accepts the folder path and the name of the csv file"""
         self.url = "https://mixkit.co/free-stock-music"
         self.download_dir = download_dir
         self.annotation_file = annotation_file
+        self.header = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
 
     def create_annotation(self) -> None:
         """Write annotation csv file"""
@@ -56,10 +67,7 @@ class AudioParser:
     def get_mood_list(self) -> list[str]:
         """Parse html to get mood links as list"""
 
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        }
-        response = requests.get(self.url, headers=headers)
+        response = requests.get(self.url, headers=self.header)
         if not response.ok:
             raise ConnectionError(f"Can't connect to {self.url}")
         html = response.text
@@ -79,17 +87,15 @@ class AudioParser:
         return mood_links
 
     def download_audios(self, count: int) -> None:
+        """Downloads the required amount of music with a random mood"""
         os.makedirs(self.download_dir, exist_ok=True)
         downloaded_count = 0
 
         while downloaded_count < count:
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            }
             mood_links = self.get_mood_list()
             mood = mood_links[random.randint(0, len(mood_links))]
             target_url = "https://mixkit.co" + mood
-            response = requests.get(target_url, headers=headers)
+            response = requests.get(target_url, headers=self.header)
             if not response.ok:
                 raise ConnectionError(f"Can't connect to {target_url}")
             html = response.text

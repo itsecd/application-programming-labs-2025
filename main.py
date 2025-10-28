@@ -35,6 +35,7 @@ def get_args() -> list[str]:
 
 
 def main() -> None:
+    """Entry point. The main function that demonstrates the work"""
     try:
         filename, dir, count = get_args()
     except TypeError:
