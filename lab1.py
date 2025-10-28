@@ -58,7 +58,14 @@ def parse_arguments() -> argparse.Namespace:
         "filename",
         nargs="?",
         default="data.txt",
-        type=str
+        type=str,
+        help="Input file with data"
+    )
+    parser.add_argument(
+        "-o", "--output",
+        default="cities_stats.txt",
+        type=str,
+        help="Output file for results"
     )
     return parser.parse_args()
 
@@ -82,7 +89,7 @@ def main() -> None:
         return
 
     results = count_cities(cities)
-    save_results(results, "cities_stats.txt")
+    save_results(results, args.output)
 
 
 if __name__ == "__main__":
