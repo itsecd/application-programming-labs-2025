@@ -1,39 +1,37 @@
-import re
 import argparse
+import re
 
-def main():
-    # Чтение аргументов командной строки
+
+def parse_args() -> tuple[str, str]:
+    """
+    Чтение аргументов командной строки
+    """
     parser = argparse.ArgumentParser(description="Лабораторная работа № 1, вариант 5.")
     parser.add_argument("input", help="Путь к файлу с анкетами.")
     parser.add_argument("-o", "--output", default="ivanovs_forms.txt",
                         help="Имя выходного файла (по умолчанию: ivanovs_forms.txt)")
-
-    # Сохранение введенных аргументов пользователем
     args = parser.parse_args()
-    filename = args.input
-    out_name = args.output
+    return args.input, args.output
 
-    # Открытие и чтение входного файла
+
+def read_lines(filename: str) -> list[str]:
+    """
+    Открытие и чтение входного файла
+    """
     try:
         with open(filename, "r", encoding = "utf-8") as f:
-            lines=f.read().splitlines()
+            return f.read().splitlines()
     except FileNotFoundError:
-        print("Файл не найден:", filename)
-        return
+        raise FileNotFoundError("Файл не найден:", filename)
 
+
+def add_if_full(lines: list[str]) -> list[list[str]]:
+    """
+    Функция по добавлению анкет именно в 6 строк
+    """
     # Создание переменных для анкеты
     surname = name = gender = birthday = contact = city = None
-    all_forms = []
-
-    # Функция по добавлению анкет именно в 6 строк (т.е. полная)
-    def add_if_full():
-        if all([surname, name, gender, birthday, contact, city]):
-            all_forms.append([f"Фамилия: {surname}",
-                              f"Имя: {name}",
-                              f"Пол: {gender}",
-                              f"Дата рождения: {birthday}",
-                              f"Номер телефона или email: {contact}",
-                              f"Город: {city}"])
+    all_forms: list[list[str]] = []
 
     # Обработка файла по строкам
     for raw in lines:
@@ -41,21 +39,21 @@ def main():
         if not s:
             continue
         if s.endswith(")") and s[:-1].isdigit():
-            add_if_full()
+            if all([surname, name, gender, birthday, contact, city]):
+                all_forms.append([f"Фамилия: {surname}",
+                                  f"Имя: {name}",
+                                  f"Пол: {gender}",
+                                  f"Дата рождения: {birthday}",
+                                  f"Номер телефона или email: {contact}",
+                                  f"Город: {city}"])
             surname = name = gender = birthday = contact = city = None
             continue
-
         # Создание копии строки в нижнем регистре
         low = s.lower()
 
-        # Выявление новой анкеты по началу с "фамилия"
-        if low.startswith("фамилия"):
-            add_if_full()
-            surname = name = gender = birthday = contact = city = None
-            surname = s.split(":", 1)[1].strip() if ":" in s else s
-            continue
-
         # Проверка строк по их началу и сохранение нужных полей анкет
+        if low.startswith("фамилия"):
+            surname = s.split(":", 1)[1].strip() if ":" in s else s
         elif low.startswith("имя"):
             name = s.split(":", 1)[1].strip() if ":" in s else s
         elif low.startswith("пол"):
@@ -71,23 +69,60 @@ def main():
             city = s.split(":", 1)[1].strip() if ":" in s else s
 
     # Проверка последней анкеты
-    add_if_full()
+    if all([surname, name, gender, birthday, contact, city]):
+        all_forms.append([f"Фамилия: {surname}",
+                          f"Имя: {name}",
+                          f"Пол: {gender}",
+                          f"Дата рождения: {birthday}",
+                          f"Номер телефона или email: {contact}",
+                          f"Город: {city}"])
+    return all_forms
 
-    # Фильтрация анкет по фамилии Иванов(а)
-    ivanovs = []
-    for form in all_forms:
+
+def filter_ivanovs(forms: list[list[str]]) -> list[list[str]]:
+    """
+    Фильтрация анкет по фамилии Иванов(а)
+    """
+    ivanovs: list[list[str]] = []
+    for form in forms:
         surname_value = form[0].split(":", 1)[1].strip()
         if re.fullmatch(r"(?i)иванов(а)?", surname_value):
             ivanovs.append(form)
+    return ivanovs
 
-    # Сохранение найденных анкет в файл
-    with open(out_name, "w", encoding="utf-8-sig") as out:
-        for form in ivanovs:
+
+def write_forms(forms: list[list[str]], filename: str) -> None:
+    """
+    Запись анкет в текстовый файл
+    """
+    with open(filename, "w", encoding="utf-8") as out:
+        for form in forms:
             out.write("\n".join(form) + "\n\n")
 
-    # Вывод информации в консоль
-    print("Найдено анкет:", len(ivanovs))
-    print("Результаты сохранены в", out_name)
+
+def main() -> None:
+    """
+    Главная функция
+    """
+    args_input, args_output = parse_args()
+
+    try:
+        lines = read_lines(args_input)
+        # Обработка анкет из файла
+        all_forms = add_if_full(lines)
+
+        # Поиск и сохранение анкет с "Иванов(а)"
+        ivanovs = filter_ivanovs(all_forms)
+
+        # Запись результата
+        write_forms(ivanovs, args_output)
+
+        # Вывод
+        print("Найдено анкет:", len(ivanovs))
+        print("Результаты сохранены в", args_output)
+    except Exception as ex:
+        print("Ошибка: ", ex)
+
 
 if __name__ == "__main__":
     main()
