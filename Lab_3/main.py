@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import soundfile as sf
 import sys
 import os
+from typing import Tuple
 
-
-def read_audio_file(file_path):
+def read_audio_file(file_path)-> Tuple[int, np.ndarray]:
     """
     Чтение аудиофайла с помощью soundfile
     Возвращает частоту дискретизации и аудиоданные
@@ -19,7 +19,7 @@ def read_audio_file(file_path):
         sys.exit(1)
 
 
-def print_audio_info(sample_rate, audio_data):
+def print_audio_info(sample_rate, audio_data)-> float:
     """Отображение информации об аудиофайле"""
     duration = len(audio_data) / sample_rate
     print(f"Частота дискретизации: {sample_rate} Hz")
@@ -38,7 +38,7 @@ def print_audio_info(sample_rate, audio_data):
     return duration
 
 
-def trim_audio(audio_data, sample_rate, start_time, end_time):
+def trim_audio(audio_data, sample_rate, start_time, end_time)-> np.ndarray:
     """
     Обрезка аудио в указанном временном интервале
     start_time: время начала (секунды)
@@ -62,7 +62,7 @@ def trim_audio(audio_data, sample_rate, start_time, end_time):
     return trimmed_audio
 
 
-def plot_audio_comparison(original_audio, trimmed_audio, sample_rate, original_duration, start_time, end_time):
+def plot_audio_comparison(original_audio, trimmed_audio, sample_rate, original_duration, start_time, end_time)-> None:
     """Построение графика сравнения исходного и обрезанного аудио"""
     time_original = np.linspace(0, original_duration, len(original_audio))
     time_trimmed = np.linspace(start_time, end_time, len(trimmed_audio))
@@ -102,7 +102,7 @@ def plot_audio_comparison(original_audio, trimmed_audio, sample_rate, original_d
     plt.show()
 
 
-def save_audio_file(file_path, sample_rate, audio_data):
+def save_audio_file(file_path, sample_rate, audio_data)->None:
     """Сохранение аудиофайла с помощью soundfile"""
     try:
         sf.write(file_path, audio_data, sample_rate)
@@ -112,7 +112,7 @@ def save_audio_file(file_path, sample_rate, audio_data):
         sys.exit(1)
 
 
-def main():
+def main()-> None:
     parser = argparse.ArgumentParser(description='Обрезка аудио в указанном временном интервале')
     parser.add_argument('input_file', help='Путь к входному аудиофайлу')
     parser.add_argument('output_file', help='Путь для сохранения выходного аудиофайла')
