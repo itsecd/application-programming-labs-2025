@@ -54,9 +54,6 @@ def split_records(text: str) -> List[str]:
     
     if cur:
         records.append("\n".join(cur).strip())
-    
-    if not records:
-        records = [blk.strip() for blk in re.split(r"\n\s*\n+", text) if blk.strip()]
 
     return records
 
@@ -66,8 +63,7 @@ def extract_contact(record_text: str) -> Optional[str]:
     Возвращает строку (телефон или email) либо None.
     """
     for line in record_text.splitlines():
-        m = re.match(r'^\s*Номер телефона или email\s*:\s*(.+)$',
-                     line, flags=re.IGNORECASE)
+        m = re.match(r'^\s*Номер телефона или email\s*:\s*(.+)$',line, flags=re.IGNORECASE)
         if m:
             return m.group(1).strip()
     return None

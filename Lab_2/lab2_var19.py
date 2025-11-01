@@ -97,7 +97,7 @@ def crawl_category(save_dir: Path, category_url: str, limit: int, delay: float) 
             if len(downloaded) >= limit:
                 break
 
-            if target.lower().endswith(".wav"):
+            if target.lower().endswith(".mp3",".wav"):
                 file_path = download_file(target, save_dir, session)
             else:
                 audio_url = extract_audio_url(target, session)
