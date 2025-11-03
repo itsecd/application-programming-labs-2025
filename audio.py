@@ -60,14 +60,11 @@ class AudioTrack:
 
     def save(self, path):
         """Save audio track to file"""
-        if os.path.exists(path):
+        try:
+            os.makedirs(path, exist_ok=True)
             sf.write(os.path.join(path, self.filename), self.data, self.samplerate)
-        else:
-            try:
-                os.makedirs(path, exist_ok=True)
-                sf.write(os.path.join(path, self.filename), self.data, self.samplerate)
-            except Exception as e:
-                raise e
+        except Exception as e:
+            raise e
 
 
 def smooth(track: AudioTrack, window_size: int) -> AudioTrack:
