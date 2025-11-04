@@ -10,24 +10,23 @@ import requests
 
 URL_BASE = "https://mixkit.co/free-stock-music/instrument/piano/"
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 }
 
 MAX_FILENAME_LENGTH = 50
 
+
 def args_parse() -> argparse.Namespace:
-    """
-    Парсит аргументы командной строки.
-    """
+    """Парсит аргументы командной строки."""
     parser = argparse.ArgumentParser(
         prog="Data parser", description="Parsing data from file"
     )
     parser.add_argument("-f", "--file", type=str, help="file for csv")
-    parser.add_argument("-o", "--output", type=str, help="Output file for downloads music")
+    parser.add_argument("-o", "--output", type=str, 
+                       help="Output file for downloads music")
 
     return parser.parse_args()
-
-
 
 
 def sanitize_filename(name: str, max_length: int = MAX_FILENAME_LENGTH) -> str:
@@ -39,29 +38,28 @@ def sanitize_filename(name: str, max_length: int = MAX_FILENAME_LENGTH) -> str:
     return cleaned[:max_length]
 
 
-def extrackt_tracks_from_page(page_num: int) -> List[Dict[str, str]]:
-    """
-    Получает список треков со страницы:
-    возвращает список {'name': ..., 'link': ...}
-    """
+def extract_tracks_from_page(page_num: int) -> List[Dict[str, str]]:
+    """Получает список треков со страницы."""
     resp = requests.get(
         URL_BASE, headers=HEADERS, params={"page": page_num}, timeout=10
     )
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, "html.parser")
     items = soup.select("div.item-grid__item")
-    music=[]
+    music = []
+    
     for item in items:
-        name=item.select_one("h2.item-grid-card__title").get_text(strip=True)
-        link = item.select_one('div[data-audio-player-preview-url-value]').get('data-audio-player-preview-url-value')
+        name = item.select_one("h2.item-grid-card__title").get_text(strip=True)
+        link = item.select_one('div[data-audio-player-preview-url-value]').get(
+            'data-audio-player-preview-url-value'
+        )
         if name and link and link.startswith("http"):
             music.append({"name": name, "link": link})
     return music
 
+
 def download_single_track(music: Dict[str, str], dir: str, page_num: int) -> str:
-    """
-    Скачивает один трек по music['link'] и сохраняет в dir.
-    """
+    """Скачивает один трек по music['link'] и сохраняет в dir."""
     name = music["name"]
     link = music["link"]
     resp = requests.get(link, headers=HEADERS, timeout=10)
@@ -77,16 +75,17 @@ def download_single_track(music: Dict[str, str], dir: str, page_num: int) -> str
 
     return path
 
+
 def get_total_pages() -> int:
-    """
-    Реализует подсчет страниц
-    """
+    """Реализует подсчет страниц."""
     resp = requests.get(URL_BASE, headers=HEADERS)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, "html.parser")
     pagination = soup.find("div", class_="pagination__wrapper")
+    
     if not pagination:
         return 1
+        
     pages = [
         int(a.get_text(strip=True))
         for a in pagination.find_all("a", class_="pagination__link")
@@ -94,14 +93,13 @@ def get_total_pages() -> int:
     ]
     return max(pages, default=1)
 
-def get_corrent_csv_path(csv_path: str):
-    """
-    Проверяет существует ли .csv в пути/названии или нет
-    """
-    match = re.search(".csv$", csv_path)
-    if match:
-        return
+
+def get_correct_csv_path(csv_path: str) -> str:
+    """Проверяет существует ли .csv в пути/названии или нет."""
+    if csv_path.endswith(".csv"):
+        return csv_path
     return csv_path + ".csv"
+
 
 class FilePathIterator(Iterator[str]):
     def __init__(self, source: Union[str, os.PathLike]):
@@ -132,20 +130,21 @@ class FilePathIterator(Iterator[str]):
         self._index += 1
         return path
 
+
 def parser_with_pagination(source: str, csv_path: str) -> None:
-    """"Главная функция скачивания"""
+    """Главная функция скачивания."""
     os.makedirs(source, exist_ok=True)
     
     with open(csv_path, "w", encoding="utf-8", newline="") as csv_file:
         writer = csv.DictWriter(
             csv_file, fieldnames=["name", "absolute_path", "relative_path"]
         )
-        writer.writeheader()  
+        writer.writeheader()
         
         total_pages = get_total_pages()
         
         for page in range(1, total_pages + 1):
-            tracks = extrackt_tracks_from_page(page)
+            tracks = extract_tracks_from_page(page)
             
             for track in tracks:
                 try:
@@ -159,12 +158,12 @@ def parser_with_pagination(source: str, csv_path: str) -> None:
                         "absolute_path": abs_path,
                         "relative_path": rel_path,
                     })
-                    csv_file.flush()  
+                    csv_file.flush()
                 except Exception as e:
                     print(f"Ошибка скачивания {track['name']}: {e}")
             
-            time.sleep(1) 
-    
+            time.sleep(1)
+
 
 def main():
     args = args_parse()
@@ -179,13 +178,12 @@ def main():
     
     print(f"Starting to download songs to {args.output}")
     
-    out_csv=get_corrent_csv_path(args.file)
+    out_csv = get_correct_csv_path(args.file)
     parser_with_pagination(args.output, out_csv)
+    
     for filepath in FilePathIterator(args.output):
         print(filepath)
 
 
 if __name__ == "__main__":
     main()
-    
-
