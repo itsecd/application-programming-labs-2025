@@ -9,8 +9,15 @@ def parse_arguments():
 
 def open_file(args):
     '''открытие файла'''
-    with open(args.filename, "r", encoding='utf-8') as file:
-        return file.read()
+    try:
+        with open(args.filename, "r", encoding='utf-8') as file:
+            return file.read()
+    except FileNotFoundError:
+        print(f"Ошибка: Файл {args.filename} не найден")
+        exit(1)
+    except Exception as e:
+        print(f"Ошибка при чтении файла: {e}")
+        exit(1)
 
 def extract_surnames(text):
     '''Приводит текст файла к списку строк вида: Фамилия И.\n'''
@@ -22,10 +29,14 @@ def extract_surnames(text):
 
 def save_surnames_in_file(name, surnames):
     '''запись или же перезапись фамилий и имен в файл'''
-    with open(name, 'w', encoding='utf-8') as file:
-        for i in range(0, len(surnames)):
-            file.write(surnames[i])
-
+    try:
+        with open(name, 'w', encoding='utf-8') as file:
+            for surname in surnames:
+                file.write(surname)
+        print(f"Файл {name} успешно создан/перезаписан")
+    except Exception as e:
+        print(f"Ошибка при сохранении файла: {e}")
+        exit(1)
 def main():
     args = parse_arguments()
     text = open_file(args)
