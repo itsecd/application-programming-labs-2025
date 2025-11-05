@@ -33,6 +33,8 @@ def create_annotation(csv_path: str, folder: str) -> None:
     Создание CSV аннотации, абсолютные и относительные пути
     """
     
+    csv_dir = os.path.dirname(os.path.abspath(csv_path))
+
     with open(csv_path, mode='w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow(['absolute_path', 'relative_path'])
@@ -40,7 +42,7 @@ def create_annotation(csv_path: str, folder: str) -> None:
         for root, _, files in os.walk(folder):
             for file in files:
                 abs_path = os.path.abspath(os.path.join(root, file))
-                rel_path = os.path.relpath(os.path.join(root, file), folder)
+                rel_path = os.path.relpath(os.path.join(root, file), start=csv_dir)
                 writer.writerow([abs_path, rel_path])
     
 def args_parse() -> argparse.Namespace:
