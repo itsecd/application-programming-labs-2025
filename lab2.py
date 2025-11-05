@@ -151,7 +151,7 @@ def parser_with_pagination(source: str, csv_path: str) -> None:
                     local_path = download_single_track(track, source, page)
 
                     abs_path = os.path.abspath(local_path)
-                    rel_path = os.path.relpath(local_path, start=source)
+                    rel_path = os.path.relpath(local_path, start=os.getcwd())
 
                     writer.writerow({
                         "name": track["name"],
@@ -173,7 +173,7 @@ def main():
         return
     
     if not args.file:
-        print("Please specify file directory using -f argument")
+        print("Please specify file using -f argument")
         return
     
     print(f"Starting to download songs to {args.output}")
