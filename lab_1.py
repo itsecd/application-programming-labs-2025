@@ -27,11 +27,8 @@ def extract_surnames(text: str) -> list[str]:
     """
     Приводит текст файла к списку строк вида: Фамилия И.\n
     """
-    surnames = re.findall("Фамилия:\s[А-Я][а-я]+\sИмя:\s[А-Я]", text)
-    for i in range(0,len(surnames)):
-        surnames[i] = surnames[i][9:]
-        surnames[i] = re.sub("\sИмя:\s", ' ', surnames[i])+'.\n'
-    return surnames
+    surnames = re.findall(r'Фамилия:\s([А-Я][а-я]+)\sИмя:\s([А-Я])', text) 
+    return [f"{surname} {initial}.\n" for surname, initial in surnames]
 
 def save_surnames_in_file(name: str, surnames: list[str]) -> int:
     """
@@ -46,6 +43,7 @@ def save_surnames_in_file(name: str, surnames: list[str]) -> int:
     except Exception as e:
         print(f"Ошибка при сохранении файла: {e}")
         exit(1)
+
 def main():
     args = parse_arguments()
     text = open_file(args)
