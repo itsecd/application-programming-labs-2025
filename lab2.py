@@ -1,9 +1,10 @@
+import argparse
 import csv
 import os
-import requests
 import random
-import argparse
 from bs4 import BeautifulSoup
+
+import requests
 
 
 class AudioIterator:
@@ -58,11 +59,12 @@ def download_audio(save_dir: str, annotation_file: str, count: int = 50) -> int:
     annotation = []
     downloaded = 0
     
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    
     for instrument, need_count in zip(instruments, counts):
         print(f"Ищем {instrument}...")
         
         url = f"https://mixkit.co/free-stock-music/instrument/{instrument}/"
-        headers = {'User-Agent': 'Mozilla/5.0'}
         
         try:
             response = requests.get(url, headers=headers)
@@ -79,7 +81,7 @@ def download_audio(save_dir: str, annotation_file: str, count: int = 50) -> int:
                         abs_path = os.path.abspath(os.path.join(save_dir, filename))
                         rel_path = os.path.join(save_dir, filename)
                         
-                        audio_data = requests.get(audio_url)
+                        audio_data = requests.get(audio_url, headers=headers)
                         audio_data.raise_for_status()
                         
                         with open(abs_path, 'wb') as file:
