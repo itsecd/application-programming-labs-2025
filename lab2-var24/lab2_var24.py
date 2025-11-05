@@ -79,8 +79,8 @@ def mp3_parse(html: str) -> List[str]:
     """
     Парсит JSON-LD скрипты и извлекает ссылки
     """
-    soup: BeautifulSoup = BeautifulSoup(html, 'html.parser')
-    urls: List[str] = []
+    soup = BeautifulSoup(html, 'html.parser')
+    urls = []
     for script in soup.find_all('script', type='application/ld+json'):
         try:
             data = json.loads(script.string or '') 
