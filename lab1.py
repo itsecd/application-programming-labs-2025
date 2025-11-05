@@ -23,7 +23,7 @@ def is_valid_name (name: str) -> bool:
     """
     проверка, что имя состоит только из букв
     """
-    pattern = r'^[А-Яа-я]+$'
+    pattern = r'^[А-Яа-яЁё]+$'
     match = re.search(pattern, name)
     return bool(match)
 
@@ -32,7 +32,7 @@ def is_valid_surname (surname: str) -> bool:
     """
     проверка, что фамилия состоит только из букв
     """
-    pattern = r'^[А-Яа-я]+$'
+    pattern = r'^[А-Яа-яЁё]+$'
     match = re.search(pattern, surname)
     return bool(match)
 
@@ -63,12 +63,16 @@ def process_text (text: str) -> str:
             surname = parts_of_lines[1].strip()
             if is_valid_surname(surname):
                 lines[i] = f"{parts_of_lines[0]}: {correct_surname(surname)}"
+            else:
+                print(f"Некорректная фамилия: {surname} в строке {i+1}")
     
         elif lines[i].startswith("Имя:"):
             parts_of_lines = lines[i].split(':')
             name = parts_of_lines[1].strip()
             if is_valid_name(name):
                 lines[i] = f"{parts_of_lines[0]}: {correct_name(name)}"
+            else:
+                print(f"Некорректное имя: {name} в строке {i+1}")
     
     correct_text = '\n'.join(lines)
     return correct_text   
