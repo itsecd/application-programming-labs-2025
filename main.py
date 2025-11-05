@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def show_plots(data, noise, noise_data) -> None:
+def show_plots(data: np.ndarray, noise: np.ndarray, noise_data: np.ndarray) -> None:
     """
     Задача данной функции - создать несколько графиков для полученных результатов
     """
@@ -14,7 +14,7 @@ def show_plots(data, noise, noise_data) -> None:
     noise_plt = ax[1]
     noise_data_plt = ax[2]
 
-    data_plt.plot(data[:len(data)//REDUCE_CONST*REDUCE_CONST].reshape(-1, REDUCE_CONST).mean(axis=1)) 
+    data_plt.plot(data[:len(data)//REDUCE_CONST*REDUCE_CONST].reshape(-1, REDUCE_CONST).mean(axis=1))
     data_plt.set_xticklabels([])
     data_plt.set_title("Исходный звук")
     data_plt.set_ylim(-1, 1)
@@ -42,16 +42,17 @@ def main(file_path: str, output_path: str) -> None:
         data, samplerate = sf.read(f)
     print(f"Частота дискретизации: {samplerate} Гц.")
     print(f"Размер аудио: {data.shape}")
-    noise = np.random.normal(loc=0, scale=0.02, size=(data.shape)) # Массив случайных значений шума.
+    noise = np.random.normal(loc=np.mean(data), scale=np.sqrt(np.std(data)), size=data.shape) # Массив случайных значений шума.
     noise_data = data + noise
     sf.write(output_path, noise_data, samplerate)
 
     show_plots(data, noise, noise_data)
 
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--file", type=str, help="Аудиофайл для обработки", default="downloads/violin/43.mp3")
+    parser.add_argument("-f", "--file", type=str, help="Аудиофайл для обработки")
     parser.add_argument("-o", "--out", type=str, help="Путь для сохранения результата", default="out.mp3")
     args = parser.parse_args()
 
