@@ -7,11 +7,11 @@ def parse_arguments() -> argparse.Namespace:
     """Парсит аргументы командной строки"""
 
     parser = argparse.ArgumentParser(description="Применяет эхо-эффект к аудиофайлу")
-    parser.add_argument("--input", required=True, help="Путь к исходному аудиофайлу")
-    parser.add_argument("--output", required=True, help="Путь для сохранения результата")
+    parser.add_argument("--input", help="Путь к исходному аудиофайлу")
+    parser.add_argument("--output", help="Путь для сохранения результата")
     parser.add_argument("--delay", type=float, default=0.3, help="Задержка эхо в секундах")
     parser.add_argument("--decay", type=float, default=0.6, help="Коэффициент затухания")
-    parser.add_argument("--samplerate", type=int, default=None, help="Частота дискретизации для сохранения")
+    parser.add_argument("--samplerate", type=int, default=44100 , help="Частота дискретизации для сохранения")
     return parser.parse_args()
 
 
