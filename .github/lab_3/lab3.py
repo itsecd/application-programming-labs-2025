@@ -7,12 +7,11 @@ def puller(img1: str, img2: str) -> tuple:
     """
     Преобразование файла в картинку
     """
-    try:
-        res1 = cv2.imread(img1)
-        res2 = cv2.imread(img2)
-        return res1, res2
-    except FileNotFoundError:
-        print("Error. Image not found.")
+    res1 = cv2.imread(img1)
+    res2 = cv2.imread(img2)
+    if res1 is None or res2 is None:
+        raise FileNotFoundError
+    return res1, res2
 
 
 def size(img: numpy.ndarray)->tuple:
@@ -73,8 +72,8 @@ def save_to_file(filename: str, img: numpy.ndarray) -> None:
     """
     сохранение картинки в формате jpg файла
     """
-    if not filename.endswith('.jpg'):
-        filename += '.jpg'
+    if not filename.endswith('.png'):
+        filename += '.png'
     cv2.imwrite(filename, img)
 
 
@@ -87,6 +86,7 @@ def main():
     args = parser.parse_args()
 
     img1, img2 = puller(args.image_1, args.image_2)
+    cv2.imshow('img', img2)
     print(size(img1))
 
 
