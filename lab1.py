@@ -21,65 +21,45 @@ def write_file (text: str, output_file: str) -> None:
 
 def is_valid_name (name: str) -> bool:
     """
-    проверка, что имя состоит только из букв
+    проверка, что имя или фамилия состоит только из букв
     """
     pattern = r'^[А-Яа-яЁё]+$'
     match = re.search(pattern, name)
     return bool(match)
 
 
-def is_valid_surname (surname: str) -> bool:
-    """
-    проверка, что фамилия состоит только из букв
-    """
-    pattern = r'^[А-Яа-яЁё]+$'
-    match = re.search(pattern, surname)
-    return bool(match)
-
-
 def correct_name (name: str) -> str:
     """
-    исправление регистра букв имени
+    исправление регистра букв имени или фамилии
     """
     return name[0].upper() + name[1:].lower()
-
-
-def correct_surname (surname: str) -> str:
-    """
-    исправление регистра букв фамилии
-    """
-    return surname[0].upper() + surname[1:].lower()
 
 
 def process_text (text: str) -> str:
     """
     исправление имён и фамилий в анкетах
     """
+    pattern = r'^(Фамилия|Имя):\s*(\w+)$'
     lines = text.split('\n')
 
     for i in range (len(lines)):
-        if lines[i].startswith("Фамилия:"):
-            parts_of_lines = lines[i].split(':')
-            surname = parts_of_lines[1].strip()
-            if is_valid_surname(surname):
-                lines[i] = f"{parts_of_lines[0]}: {correct_surname(surname)}"
+        match = re.search(pattern, lines[i])
+        if match!=None:
+            name = match.group(1)
+            value = match.group(2)            
+            
+            if name == "Фамилия" and is_valid_name(value):
+                lines[i] = f"{name}: {correct_name(value)}"
+            elif name == "Имя" and is_valid_name(value):
+                lines[i] = f"{name}: {correct_name(value)}"
             else:
-                print(f"Некорректная фамилия: {surname} в строке {i+1}")
-    
-        elif lines[i].startswith("Имя:"):
-            parts_of_lines = lines[i].split(':')
-            name = parts_of_lines[1].strip()
-            if is_valid_name(name):
-                lines[i] = f"{parts_of_lines[0]}: {correct_name(name)}"
-            else:
-                print(f"Некорректное имя: {name} в строке {i+1}")
+                print(f"Некорректное значение: {value} в строке {i+1}")
     
     correct_text = '\n'.join(lines)
-    return correct_text   
-
+    return correct_text
+ 
 
 def main() :
-
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--input_file_name', type=str, default='data.txt', help='name of input file')
     parser.add_argument("-o", '--output_file_name', type=str, default='output.txt', help='your name of output file')
