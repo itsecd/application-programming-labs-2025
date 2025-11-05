@@ -1,54 +1,82 @@
-import numpy
+import numpy as np
 import argparse
 import soundfile as sf
 import matplotlib.pyplot as plt
 import os
 
 
-
-
-
-def load_music(path:str) ->  np.ndarray:
-    data, samplerate = sf.read(filepath)
+def load_audio(filepath: str) -> np.ndarray:
+    """
+    Загружает аудиофайл.
+    
+    Args:
+        filepath (str): Путь к аудиофайлу
+        
+    Returns:
+        np.ndarray: numpy массив сэмплов
+    """
+    
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"Файл не найден: {filepath}")
+    
+    valid_extensions = ['.mp3', '.wav', '.flac', '.ogg', '.m4a']
+    if not any(filepath.lower().endswith(ext) for ext in valid_extensions):
+        raise ValueError(f"Поддерживаемые форматы: {valid_extensions}")
+    
+    data, _ = sf.read(filepath)
     return data
 
+
 def create_echo(audio_data: np.ndarray, delay_samples: int, decay: float) -> np.ndarray:
-    output_size = len(audio_data) + delay_samples
-    result = np.zeros(output_size, dtype=audio_data.dtype)
+    """
+    Создаёт эхо-эффект путём наложения задержанного сигнала.
     
-    result[:len(audio_data)] = audio_data
+    Args:
+        audio_data (np.ndarray): numpy массив сэмплов
+        delay_samples (int): Задержка в сэмплах
+        decay (float): Коэффициент затухания (0-1)
+        
+    Returns:
+        np.ndarray: numpy массив с эхо-эффектом
+    """
     
-    result[delay_samples:delay_samples + len(audio_data)] += audio_data * decay
+    if len(audio_data.shape) == 1:
+        # Моно (одномерный массив)
+        output_size = len(audio_data) + delay_samples
+        result = np.zeros(output_size, dtype=audio_data.dtype)
+        
+        result[:len(audio_data)] = audio_data
+        result[delay_samples:delay_samples + len(audio_data)] += audio_data * decay
+    else:
+        # Стерео (двумерный массив)
+        output_size = len(audio_data) + delay_samples
+        result = np.zeros((output_size, audio_data.shape[1]), dtype=audio_data.dtype)
+        
+        result[:len(audio_data)] = audio_data
+        result[delay_samples:delay_samples + len(audio_data)] += audio_data * decay
+    
+    max_val = np.max(np.abs(result))
+    if max_val > 1.0:
+        result = result / max_val
     
     return result
 
+
 def save_audio(audio_data: np.ndarray, filepath: str, samplerate: int = 44100) -> None:
-     sf.write(filepath, audio_data, samplerate)
-     
-def parse_arguments() -> argparse.Namespace:
     """
-    Парсит аргументы командной строки.
+    Сохраняет аудиофайл.
     
+    Args:
+        audio_data (np.ndarray): numpy массив сэмплов
+        filepath (str): Путь для сохранения
+        samplerate (int): Частота дискретизации (default: 44100)
+        
     Returns:
-        argparse.Namespace: объект с аргументами
+        None
     """
     
-    parser = argparse.ArgumentParser(
-        description='Применяет эхо-эффект к аудиофайлу'
-    )
-    parser.add_argument(
-        '--input',
-        required=True,
-        help='Путь к исходному аудиофайлу'
-    )
-    parser.add_argument(
-        '--output',
-        required=True,
-        help='Путь для сохранения результата'
-    )
-   
-    
-    return parser.parse_args()
+    sf.write(filepath, audio_data, samplerate)
+
 
 def visualize(original: np.ndarray, echo: np.ndarray, delay_samples: int, samplerate: int = 44100) -> None:
     """
@@ -92,6 +120,37 @@ def visualize(original: np.ndarray, echo: np.ndarray, delay_samples: int, sample
     
     plt.tight_layout()
     plt.show()
+
+
+def parse_arguments() -> argparse.Namespace:
+    """
+    Парсит аргументы командной строки.
+    
+    Returns:
+        argparse.Namespace: объект с аргументами
+    """
+    
+    parser = argparse.ArgumentParser(
+        description='Применяет эхо-эффект к аудиофайлу'
+    )
+    parser.add_argument(
+        '--input',
+        required=True,
+        help='Путь к исходному аудиофайлу'
+    )
+    parser.add_argument(
+        '--output',
+        required=True,
+        help='Путь для сохранения результата'
+    )
+    parser.add_argument(
+        '--samplerate',
+        type=int,
+        default=44100,
+        help='Частота дискретизации для сохранения (default: 44100)'
+    )
+    
+    return parser.parse_args()
 
 
 def main() -> int:
