@@ -1,11 +1,10 @@
 import argparse
 import cv2
-import os
-import numpy as np
 from image_processor import create_puzzle
 from visualizer import show_comparison
 
-def main():
+
+def main() -> None:
     parser = argparse.ArgumentParser(description='Создание паззла из изображения')
     parser.add_argument('input', help='Путь к исходному изображению')
     parser.add_argument('output', help='Путь для сохранения паззла')
@@ -14,39 +13,26 @@ def main():
     args = parser.parse_args()
     
     try:
-        original_img, puzzle_img = create_puzzle(args.input, args.n)
-        print(f"Размер изображения: {original_img.shape}")
-        output_path = "puzzle_result.jpg"
-        success = save_image_alternative(output_path, puzzle_img)
+        original_img = cv2.imread(args.input)
+        if original_img is None:
+            print(f"Не удалось загрузить изображение: {args.input}")
+            return
+        
+        print(f"Изображение успешно загружено, размер: {original_img.shape}")
+        
+        original_img, puzzle_img = create_puzzle(original_img, args.n)
+        
+        success = cv2.imwrite(args.output, puzzle_img)
         if success:
-            print(f"Паззл успешно сохранен в: {output_path}")
+            print(f"Паззл успешно сохранен в: {args.output}")
         else:
-            print("Ошибка сохранения")
+            print(f"Ошибка сохранения в: {args.output}")
         
         show_comparison(original_img, puzzle_img, args.n)
         
     except Exception as e:
         print(f"Ошибка: {e}")
 
-def save_image_alternative(image_path, image):
-    """Альтернативный способ сохранения изображения(из-за проблем с кодировкой)"""
-    try:
-        """Сохраняет в текущую папку"""
-        success = cv2.imwrite(image_path, image)
-        if success:
-            return True
-        
-        """Если не получилось, пробуем через imencode"""
-        extension = os.path.splitext(image_path)[1]
-        success, encoded_image = cv2.imencode(extension, image)
-        if success:
-            with open(image_path, 'wb') as f:
-                f.write(encoded_image.tobytes())
-            return True
-    except Exception as e:
-        print(f"Ошибка при сохранении: {e}")
-    
-    return False
 
 if __name__ == "__main__":
     main()
