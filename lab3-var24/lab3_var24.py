@@ -7,37 +7,20 @@ import os
 
 def load_audio(filepath: str) -> np.ndarray:
     """
-    Загружает аудиофайл.
-    
-    Args:
-        filepath (str): Путь к аудиофайлу
-        
-    Returns:
-        np.ndarray: numpy массив сэмплов
+    Загружает аудиофайл
     """
-    
-    if not os.path.exists(filepath):
-        raise FileNotFoundError(f"Файл не найден: {filepath}")
-    
-    valid_extensions = ['.mp3', '.wav', '.flac', '.ogg', '.m4a']
-    if not any(filepath.lower().endswith(ext) for ext in valid_extensions):
-        raise ValueError(f"Поддерживаемые форматы: {valid_extensions}")
-    
-    data, _ = sf.read(filepath)
-    return data
+    try:
+   
+        data, _ = sf.read(filepath)
+        return data
+    except FileNotFoundError:
+        raise 
+
 
 
 def create_echo(audio_data: np.ndarray, delay_samples: int, decay: float) -> np.ndarray:
     """
     Создаёт эхо-эффект путём наложения задержанного сигнала.
-    
-    Args:
-        audio_data (np.ndarray): numpy массив сэмплов
-        delay_samples (int): Задержка в сэмплах
-        decay (float): Коэффициент затухания (0-1)
-        
-    Returns:
-        np.ndarray: numpy массив с эхо-эффектом
     """
     
     if len(audio_data.shape) == 1:
@@ -65,14 +48,7 @@ def create_echo(audio_data: np.ndarray, delay_samples: int, decay: float) -> np.
 def save_audio(audio_data: np.ndarray, filepath: str, samplerate: int = 44100) -> None:
     """
     Сохраняет аудиофайл.
-    
-    Args:
-        audio_data (np.ndarray): numpy массив сэмплов
-        filepath (str): Путь для сохранения
-        samplerate (int): Частота дискретизации (default: 44100)
-        
-    Returns:
-        None
+
     """
     
     sf.write(filepath, audio_data, samplerate)
@@ -81,15 +57,7 @@ def save_audio(audio_data: np.ndarray, filepath: str, samplerate: int = 44100) -
 def visualize(original: np.ndarray, echo: np.ndarray, delay_samples: int, samplerate: int = 44100) -> None:
     """
     Визуализирует исходный и обработанный сигналы.
-    
-    Args:
-        original (np.ndarray): исходный массив сэмплов
-        echo (np.ndarray): массив с эхо-эффектом
-        delay_samples (int): Задержка в сэмплах
-        samplerate (int): Частота дискретизации (default: 44100)
-        
-    Returns:
-        None
+
     """
     
     samples_to_show = min(samplerate * 2, len(original))
@@ -124,10 +92,7 @@ def visualize(original: np.ndarray, echo: np.ndarray, delay_samples: int, sample
 
 def parse_arguments() -> argparse.Namespace:
     """
-    Парсит аргументы командной строки.
-    
-    Returns:
-        argparse.Namespace: объект с аргументами
+    Парсит аргументы командной строки
     """
     
     parser = argparse.ArgumentParser(
@@ -156,12 +121,9 @@ def parse_arguments() -> argparse.Namespace:
 def main() -> int:
     """
     Главная функция программы.
-    
-    Returns:
-        int: код выхода (0 - успех, 1 - ошибка)
     """
     
-    # Фиксированные параметры эхо
+    
     DELAY = 0.3  # секунды
     DECAY = 0.6  # коэффициент затухания
     
@@ -193,20 +155,9 @@ def main() -> int:
         
         print("\n✓ Готово!")
         return 0
-        
-    except FileNotFoundError as e:
-        print(f"\n✗ Ошибка: {e}")
-        return 1
-    except ValueError as e:
-        print(f"\n✗ Ошибка: {e}")
-        return 1
-    except RuntimeError as e:
-        print(f"\n✗ Ошибка: {e}")
-        return 1
     except Exception as e:
-        print(f"\n✗ Неожиданная ошибка: {e}")
-        return 1
-
+        print(f"Ошибка при выполнении программы: {e}")
+  
 
 if __name__ == '__main__':
     exit(main())
