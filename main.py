@@ -1,9 +1,11 @@
 import re
 from datetime import datetime
+import argparse
 
 
 def is_valid_name(name: str) -> bool:
-    """Проверяет, что имя/фамилия с заглавной буквы и состоит только из букв.
+    """
+    Проверяет, что имя/фамилия с заглавной буквы и состоит только из букв.
 
     Args:
         name (str): Имя или фамилия для проверки.
@@ -17,7 +19,8 @@ def is_valid_name(name: str) -> bool:
 
 
 def normalize_gender(gender: str) -> str:
-    """Нормализует значение пола к 'М' или 'Ж'.
+    """
+    Нормализует значение пола к 'М' или 'Ж'.
 
     Args:
         gender (str): Исходное значение пола.
@@ -34,7 +37,8 @@ def normalize_gender(gender: str) -> str:
 
 
 def is_valid_gender(gender: str) -> bool:
-    """Проверяет корректность значения пола.
+    """
+    Проверяет корректность значения пола.
 
     Args:
         gender (str): Значение пола.
@@ -46,7 +50,8 @@ def is_valid_gender(gender: str) -> bool:
 
 
 def normalize_date(date_str: str) -> str:
-    """Приводит дату к формату DD.MM.YYYY или возвращает '-' при ошибке.
+    """
+    Приводит дату к формату DD.MM.YYYY или возвращает '-' при ошибке.
 
     Args:
         date_str (str): Строка с датой в одном из поддерживаемых форматов.
@@ -78,7 +83,8 @@ def normalize_date(date_str: str) -> str:
 
 
 def is_valid_date(date_str: str) -> bool:
-    """Проверяет корректность даты рождения.
+    """
+    Проверяет корректность даты рождения.
 
     Args:
         date_str (str): Строка с датой.
@@ -90,7 +96,8 @@ def is_valid_date(date_str: str) -> bool:
 
 
 def normalize_contact(contact: str) -> str:
-    """Нормализует контакт: телефон РФ → 8 (XXX) XXX XX XX или email.
+    """
+    Нормализует контакт: телефон РФ → 8 (XXX) XXX XX XX или email.
 
     Args:
         contact (str): Контактная информация (телефон или email).
@@ -110,7 +117,8 @@ def normalize_contact(contact: str) -> str:
 
 
 def is_valid_contact(contact: str) -> bool:
-    """Проверяет корректность контакта (телефон РФ или email).
+    """
+    Проверяет корректность контакта (телефон РФ или email).
 
     Args:
         contact (str): Контактная информация.
@@ -138,9 +146,9 @@ def normalize_city(city: str) -> str:
     return city
 
 
-def main() -> None:
+def main(input_file: str, output_file: str) -> None:
     """Основная функция: читает data.txt, обрабатывает анкеты, сохраняет результат в result.txt."""
-    with open("data.txt", "r", encoding="utf-8") as f:
+    with open(input_file, "r", encoding="utf-8") as f:
         content = f.read()
 
     entries = re.split(r"\n\d+\)\s*", content)[1:]
@@ -178,12 +186,26 @@ def main() -> None:
         )
         results.append(line)
 
-    with open("result.txt", "w", encoding="utf-8") as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         for line in results:
             f.write(line + "\n")
 
-    print("Обработка завершена. Результат в файле 'result.txt'")
+    print(f"Обработка завершена. Результат в файле '{output_file}'")
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-i", "--input",
+        type=str,
+        default="data.txt",
+        help="Имя входного файла - data.txt"
+    )
+    parser.add_argument(
+        "-o", "--output",
+        type=str,
+        default="result.txt",
+        help="Имя выходного файла - result.txt"
+    )
+    args = parser.parse_args()
+    main(args.input, args.output)
