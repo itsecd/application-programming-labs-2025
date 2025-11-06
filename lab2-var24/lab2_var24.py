@@ -1,32 +1,30 @@
-import csv
-import random
 import argparse
-import requests
-from bs4 import BeautifulSoup
-from typing import List
-import os
-import re
+import csv
 import json
+import os
+import random
+import re
+import requests
+from typing import List
 
 
+from bs4 import BeautifulSoup
 class FileIterator:
-    """
-    Итератор по списку путей к файла
-    """
-    def __init__(self, paths: List[str]) -> None:
-        self.paths: List[str] = paths
+    def __init__(self, dir_path: str) -> None:
+        self.dir_path = os.path.abspath(dir_path)
+        self.file_list = [os.path.join(self.dir_path, f) for f in os.listdir(self.dir_path)]
         self.index = 0
 
-    def __iter__(self) :
+    def __iter__(self):
         return self
 
     def __next__(self) -> str:
-        if self.index < len(self.paths):
-            result = self.paths[self.index]
+        while self.index < len(self.file_list):
+            file_path = self.file_list[self.index]
             self.index += 1
-            return result
-        else:
-            raise StopIteration
+            if file_path.lower().endswith('.mp3'):
+                return file_path
+        raise StopIteration
 
 
 def parse_args() -> argparse.Namespace:
@@ -49,13 +47,17 @@ def csv_init(csv_path: str) -> None:
         writer.writerow(csv_header)
 
 
-def append_to_csv(csv_path: str, genre: str, abs_path: str, real_path: str, url: str) -> None:
+def append_to_csv(csv_path: str, csv_data: List[str]) -> None:
     """
     Добавляет строку в CSV-файл
     """
-    with open(csv_path, 'a', encoding="utf-8", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow([genre, abs_path, real_path, url])
+    
+    for data in csv_data:
+        genre, abs_path, real_path, url = data
+    
+        with open(csv_path, 'a', encoding="utf-8", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow([genre, abs_path, real_path, url])
 
 
 def generate_url(genre: str) -> str:
@@ -70,7 +72,7 @@ def get_html(url: str) -> str:
     Получает HTML страницы
     """
     headers = {'User-Agent': 'Mozilla/5.0'}
-    resp: requests.Response = requests.get(url, headers=headers)
+    resp = requests.get(url, headers=headers)
     resp.raise_for_status()
     return resp.text
 
@@ -113,8 +115,8 @@ def download_mp3(url: str, path: str) -> None:
             for chunk in resp.iter_content(8192):
                 if chunk:
                     f.write(chunk)
-    except Exception as e:
-        print(f"Ошибка при загрузке {url}: {e}")
+    except Exception:
+        raise
 
 
 def process_genre(genre: str, output_dir: str, csv_path: str) -> None:
@@ -131,37 +133,43 @@ def process_genre(genre: str, output_dir: str, csv_path: str) -> None:
         print("Ссылки не найдены!")
         return      
 
-    select_urls: List[str] = random_urls(urls)
-    print(f"Выбрано для скачивания: {len(select_urls)} ссылок")
+    selected_urls: List[str] = random_urls(urls)
+    print(f"Выбрано для скачивания: {len(selected_urls)} ссылок")
 
-    iterator = FileIterator(select_urls)
-    for url in iterator:
+    
+    csv_data: List[str] = []
+    
+    for url in selected_urls:
+        
         filename = f"{genre}_{os.path.basename(url)}"
-           
-        real_path = os.path.join(output_dir, filename)
-        
-        
-        abs_p = os.path.abspath(real_path)
-
-
-
+            
         print(f"Скачиваем: {url}")
-        download_mp3(url, abs_p)
-        append_to_csv(csv_path, genre, abs_p, real_path, url)
+        download_mp3(url, os.path.join(output_dir, filename))
+            
+    abs_path_iterator = FileIterator(output_dir)
+        
+    for abs_path in abs_path_iterator:
+        real_path = os.path.join(output_dir, f"{genre}_{os.path.basename(url)}")
+        csv_data.append([genre, abs_path, real_path, url])
+          
+    append_to_csv(csv_path,csv_data)
 
 
 def main() -> None:
     """
     Основная функция программы
     """
-    args = parse_args()
-    csv_init(args.csv_path)
-    os.makedirs(args.output_dir, exist_ok=True)
+    try:
+        args = parse_args()
+        csv_init(args.csv_path)
+        os.makedirs(args.output_dir, exist_ok=True)
 
-    genres = ['country', 'funk', 'classical']
-    for genre in genres:
-        process_genre(genre, args.output_dir, args.csv_path)
-
+        genres = ['country', 'funk', 'classical']
+        for genre in genres:
+            process_genre(genre, args.output_dir, args.csv_path)
+            
+    except Exception as e:
+        print(f"Ошибка при выполнении программы: {e}")
 
 if __name__ == '__main__':
     main()
