@@ -18,14 +18,10 @@ def create_echo(audio_data: np.ndarray, delay_samples: int, decay: float) -> np.
     if len(audio_data.shape) == 1:
         result = np.zeros(output_size, dtype=audio_data.dtype)
     else:
-        result = np.zeros(
-            (output_size, audio_data.shape[1]), dtype=audio_data.dtype
-        )
+        result = np.zeros((output_size, audio_data.shape[1]), dtype=audio_data.dtype)
 
     result[: len(audio_data)] = audio_data
-    result[delay_samples : delay_samples + len(audio_data)] += (
-        audio_data * decay
-    )
+    result[delay_samples : delay_samples + len(audio_data)] += (audio_data * decay)
 
     return result
 
