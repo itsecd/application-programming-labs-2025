@@ -1,10 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import argparse
 import csv
 from pathlib import Path
-from icrawler.builtin import BingImageCrawler
+
+from icrawler.builtin import GoogleImageCrawler
 
 
 def parse_args() -> argparse.Namespace:
@@ -12,7 +10,7 @@ def parse_args() -> argparse.Namespace:
     Разбирает аргументы командной строки: цвет, количество, папка, путь к CSV и ключевое слово.
     """
     parser = argparse.ArgumentParser(description="ЛР: скачивание изображений по цвету и создание CSV-аннотации")
-    parser.add_argument("--color", required=True, choices=["red", "yellow", "green", "blue"],help="Цвет изображений (red, yellow, green, blue)")
+    parser.add_argument("--color", required=True, choices=["red", "yellow", "green", "blue"], help="Цвет изображений (red, yellow, green, blue)")
     parser.add_argument("--count", type=int, required=True, help="Количество изображений для скачивания (от 50 до 1000)")
     parser.add_argument("--save-dir", required=True, help="Папка для сохранения изображений")
     parser.add_argument("--csv", required=True, help="Путь к CSV-файлу аннотации")
@@ -24,9 +22,9 @@ def download_images(keyword: str, color: str, save_dir: Path, count: int) -> Non
     Скачивает изображения через BingImageCrawler по запросу, включающему цвет и ключевое слово.
     """
     save_dir.mkdir(parents=True, exist_ok=True)
-    crawler = BingImageCrawler(storage={"root_dir": str(save_dir)})
-    query = f"{color} {keyword}".strip()
-    crawler.crawl(keyword=query, max_num=count)
+    crawler = GoogleImageCrawler(storage={"root_dir": str(save_dir)}, feeder_threads=1, parser_threads=1, downloader_threads=4)
+    filters = {"color" : color, "size": "large", "type" : "photo"}
+    crawler.crawl(keyword=keyword, max_num=count, filters=filters, file_idx_offset=0)
 
 def write_csv_annotation(folder: Path, csv_path: Path) -> None:
     """
@@ -82,7 +80,7 @@ def main() -> None:
     args = parse_args()
 
     if not (50 <= args.count <= 1000):
-        print("Ошибка: --count должен быть в диапазоне от 50 до 1000")
+        raise ValueError("Ошибка: --count должен быть в диапазоне от 50 до 1000 изображений. ")
         return
 
     print(f"Скачивание {args.count} изображений по запросу: '{args.color} {args.keyword}'")
@@ -93,7 +91,7 @@ def main() -> None:
         count=args.count
     )
 
-    print(f"Создание CSV-аннотацию: {args.csv}")
+    print(f"Создание CSV-аннотации: {args.csv}")
     write_csv_annotation(
         folder=Path(args.save_dir),
         csv_path=Path(args.csv)
