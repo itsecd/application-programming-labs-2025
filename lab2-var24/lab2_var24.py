@@ -9,6 +9,7 @@ from typing import List
 
 
 from bs4 import BeautifulSoup
+
 class FileIterator:
     def __init__(self, dir_path: str) -> None:
         self.dir_path = os.path.abspath(dir_path)
