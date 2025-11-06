@@ -11,7 +11,7 @@ def extract_gender_entries(lines, target_gender='Мужской'):
     male_pattern = re.compile(r'^Пол:\s*(Мужской|мужской|М|м)\b')
 
     for line in lines:
-        if not line:  # пустая строка — граница анкеты
+        if not line:  
             if current_entry and is_male:
                 male_entries.append('\n'.join(current_entry))
                 entry_count += 1
