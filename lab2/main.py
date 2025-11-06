@@ -3,14 +3,17 @@ import re
 import csv
 import argparse
 import requests
+
 from bs4 import BeautifulSoup
 from typing import List, Dict, Iterator
+
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                   "AppleWebKit/537.36 (KHTML, like Gecko) "
                   "Chrome/91.0.4472.124 Safari/537.36"
 }
+
 
 def fetch_page(url: str, timeout: int = 3) -> str | None:
     try:
