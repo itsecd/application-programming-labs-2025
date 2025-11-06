@@ -7,6 +7,8 @@ import requests
 from bs4 import BeautifulSoup
 from typing import List, Dict, Iterator
 
+from track_iterator import TrackIterator
+
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -151,38 +153,6 @@ def download_tracks(tracks: List[Dict[str, str]], dest_dir: str, csv_path: str):
 
             except Exception as e:
                 print(f"❌ error: {track['title']}: {e}")
-
-
-class TrackIterator:
-    def __init__(self, source: str):
-        self.paths = []
-
-        if os.path.isdir(source):
-            for root, _, files in os.walk(source):
-                for f in files:
-                    if f.endswith(".mp3"):
-                        self.paths.append(os.path.join(root, f))
-
-        elif os.path.isfile(source) and source.endswith(".csv"):
-            with open(source, encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    self.paths.append(row["absolute_path"])
-
-        else:
-            raise ValueError("The source must be the path to the csv or folder")
-
-        self._index = 0
-
-    def __iter__(self) -> Iterator[str]:
-        return self
-
-    def __next__(self) -> str:
-        if self._index >= len(self.paths):
-            raise StopIteration
-        path = self.paths[self._index]
-        self._index += 1
-        return path
 
 
 def parse_args():
