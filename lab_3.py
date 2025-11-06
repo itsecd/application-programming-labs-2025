@@ -4,6 +4,7 @@ import download_and_save
 import show
 import change_image
 
+
 def parsing() -> tuple[str, str]:
     """
     передача аргументов через командную строку
@@ -19,13 +20,16 @@ def main() -> None:
     try:
         filenamepath_image, filename_save = parsing()
         image = download_and_save.download_image(filenamepath_image)
-        img_rgb, img_changed = change_image.change_image(image)
-        show.show_image(img_rgb, img_changed)
-        download_and_save.save_image(filename_save, img_changed)
+        image_rgb = change_image.bgr_2_rgb(image)
+        image_changed = change_image.change_image(image_rgb)
+        show.show_image(image_rgb, image_changed)
+        download_and_save.save_image(filename_save, image_changed)
     except Exception as exp:
         print(exp)
 
 
 if __name__ == "__main__":
     main()
+
+
 
