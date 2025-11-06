@@ -164,19 +164,31 @@ def parse_args():
     return parser.parse_args()
 
 
+def collect_all_tracks(instruments: list[str], limit: int) -> list[dict[str, str]]:
+    """
+    Функция собирает треки для указанных инструментов с сайта Mixkit.
+    
+    :param instruments: список инструментов (например ["acoustic-guitar", "drums"])
+    :param limit: максимальное количество треков на каждый инструмент
+    :return: список словарей с полями {"title": ..., "mp3_link": ...}
+    """
+    all_tracks = []
+    for instrument in instruments:
+        print(f"\n🎵 Category: {instrument}")
+        url = f"https://mixkit.co/free-stock-music/instrument/{instrument}/"
+        tracks = fetch_tracks(url, limit)
+        print(f"Tracks found: {len(tracks)}")
+        all_tracks.extend(tracks)
+
+    return all_tracks
+
+
 def main():
     args = parse_args()
 
     instruments = ["acoustic-guitar", "drums", "piano"]
 
-    all_tracks = []
-    for instrument in instruments:
-        print(f"\n🎵 Category: {instrument}")
-        url = f"https://mixkit.co/free-stock-music/instrument/{instrument}/"
-        tracks = fetch_tracks(url, args.limit)
-        print(f"Tracks found: {len(tracks)}")
-        all_tracks.extend(tracks)
-
+    all_tracks = collect_all_tracks(instruments, args.limit)
     download_tracks(all_tracks, args.folder, args.csv)
 
     #for path in TrackIterator(args.csv):
