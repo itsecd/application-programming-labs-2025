@@ -1,17 +1,29 @@
 import argparse
-import requests
+import csv
+import os
+
 from icrawler.builtin import GoogleImageCrawler
 
 
-"""
-Скачать изображения по ключевому слову "turtle", 
-пользователь задаёт несколько цветов из списка на выбор. 
-Количество изображений каждого цвета одинаковое.
-"""
+class FileIterator:
+    def __init__(self, filepath: str):
+        try:
+            self.filepath = filepath
+            self.file = open(filepath, 'r', encoding='utf-8')
+        except FileNotFoundError:
+            print(f'File {filepath} not found.')
 
+    def __iter__(self):
+        return self
 
-class Iterator:
-    pass
+    def __next__(self):
+        line = self.file.readline()
+
+        if not line:
+            self.file.close()
+            raise StopIteration
+
+        return line
 
 
 def get_color(avaible_colors: list[str]) -> list[str]:
@@ -41,8 +53,29 @@ def image_parse(images_dir: str, colors: list[str], keyword: str) -> None:
         google_crawler.crawl(search_keyword, max_num=100)
 
 
-def create_annotation() -> None:
-    pass
+def get_paths(dir_path: str) -> list[list[str]]:
+    """
+    Данная функция вовзращает список всех абсолютных
+    и относительных путей к изображениям
+    """
+    if os.path.exists(dir_path):
+        paths = [["Абсолютный путь", "Относительный путь"]] 
+
+        for dir in os.listdir(dir_path):   
+            for file in os.listdir(f"{dir_path}\\{dir}"):
+                paths.append([os.path.abspath(f"{dir_path}\{dir}\{file}"), 
+                              f"{dir_path}\{dir}\{file}"])
+
+        return paths
+    else:
+        return []
+
+
+def create_annotation(file_name: str, img_paths: list[list[str]]) -> None:
+    """Данная функция создаёт аннотацию в виде csv-файла"""
+    with open(file_name, 'w', encoding="utf-8", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerows(img_paths)
 
 
 def arguments_parse() -> argparse.Namespace:
@@ -61,13 +94,20 @@ def arguments_parse() -> argparse.Namespace:
 
 
 def main() -> None:
-    output_folder = arguments_parse().output_folder
+    images_dir = arguments_parse().output_folder
     annotation = arguments_parse().annotation
     avaible_colors = ["green", "black", "brown", "yellow"]
-    
-    colors = get_color(avaible_colors)
-    image_parse(output_folder, colors, "turtle")
 
+    colors = get_color(avaible_colors)
+    image_parse(images_dir, colors, "turtle")
+    paths = get_paths(images_dir)    
+
+    create_annotation(annotation, paths)
+    
+    it = FileIterator(annotation)
+    for i in it:
+        print(i)
+    
 
 if __name__ == "__main__":
     main()
