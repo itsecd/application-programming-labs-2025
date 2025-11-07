@@ -50,7 +50,7 @@ def image_parse(images_dir: str, colors: list[str], keyword: str) -> None:
             downloader_threads=4, storage={"root_dir": f"{images_dir}/{color}"}
         )
         search_keyword = f"{color} {keyword}"
-        google_crawler.crawl(search_keyword, max_num=100)
+        google_crawler.crawl(search_keyword, max_num=150//len(colors))
 
 
 def get_paths(dir_path: str) -> list[list[str]]:
