@@ -2,7 +2,10 @@ import argparse
 import re
 
 
-def get_args():
+def get_args()-> list:
+    """
+    парсит аргументы командной строки
+    """
     filenames = []
     parser = argparse.ArgumentParser()
     parser.add_argument("input_file", type=str)
@@ -14,6 +17,9 @@ def get_args():
 
 
 def read_file(filename: str) -> str:
+    """
+    читает содержимое файла
+    """
     try:
         with open(filename, "r", encoding="utf-8") as file:
             return file.read()
@@ -22,10 +28,16 @@ def read_file(filename: str) -> str:
 
 
 def is_valid_email(contact: str) -> bool:
+    """
+    проверяет валидность email
+    """
     pattern = r'^[a-zA-Z0-9._%+-]{1,64}@(gmail\.com|mail\.ru|yandex\.ru)$'
     return bool(re.match(pattern, contact))
 
 
-def write_emails(file, emails_list):
+def write_emails(file, emails_list) -> None:
+    """
+    записывает список email в файл
+    """
     for email in emails_list:
         file.write(email + "\n")
