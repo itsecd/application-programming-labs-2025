@@ -22,7 +22,7 @@ def read_file(filename: str) -> str:
 
 
 def is_valid_email(contact: str) -> bool:
-    pattern = r'^[a-zA-Z0-9._%+-]+@(gmail\.com|mail\.ru|yandex\.ru)$'
+    pattern = r'^[a-zA-Z0-9._%+-]{1,64}@(gmail\.com|mail\.ru|yandex\.ru)$'
     return bool(re.match(pattern, contact))
 
 
