@@ -13,8 +13,7 @@ def fetch_page(url: str, timeout: int = 10) -> str | None:
         resp = requests.get(url, headers=HEADERS, timeout=timeout)
         resp.raise_for_status()
         return resp.text
-    except Exception as e:
-        print(f"❌ Ошибка загрузки страницы {url}: {e}")
+    except Exception:
         return None
 
 
@@ -115,11 +114,7 @@ def fetch_animal_sounds(url: str, num_sounds: int) -> List[Dict[str, str]]:
     sounds = []
     total_pages = get_total_pages(url)
 
-    print(f"📄 Всего страниц для обработки: {total_pages}")
-
     for page in range(1, total_pages + 1):
-        print(f"→ Загружаем страницу: {page}/{total_pages}")
-
         if page == 1:
             page_url = url
         else:
@@ -130,11 +125,9 @@ def fetch_animal_sounds(url: str, num_sounds: int) -> List[Dict[str, str]]:
             continue
 
         page_sounds = extract_animal_sounds_from_html(html)
-        print(f"🎵 Найдено звуков на странице: {len(page_sounds)}")
         sounds.extend(page_sounds)
 
         if len(sounds) >= num_sounds:
-            print(f"🎯 Достигнут лимит в {num_sounds} звуков")
             return sounds[:num_sounds]
 
         time.sleep(1)

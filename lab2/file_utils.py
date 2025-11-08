@@ -35,14 +35,11 @@ def download_sounds(sounds: List[Dict[str, str]],
             file_path = os.path.join(dest_dir, filename)
 
             try:
-                print(f"⬇️  Скачиваем ({i}/{len(sounds)}): {safe_name}")
-
                 resp = requests.get(
                     sound["mp3_link"], headers=HEADERS, timeout=30)
                 resp.raise_for_status()
 
                 if len(resp.content) < 1024:
-                    print(f"❌ Файл слишком маленький: {safe_name}")
                     continue
 
                 with open(file_path, "wb") as f:
@@ -58,7 +55,5 @@ def download_sounds(sounds: List[Dict[str, str]],
                     "relative_path": rel_path
                 })
 
-                print(f"✅ Сохранено: {filename}")
-
-            except Exception as e:
-                print(f"❌ Ошибка: {sound['title']}: {e}")
+            except Exception:
+                continue
