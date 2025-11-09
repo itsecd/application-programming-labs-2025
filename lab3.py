@@ -12,7 +12,7 @@ def add_white_noise(audio_data, noise_level=0.1):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file', required=True, help='Аудиофайл для обработки')
-    parser.add_argument('-o', '--out', help='Файл для сохранения результата', default='out.mp3')
+    parser.add_argument('-o', '--out', help='Файл для сохранения результата', default="audio_with_white_noise.mp3")
     
     args = parser.parse_args()
     
