@@ -16,6 +16,7 @@ def fetch_page(url: str, timeout: int = 10) -> str | None:
     except Exception:
         return None
 
+
 def extract_animal_sounds_from_html(html: str) -> List[Dict[str, str]]:
     """
     Извлекает информацию о звуках животных из HTML страницы.
@@ -23,55 +24,16 @@ def extract_animal_sounds_from_html(html: str) -> List[Dict[str, str]]:
     soup = BeautifulSoup(html, "html.parser")
     sounds = []
 
-    container = soup.select_one("div.item-grid__items")
-    if not container:
-        container = soup.select_one("div.grid-cards")
-    if not container:
-        container = soup.select_one("div.sounds-grid")
+    for element in soup.find_all(
+            attrs={"data-audio-player-preview-url-value": True}):
+        mp3_link = element.get("data-audio-player-preview-url-value")
+        title = element.get("title", "Animal Sound")
 
-    if container:
-        for item in container.select("div.item-grid__item,"
-                                     " div.grid-card, div.sound-card"):
-            title_tag = item.select_one(
-                "h2.item-grid-card__title, h3.card-title, h4.sound-title")
-            if not title_tag:
-                continue
-
-            mp3_link = None
-
-            player_tag = item.select_one(
-                'div[data-audio-player-preview-url-value]')
-            if player_tag:
-                mp3_link = player_tag.get(
-                    "data-audio-player-preview-url-value")
-
-            if not mp3_link:
-                mp3_element = item.select_one('[data-mp3]')
-                if mp3_element:
-                    mp3_link = mp3_element.get("data-mp3")
-
-            if not mp3_link:
-                audio_tag = item.select_one("audio source[src$='.mp3']")
-                if audio_tag:
-                    mp3_link = audio_tag.get("src")
-
-            if mp3_link and mp3_link.startswith("http"):
-                sounds.append({
-                    "title": title_tag.get_text(strip=True),
-                    "mp3_link": mp3_link,
-                })
-
-    if not sounds:
-        players = soup.find_all(
-            attrs={"data-audio-player-preview-url-value": True})
-        for player in players:
-            title = player.get("title") or "Animal Sound"
-            mp3_link = player.get("data-audio-player-preview-url-value")
-            if mp3_link and mp3_link.startswith("http"):
-                sounds.append({
-                    "title": title,
-                    "mp3_link": mp3_link,
-                })
+        if mp3_link and mp3_link.startswith("http"):
+            sounds.append({
+                "title": title,
+                "mp3_link": mp3_link,
+            })
 
     return sounds
 
