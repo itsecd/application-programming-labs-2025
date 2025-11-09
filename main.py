@@ -40,7 +40,7 @@ def count_samples_ratio(audio_path: str, min_amplitude: float) -> float:
     """
     with open(f"{audio_path}", mode="rb") as f:
         audio, samplerate = sf.read(f)
-    samples = np.where(audio.flatten() > min_amplitude)[0]
+    samples = np.where(np.abs(audio.flatten()) > min_amplitude)[0]
     return float(len(samples) / np.prod(audio.shape))
 
 
@@ -61,10 +61,11 @@ def main(csv_path: str, output_frame: str, output_graph: str, min_amplitude: flo
 
     data["ratio"] = ratio_values
 
-    # print(data.query("ratio > 0.5")) не пригодилось
-
-    plt.plot(sort_by(data, "ratio")["ratio"])
-    plt.xlabel("Индекс изображения")
+    # print(data.query("ratio > 0.1")) не пригодилось
+    
+    data = sort_by(data, "ratio")
+    plt.plot(data["ratio"])
+    plt.xlabel("Индекс аудиофайла")
     plt.ylabel("Отношение")
     plt.savefig(output_graph)
     data.to_csv(output_frame, index=False)
@@ -80,11 +81,16 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--csv", type=str, help="Путь к файлу аннотации", default="downloads/annotation.csv")
     parser.add_argument("-of", "--output_frame", type=str, help="Путь для сохранения новых данных", default="downloads/output.csv")
     parser.add_argument("-og", "--output_graph", type=str, help="Путь для сохранения графика", default="downloads/output.png")
-    parser.add_argument("-min", "--min_amplitude", type=float, help="Путь для сохранения графика", default=0)
+    parser.add_argument("-min", "--min_amplitude", type=float, help="Значение минимальный амплитуды для подсчёта отношения", default=0.5)
     args = parser.parse_args()
 
     try:
-        main(args.csv, args.output_frame, args.output_graph, args.min_amplitude)
+        if 0 <= args.min_amplitude <= 1:
+            main(args.csv, args.output_frame, args.output_graph, args.min_amplitude)
+        else:
+            raise ValueError("Значение --min_amplitude должно быть в пределах от 0 до 1!")
+    except ValueError as e:
+        print(f"Ошибка: {e}")
     except FileNotFoundError as e:
         print(f'Ошибка, не найден файл: "{e.filename}"')
     except PermissionError as e:
