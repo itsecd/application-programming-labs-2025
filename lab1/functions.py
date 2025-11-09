@@ -5,8 +5,13 @@ from typing import List, Dict, Tuple, Optional
 
 def read_file(file_path: str) -> str:
     # Читает содержимое файла.
-    with open(file_path, "r", encoding="utf-8") as file:
-        return file.read()
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            return file.read()
+    except FileNotFoundError as e:
+        raise FileNotFoundError(f"Файл не найден: {file_path}") from e
+    except IOError as e:
+        raise IOError(f"Ошибка при ччтении файла {file_path}: {e}") from e
 
 
 def parse_profiles(text: str) -> List[Dict[str, str]]:
@@ -63,6 +68,9 @@ def is_valid_date(date_str: str) -> bool:
 
 def parse_date(date_str: str) -> datetime:
     # Преобразует строку с датой в объект datetime.
+    if not is_valid_date(date_str):
+        raise ValueError(f"Формат даты неверный {date_str}")
+
     normalized = re.sub(r"[./]", "-", date_str.strip())
     day, month, year = map(int, normalized.split("-"))
     return datetime(year=year, month=month, day=day)
@@ -79,16 +87,24 @@ def calculate_age(birthdate: datetime) -> int:
 
 def find_oldest_and_youngest(profiles: List[Dict[str, str]]) -> Tuple[Dict, Dict]:
     # Ищет самого старого и самого молодого человека.
+    if not profiles:
+        raise ValueError("Пустой список анкет")
+
     valid_profiles = []
-
     for profile in profiles:
-        bd = parse_date(profile["birthdate"])
-        age = calculate_age(bd)
-        profile_with_age = {**profile, "age": age, "birthdate_obj": bd}
-        valid_profiles.append(profile_with_age)
+        try:
+            bd = parse_date(profile["birthdate"])
+            age = calculate_age(bd)
+            profile_with_age = {**profile, "age": age, "birthdate_obj": bd}
+            valid_profiles.append(profile_with_age)
+        except ValueError:
+            continue
 
-    oldest = min(valid_profiles, key=lambda p: p["birthdate_obj"])  
-    youngest = max(valid_profiles, key=lambda p: p["birthdate_obj"]) 
+    if not valid_profiles:
+        raise ValueError("Анкет с валидной датой рождения нет :( ")
+
+    oldest = min(valid_profiles, key=lambda p: p["birthdate_obj"])
+    youngest = max(valid_profiles, key=lambda p: p["birthdate_obj"])
     return oldest, youngest
 
 
