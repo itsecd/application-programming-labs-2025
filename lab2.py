@@ -2,9 +2,9 @@ import argparse
 import csv
 import os
 import random
-from bs4 import BeautifulSoup
 
 import requests
+from bs4 import BeautifulSoup
 
 
 class AudioIterator:
@@ -151,3 +151,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
