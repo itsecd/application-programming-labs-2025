@@ -16,37 +16,6 @@ def fetch_page(url: str, timeout: int = 10) -> str | None:
     except Exception:
         return None
 
-
-def get_total_pages(url: str) -> int:
-    """
-    Определяет общее количество страниц с звуками животных.
-    """
-    html = fetch_page(url)
-    if not html:
-        return 1
-
-    soup = BeautifulSoup(html, "html.parser")
-
-    pagination = soup.find("div", class_="pagination__wrapper")
-    if not pagination:
-        pagination = soup.find("nav", class_="pagination")
-    if not pagination:
-        pagination = soup.find("ul", class_="pagination")
-
-    if pagination:
-        pages = [int(a.get_text(strip=True))
-                 for a in pagination.find_all
-                 ("a", class_=lambda x: x and "pagination" in x)
-                 if a.get_text(strip=True).isdigit()]
-        if pages:
-            return max(pages)
-
-    if 'page/2/' in html:
-        return 2
-
-    return 1
-
-
 def extract_animal_sounds_from_html(html: str) -> List[Dict[str, str]]:
     """
     Извлекает информацию о звуках животных из HTML страницы.
@@ -112,7 +81,7 @@ def fetch_animal_sounds(url: str, num_sounds: int) -> List[Dict[str, str]]:
     Собирает звуки животных со всех доступных страниц.
     """
     sounds = []
-    total_pages = get_total_pages(url)
+    total_pages = 1
 
     for page in range(1, total_pages + 1):
         if page == 1:
