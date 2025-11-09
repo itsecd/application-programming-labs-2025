@@ -1,6 +1,7 @@
 import argparse
 import csv
 import os
+
 from icrawler.builtin import GoogleImageCrawler
 
 
@@ -32,9 +33,26 @@ def parse_arguments() -> list:
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--img_dir", default="imgs", type=str, help="image folder path")
     parser.add_argument("-c", "--csv_path", default="annotation.csv", type=str, help="annotation file path")
-    parser.add_argument("-n", "--img_max_num", type=int, default=50, help="max number of downloaded images")
+    parser.add_argument("-n", "--img_max_num", default=50, type=int, help="max number of downloaded images")
     args = parser.parse_args()
     return [args.img_dir, args.csv_path, args.img_max_num]
+
+
+def color_toggle(choice: int, colors: list[str]) -> None:
+    """
+    Добавление/удаление выбранного цвета из списка
+    """
+    full_color_list = {1: "green",
+                       2: "blue",
+                       3: "yellow",
+                       4: "brown",
+                       5: "grey",
+                       6: "black&white"}
+    if full_color_list.get(choice):
+        if full_color_list[choice] in colors:
+            colors.remove(full_color_list[choice])
+        else:
+            colors.append(full_color_list[choice])
 
 
 def colors_choice() -> list[str]:
@@ -58,36 +76,7 @@ def colors_choice() -> list[str]:
         for i in colors:
             print(i)
         user_choice = int(input("\nВаш выбор: "))
-        if user_choice == 1:
-            if colors.__contains__("green"):
-                colors.remove("green")
-            else:
-                colors.append("green")
-        elif user_choice == 2:
-            if colors.__contains__("blue"):
-                colors.remove("blue")
-            else:
-                colors.append("blue")
-        elif user_choice == 3:
-            if colors.__contains__("yellow"):
-                colors.remove("yellow")
-            else:
-                colors.append("yellow")
-        elif user_choice == 4:
-            if colors.__contains__("brown"):
-                colors.remove("brown")
-            else:
-                colors.append("brown")
-        elif user_choice == 5:
-            if colors.__contains__("grey"):
-                colors.remove("grey")
-            else:
-                colors.append("grey")
-        elif user_choice == 6:
-            if colors.__contains__("black&white"):
-                colors.remove("black&white")
-            else:
-                colors.append("black&white")
+        color_toggle(user_choice, colors)
     return colors
 
 
