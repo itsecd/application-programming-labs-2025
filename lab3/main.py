@@ -1,10 +1,10 @@
 import argparse
-import matplotlib.pyplot as plt
-import random
-import cv2
 import os
-import numpy as np
+import random
 
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
 
 def parse_arguments():
     """Парсинг аргументов командной строки."""
