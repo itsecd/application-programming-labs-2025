@@ -1,7 +1,35 @@
 import pandas
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import soundfile as sf
 import numpy as np
+
+
+def sort_by(df: pandas.DataFrame, column: str, reverse: bool = False) -> pandas.DataFrame:
+    """
+    Зачем-то в задании требуется реализовать функцию сортировки по новой колонке. Вот Вам сортировка по любой колонке.
+    И да, это просто обёртка на встроенную готовую функцию в pandas
+    Args:
+        df (DataFrame): Данные для сортировки
+        column (str): Колонка, по которой происходит сортировка
+        reverse (boll): Прямой или обратный порядок сортировки
+    """
+    data = df.sort_values(by=column, ascending= not reverse)
+    data.reset_index(drop = True, inplace=True)
+    return data
+
+
+def filter_by(df: pandas.DataFrame, expression: str) -> pandas.DataFrame:
+    """
+    У меня много вопрос касательно того, как будет происходить фильтрация значений, поэтому просто используйте выражение из pandas.
+    Для числовых значений например: "column > 2"
+    Args:
+        df (DataFrame): Данные для фильтрации
+        expression (str): Условное выражение для фильтрации.
+    """
+    data = df.query(expression)
+    data.reset_index(drop = True, inplace=True)
+    return data
+
 
 def count_samples_ratio(audio_path: str, min_amplitude: float) -> float:
     """
@@ -14,6 +42,7 @@ def count_samples_ratio(audio_path: str, min_amplitude: float) -> float:
         audio, samplerate = sf.read(f)
     samples = np.where(audio.flatten() > min_amplitude)[0]
     return float(len(samples) / np.prod(audio.shape))
+
 
 def main(csv_path: str, output_frame: str, output_graph: str, min_amplitude: float) -> None:
     """ 
@@ -31,7 +60,17 @@ def main(csv_path: str, output_frame: str, output_graph: str, min_amplitude: flo
         ratio_values.append(count_samples_ratio(path, min_amplitude))
 
     data["ratio"] = ratio_values
-    print(data)
+
+    # print(data.query("ratio > 0.5")) не пригодилось
+
+    plt.plot(sort_by(data, "ratio")["ratio"])
+    plt.xlabel("Индекс изображения")
+    plt.ylabel("Отношение")
+    plt.savefig(output_graph)
+    data.to_csv(output_frame, index=False)
+    plt.show()
+    plt.close()
+
 
 if __name__ == "__main__":
     import argparse
