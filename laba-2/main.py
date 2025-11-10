@@ -1,5 +1,6 @@
 import argparse
 import os
+import downloader
 
 def parse_arguments() -> argparse.Namespace:
     """
@@ -11,7 +12,7 @@ def parse_arguments() -> argparse.Namespace:
         '-c',
         required=True,
         nargs='+',
-        help='List of colors to search.'
+        help='List of colors to search. Example: red green'
     )
     parser.add_argument(
         '--output_dir',
@@ -33,13 +34,26 @@ def main():
     """
     args = parse_arguments()
 
-    print("Run a script")
-
+    print("Args for script:")
+    print(f"    Colors: {args.colors}")
+    print(f"    Directory to save images: {args.output_dir}")
+    print(f"    Filepath to save CSV table: {args.annotation_path}")
+    
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
-        print(f"Directory {atgs.output_dir} created!")
+        print(f"Directory {args.output_dir} created!")
 
     #code
+    downloaded_paths = downloader.download_images(
+        key="snake",
+        colors=args.colors,
+        root_dir=args.output_dir
+    )
+
+    if (downloaded_paths):
+        print(f"Downloaded {len(downloaded_paths)} files.")
+    else:
+        print(f"Won't able to download any images!")
 
 if __name__ == "__main__":
     main()
