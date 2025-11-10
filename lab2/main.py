@@ -2,6 +2,9 @@
 Лабораторная работа №2: Загрузка изображений по ключевому слову с фильтрацией по датам.
 """
 
+import argparse
+import sys
+from datetime import datetime
 import csv
 from pathlib import Path
 from typing import List, Tuple
@@ -89,3 +92,36 @@ class ImagePathIterator:
         self._index: int = 0
         self._load_items(source, root_dir)  
 
+
+def parse_date_range(date_range: str) -> Tuple[Tuple[int, int, int], Tuple[int, int, int]]:
+    """Парсит строку с диапазоном дат в формате YYYY-MM-DD:YYYY-MM-DD."""
+    start_str, end_str = date_range.split(':')
+    start_date = datetime.strptime(start_str, '%Y-%m-%d').date()
+    end_date = datetime.strptime(end_str, '%Y-%m-%d').date()
+    
+    if start_date > end_date:
+        start_date, end_date = end_date, start_date
+    
+    return ((start_date.year, start_date.month, start_date.day),
+            (end_date.year, end_date.month, end_date.day))
+
+
+def parse_arguments():
+    """Парсит аргументы командной строки."""
+    parser = argparse.ArgumentParser(description='Загрузка изображений с фильтрацией по датам')
+    parser.add_argument('--output-dir', required=True, help='Директория для сохранения изображений')
+    parser.add_argument('--annotation-file', required=True, help='Путь к файлу CSV-аннотации')
+    parser.add_argument('--date-ranges', nargs='+', required=True, 
+                       help='Диапазоны дат в формате YYYY-MM-DD:YYYY-MM-DD')
+    parser.add_argument('--images-per-range', type=int, required=True, 
+                       help='Количество изображений для каждого диапазона (50-1000)')
+    parser.add_argument('--keyword', default='bear', help='Ключевое слово для поиска')
+    return parser.parse_args()
+
+
+def validate_arguments(args) -> bool:
+    """Проверяет корректность аргументов командной строки."""
+    if not (50 <= args.images_per_range <= 1000):
+        print("Ошибка: количество изображений должно быть от 50 до 1000", file=sys.stderr)
+        return False
+    return True
