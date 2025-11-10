@@ -24,4 +24,3 @@ def create_annotation_csv(folder_path: str, csv_path: str) -> None:
             rel_path = os.path.relpath(abs_path, start=os.getcwd())
             writer.writerow([abs_path, rel_path])
 
-    print(f"Файл-аннотация создан: {os.path.abspath(csv_path)}")
