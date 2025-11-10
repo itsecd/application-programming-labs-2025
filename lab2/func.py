@@ -2,9 +2,10 @@ import argparse
 import csv
 import os
 import random
-import requests
 
+import requests
 from bs4 import BeautifulSoup
+
 from itr import SoundtrackIterator
 
 
@@ -18,7 +19,16 @@ def get_args() -> argparse.Namespace:
 
 def collect_tracks(genre: str) -> list[dict[str, str]]:
     """
-    Извлекает данные о треках указанного жанра с сайта mixkit.co.
+    Извлекает информацию о треках указанного жанра с сайта mixkit.co.
+
+    Args:
+        genre (str): Название музыкального жанра для поиска треков.
+
+    Returns:
+        list[dict[str, str]]: Список треков, каждый представлен словарём с ключами:
+            - "title" (str): Название трека.
+            - "artist" (str): Имя автора/исполнителя.
+            - "link" (str): URL для скачивания превью аудио.
     """
     headers = {
         "User-Agent": (
@@ -51,7 +61,15 @@ def collect_tracks(genre: str) -> list[dict[str, str]]:
 
 def save_audio_file(genre_folder: str, url: str) -> str:
     """
-    Скачивает трек по ссылке и сохраняет в указанную директорию.
+    Скачивает аудиофайл по указанной ссылке и сохраняет его в заданную директорию.
+
+    Args:
+        genre_folder (str): Путь к директории, куда сохраняется файл. 
+                            Если директория не существует, она будет создана.
+        url (str): URL трека для скачивания.
+
+    Returns:
+        str: Имя сохранённого файла (basename из URL).
     """
     os.makedirs(genre_folder, exist_ok=True)
     filename = os.path.basename(url)
@@ -67,7 +85,18 @@ def save_audio_file(genre_folder: str, url: str) -> str:
 
 
 def handle_genre(genre: str, base_dir: str, writer: csv.writer) -> int:
-    """Обрабатывает жанр: выбирает случайные треки, скачивает и записывает в CSV."""
+    """
+    Обрабатывает указанный музыкальный жанр: собирает треки, выбирает случайные,
+    скачивает их и записывает информацию в CSV.
+
+    Args:
+        genre (str): Название жанра для обработки.
+        base_dir (str): Базовая директория для сохранения файлов.
+        writer (csv.writer): Объект CSV writer для записи данных о треках.
+
+    Returns:
+        int: Количество успешно скачанных и записанных треков.
+    """
     print(f"\nОбработка жанра: {genre}")
     try:
         all_tracks = collect_tracks(genre)
