@@ -3,11 +3,12 @@
 Вариант 26: Уменьшите скорость аудиофайла в заданное количество раз.
 """
 
-import numpy as np
-import soundfile as sf
 import argparse
 from pathlib import Path
+
 import matplotlib.pyplot as plt
+import numpy as np
+import soundfile as sf
 
 
 class AudioSpeedReducer:
@@ -34,7 +35,7 @@ class AudioSpeedReducer:
         
         # Для ЗАМЕДЛЕНИЯ нужно УВЕЛИЧИТЬ длину
         original = self.original_audio
-        new_length = int(len(original) * slowdown_factor)  # ИЗМЕНИЛИ ЗДЕСЬ!
+        new_length = int(len(original) * slowdown_factor)
         
         if len(original.shape) == 1:
             # Моно аудио
@@ -61,15 +62,79 @@ class AudioSpeedReducer:
             raise Exception(f"Ошибка сохранения аудио: {e}")
 
 
+def plot_audio_comparison(original: np.ndarray, processed: np.ndarray, sample_rate: int, output_plot: str):
+    """Строит графики сравнения оригинального и обработанного аудио."""
+    plt.switch_backend('Agg')
+    
+    # Временные оси (только первые 5 секунд для наглядности)
+    max_samples = min(5 * sample_rate, len(original), len(processed))
+    time_original = np.arange(max_samples) / sample_rate
+    time_processed = np.arange(max_samples) / sample_rate
+    
+    
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+    
+    # График оригинального аудио 
+    if len(original.shape) == 1:
+        ax1.plot(time_original, original[:max_samples], color='blue', linewidth=0.5)
+        ax1.set_title('Оригинальное аудио (первые 5 сек)')
+    else:
+        for channel in range(min(2, original.shape[1])):  # только первые 2 канала
+            ax1.plot(time_original, original[:max_samples, channel], linewidth=0.5, 
+                    label=f'Канал {channel+1}')
+        ax1.set_title('Оригинальное аудио (первые 5 сек)')
+        ax1.legend()
+    
+    ax1.set_ylabel('Амплитуда')
+    ax1.grid(True, alpha=0.3)
+    
+    # График обработанного аудио
+    if len(processed.shape) == 1:
+        ax2.plot(time_processed, processed[:max_samples], color='red', linewidth=0.5)
+        ax2.set_title('Замедленное аудио (первые 5 сек)')
+    else:
+        for channel in range(min(2, processed.shape[1])):  # только первые 2 канала
+            ax2.plot(time_processed, processed[:max_samples, channel], linewidth=0.5, 
+                    label=f'Канал {channel+1}')
+        ax2.set_title('Замедленное аудио (первые 5 сек)')
+        ax2.legend()
+    
+    ax2.set_ylabel('Амплитуда')
+    ax2.set_xlabel('Время (секунды)')
+    ax2.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig(output_plot, dpi=150, bbox_inches='tight')
+    plt.close()
+
+
 def main():
     """Главная функция обработки аудио."""
     parser = argparse.ArgumentParser(
         description='Уменьшение скорости аудиофайла в заданное количество раз'
     )
     
-    parser.add_argument('--input', required=True, help='Путь к исходному аудиофайлу')
-    parser.add_argument('--output', required=True, help='Путь для сохранения обработанного аудио')
-    parser.add_argument('--slowdown', type=float, required=True, help='Коэффициент замедления')
+    parser.add_argument(
+        '--input', 
+        required=True, 
+        help='Путь к исходному аудиофайлу'
+    )
+    parser.add_argument(
+        '--output', 
+        required=True, 
+        help='Путь для сохранения обработанного аудио'
+    )
+    parser.add_argument(
+        '--slowdown', 
+        type=float, 
+        required=True, 
+        help='Коэффициент замедления'
+    )
+    parser.add_argument(
+        '--plot', 
+        type=str, 
+        help='Сохранить график в файл (например: --plot graph.png)'
+    )
     
     args = parser.parse_args()
     
@@ -90,6 +155,10 @@ def main():
         print(f"Новая длительность: {new_duration:.2f} сек")
         print(f"Замедление в {new_duration/original_duration:.2f} раз")
         
+        if args.plot:
+            print(f"Создание графика: {args.plot}")
+            plot_audio_comparison(audio_data, processed_audio, sample_rate, args.plot)
+        
     except Exception as e:
         print(f"Ошибка: {e}")
         return 1
@@ -98,4 +167,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main() 
