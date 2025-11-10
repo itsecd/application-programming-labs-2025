@@ -1,8 +1,8 @@
+from bs4 import BeautifulSoup
+from config import HEADERS
 import requests
 import time
-from bs4 import BeautifulSoup
 from typing import List, Dict
-from config import HEADERS
 
 
 def fetch_page(url: str, timeout: int = 10) -> str | None:
