@@ -2,6 +2,7 @@
 Лабораторная работа №2: Загрузка изображений по ключевому слову с фильтрацией по датам.
 """
 
+import csv
 from pathlib import Path
 from typing import List, Tuple
 
@@ -26,6 +27,26 @@ class ImageDownloadManager:
             return False
 
 
+def create_annotation(self, root_dir: Path, csv_path: Path) -> bool:
+        """Создает CSV-аннотацию с путями к файлам."""
+        try:
+            root_dir = root_dir.resolve()
+            csv_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            with csv_path.open('w', newline='', encoding='utf-8') as file:
+                writer = csv.writer(file, delimiter=';')
+                writer.writerow(['Абсолютный путь', 'Относительный путь'])
+                
+                for file_path in root_dir.rglob('*'):
+                    if file_path.is_file() and file_path.suffix.lower() in self.IMG_EXTENSIONS:
+                        abs_path = file_path.resolve()
+                        rel_path = abs_path.relative_to(root_dir)
+                        writer.writerow([str(abs_path), str(rel_path)])
+            return True
+        except Exception:
+            return False
+
+
 class ImagePathIterator:
     """Итератор для перебора путей к изображениям."""
     
@@ -43,3 +64,28 @@ class ImagePathIterator:
         item = self._items[self._index]
         self._index += 1
         return item
+    
+    def _load_items(self, source: str, root_dir: str = None) -> None:
+        """Загружает элементы из указанного источника."""
+        source_path = Path(source)
+        
+        if source_path.is_file() and source_path.suffix.lower() == '.csv':
+            with source_path.open('r', newline='', encoding='utf-8') as file:
+                reader = csv.reader(file, delimiter=';')
+                next(reader)
+                self._items = [row for row in reader if len(row) >= 2]
+        else:
+            base_dir = Path(root_dir) if root_dir else source_path
+            base_dir = base_dir.resolve()
+            for file_path in source_path.rglob('*'):
+                if (file_path.is_file() and 
+                    file_path.suffix.lower() in ImageDownloadManager.IMG_EXTENSIONS):
+                    abs_path = file_path.resolve()
+                    rel_path = abs_path.relative_to(base_dir)
+                    self._items.append([str(abs_path), str(rel_path)])
+    
+    def __init__(self, source: str, root_dir: str = None) -> None:
+        self._items: List[List[str]] = []
+        self._index: int = 0
+        self._load_items(source, root_dir)  
+
