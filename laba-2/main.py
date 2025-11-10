@@ -1,12 +1,15 @@
+import annotator
 import argparse
-import os
 import downloader
+import os
+from iterator import ImageIterator
+
 
 def parse_arguments() -> argparse.Namespace:
     """
-    Adds and parses command-line arguments
+    Adds and parses command-line arguments.
     """
-    parser = argparse.ArgumentParser(description="Web scraper for dowbloading snake images by color.")
+    parser = argparse.ArgumentParser(description="Web scraper for downloading snake images by color.")
     parser.add_argument(
         '--colors',
         '-c',
@@ -28,9 +31,10 @@ def parse_arguments() -> argparse.Namespace:
     )
     return parser.parse_args()
 
-def main():
+
+def main() -> None:
     """
-    Main function
+    Main function.
     """
     args = parse_arguments()
 
@@ -38,22 +42,37 @@ def main():
     print(f"    Colors: {args.colors}")
     print(f"    Directory to save images: {args.output_dir}")
     print(f"    Filepath to save CSV table: {args.annotation_path}")
-    
+
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
         print(f"Directory {args.output_dir} created!")
 
-    #code
     downloaded_paths = downloader.download_images(
         key="snake",
         colors=args.colors,
         root_dir=args.output_dir
     )
 
-    if (downloaded_paths):
+    if downloaded_paths:
         print(f"Downloaded {len(downloaded_paths)} files.")
+        annotator.create_annotation(
+            annotation_path=args.annotation_path,
+            absolute_paths=downloaded_paths
+        )
+        print("\nIterator demo:")
+        try:
+            image_iterator = ImageIterator(args.annotation_path)
+            print("First 5 lines in CSV:\n")
+            for i, path in enumerate(image_iterator):
+                print(f"{i + 1}: {path}")
+                if i >= 4:
+                    break
+        except Exception as e:
+            print(f"Error while working with iterator: {e}")
+
     else:
         print(f"Won't able to download any images!")
+
 
 if __name__ == "__main__":
     main()
