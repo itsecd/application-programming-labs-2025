@@ -24,13 +24,23 @@ class ImageDownloadManager:
         try:
             output_dir.mkdir(parents=True, exist_ok=True)
             crawler = GoogleImageCrawler(storage={'root_dir': str(output_dir)})
-            crawler.crawl(keyword=keyword, filters={'date': date_range}, max_num=max_num)
+            
+            # Пытаемся использовать фильтрацию по датам
+            try:
+                crawler.crawl(keyword=keyword, filters={'date': date_range}, max_num=max_num)
+                print(f"Успешная загрузка с фильтрацией по датам: {date_range}")
+            except Exception:
+                # Если фильтрация не работает - загружаем без фильтра
+                crawler.crawl(keyword=keyword, max_num=max_num)
+                print(f"Загружены изображения без фильтрации по датам")
+            
             return True
-        except Exception:
+        except Exception as e:
+            print(f"Ошибка при загрузке: {e}")
             return False
-
-
-def create_annotation(self, root_dir: Path, csv_path: Path) -> bool:
+    
+        
+    def create_annotation(self, root_dir: Path, csv_path: Path) -> bool:
         """Создает CSV-аннотацию с путями к файлам."""
         try:
             root_dir = root_dir.resolve()
@@ -56,6 +66,7 @@ class ImagePathIterator:
     def __init__(self, source: str, root_dir: str = None) -> None:
         self._items: List[List[str]] = []
         self._index: int = 0
+        self._load_items(source, root_dir)
     
     def __iter__(self) -> 'ImagePathIterator':
         self._index = 0
@@ -86,11 +97,6 @@ class ImagePathIterator:
                     abs_path = file_path.resolve()
                     rel_path = abs_path.relative_to(base_dir)
                     self._items.append([str(abs_path), str(rel_path)])
-    
-    def __init__(self, source: str, root_dir: str = None) -> None:
-        self._items: List[List[str]] = []
-        self._index: int = 0
-        self._load_items(source, root_dir)  
 
 
 def parse_date_range(date_range: str) -> Tuple[Tuple[int, int, int], Tuple[int, int, int]]:
@@ -125,3 +131,54 @@ def validate_arguments(args) -> bool:
         print("Ошибка: количество изображений должно быть от 50 до 1000", file=sys.stderr)
         return False
     return True
+
+
+def main() -> None:
+    """Основная функция программы."""
+    try:
+        args = parse_arguments()
+        
+        if not validate_arguments(args):
+            sys.exit(1)
+        
+        download_manager = ImageDownloadManager()
+        output_dir = Path(args.output_dir)
+        
+        # Загрузка изображений для каждого диапазона
+        for i, date_range_str in enumerate(args.date_ranges):
+            date_range = parse_date_range(date_range_str)
+            range_dir = output_dir / f"range_{i}"
+            
+            success = download_manager.download_images(
+                keyword=args.keyword,
+                output_dir=range_dir,
+                date_range=date_range,
+                max_num=args.images_per_range
+            )
+            
+            if not success:
+                print(f"Предупреждение: проблемы с загрузкой для диапазона {i+1}")
+        
+        # Создание аннотации
+        csv_path = Path(args.annotation_file)
+        if not download_manager.create_annotation(output_dir, csv_path):
+            print("Ошибка: не удалось создать аннотацию", file=sys.stderr)
+            sys.exit(1)
+        
+        # Демонстрация работы итератора
+        print("Демонстрация работы итератора (первые 5 файлов):")
+        iterator = ImagePathIterator(str(csv_path))
+        for i, (abs_path, rel_path) in enumerate(iterator):
+            if i < 5:
+                print(f"  {rel_path}")
+            else:
+                break
+        
+           
+    except Exception as e:
+        print(f"Критическая ошибка: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()
