@@ -1,11 +1,16 @@
 import os
 import random
-from icrawler.builtin import GoogleImageCrawler
+from icrawler.builtin import BingImageCrawler
 
 
 def _calculate_count(colors: list[str], min_val: int, max_val: int) -> dict[str, int]:
     """
     Ensures that we have at least 1 image per color, and total number of images in set range.
+
+    :param colors: List of colors to download.
+    :param min_val: Minimum value of required downloaded pictures.
+    :param max_val: Maximum value of required downloaded pictures.
+    :return: Dictionary of how many images need to download per color.
     """
     num_colors = len(colors)
 
@@ -45,14 +50,16 @@ def download_images(key: str, colors: list[str], root_dir: str) -> list[str]:
 
         print(f"Searching: {search_key} in quantity: {num_images}, saving to: {color_dir}")
 
-        google_crawler = GoogleImageCrawler(storage={'root_dir': color_dir})
+        google_crawler = BingImageCrawler(storage={'root_dir': color_dir})
         google_crawler.crawl(keyword=search_key, max_num=num_images)
 
         # take paths
         try:
             downloaded_files = os.listdir(color_dir)
             for file in downloaded_files:
-                all_images_path.append(os.path.abspath(os.path.join(color_dir, file)))
+                full_path = os.path.abspath(os.path.join(color_dir, file))
+                if os.path.isfile(full_path):
+                    all_images_path.append(full_path)
         except FileNotFoundError:
             print(f"Can't find directory for downloaded images! Maybe no files were downloaded?")
 

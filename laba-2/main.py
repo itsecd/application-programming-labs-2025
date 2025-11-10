@@ -40,8 +40,8 @@ def main() -> None:
 
     print("Args for script:")
     print(f"    Colors: {args.colors}")
-    print(f"    Directory to save images: {args.output_dir}")
-    print(f"    Filepath to save CSV table: {args.annotation_path}")
+    print(f"    Directory to save images: {os.path.abspath(args.output_dir)}")
+    print(f"    Filepath to save CSV table: {os.path.abspath(args.annotation_path)}")
 
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
