@@ -2,7 +2,7 @@ import os
 import argparse
 import csv
 import random
-from icrawler.builtin import GoogleImageCrawler
+from icrawler.builtin import BingImageCrawler
 
 
 class ImageDownloader:
@@ -27,44 +27,42 @@ class ImageDownloader:
 
         print(f"Скачивание изображений в директорию:{save_dir}")
         
-        with open(annotation_file, 'w', encoding='utf-8') as csvfile:
-            writer=csv.writer(csvfile)
-            writer.writerow(['Абсолютный путь','Относительный путь', 'Ключевое слово'])
+        with open(annotation_file, 'w', encoding='utf-8', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Absolute path','Relative path', 'Keyword'])
 
-            global_downloaded_images=0
+            global_downloaded_images = 0
 
             for keyword in self.keywords:
-                images_num=random.randint(1, 50)
+                images_num = random.randint(10, 50)
 
-                print(f"Скачивание {images_num} изображений, в директорию: {save_dir}")
+                print(f"Скачивание {images_num} изображений для ключевого слова: '{keyword}'")
 
                 keyword_dir = os.path.join(save_dir, keyword.replace(' ', '_'))
                 if not os.path.exists(keyword_dir):
                     os.makedirs(keyword_dir, exist_ok=True)
 
-                crawler = GoogleImageCrawler(storage={'root_dir': keyword_dir})
+                crawler = BingImageCrawler(storage={'root_dir': keyword_dir}, downloader_threads=1, parser_threads=1, feeder_threads=1)
 
                 try:
                     crawler.crawl(keyword=keyword, max_num=images_num)
 
-                    image_extensions=['.jpg','.jpeg','.png','.gif','.bmp']
-                    downloaded_count=0
+                    image_extensions = ['.jpg','.jpeg','.png','.gif','.bmp']
+                    downloaded_count = 0
 
                     for filename in os.listdir(keyword_dir):
-                        file_path=os.path.join(keyword_dir, filename)
+                        file_path = os.path.join(keyword_dir, filename)
                         if os.path.isfile(file_path):
-                            _, file_extension=os.path.splitext(filename)
-                            file_ext=file_extension.lower
+                            _, file_extension = os.path.splitext(filename)
+                            file_ext = file_extension.lower()
 
                             if file_ext in image_extensions:
-                                abs_path=os.path.abspath(file_path)
-                                parent_dir=os.path.dirname(save_dir)
-                                rel_path=os.path.relpath(file_path, parent_dir)
-
+                                abs_path = os.path.abspath(file_path)
+                                rel_path = os.path.relpath(file_path)
+                                
                                 writer.writerow([abs_path, rel_path, keyword])
-
-                                global_downloaded_images+=1
-                                downloaded_count+=1
+                                global_downloaded_images += 1
+                                downloaded_count += 1
 
                     print(f"Успешно скачано {downloaded_count} изображений для '{keyword}'")
 
@@ -104,7 +102,9 @@ class ImagePathIterator:
                 with open(self.annotation_file, 'r', encoding='utf-8') as csvfile:
                     reader=csv.DictReader(csvfile)
                     for row in reader:
-                        self.image_paths.append(row['Абсолютный путь'])
+                        file_path = row['Absolute path']
+                        if os.path.exists(file_path):
+                            self.image_paths.append(file_path)
                 print(f"Загружено {len(self.image_paths)} путей из файла с аннотацией")
             except FileNotFoundError:
                 print(f"Ошибка: Файл не найден: {self.annotation_file}")
@@ -183,8 +183,6 @@ def main():
             if i < 5:
                 filename = os.path.basename(path)
                 print(f"{i + 1}. {filename}")
-            if i == 4:
-                break
     else:
         print("Файлы не найдены")
     
