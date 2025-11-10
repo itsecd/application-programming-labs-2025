@@ -1,9 +1,9 @@
 import requests
+
 from func import (get_args, run_downloads, print_summary)
 
 
 def main(out_dir: str, csv_out: str) -> None:
-    """Основная функция."""
     genres = ["country", "funk", "classical"]
     stats = run_downloads(out_dir, csv_out, genres)
     print_summary(csv_out, stats)
