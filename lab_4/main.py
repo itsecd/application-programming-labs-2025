@@ -11,18 +11,8 @@ def rang_calculate(path: str) -> int:
         img = cv2.imread(path)
         if img is None:
             raise ValueError(f"Не удалось загрузить изображение: {path}")
-
-        height, width, channels = img.shape
-        max_val = -1
-        min_val = 256
-
-        for i in range(height):
-            for j in range(width):
-                for k in range(3):
-                    if max_val < img[i, j, k]:
-                        max_val = img[i, j, k]
-                    if min_val > img[i, j, k]:
-                        min_val = img[i, j, k]
+        max_val = np.max(img)
+        min_val = np.min(img)
 
         return max_val - min_val
 
