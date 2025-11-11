@@ -15,6 +15,9 @@ def puller(img1: str) -> np.ndarray:
 
 
 def read_csv(filename: str) -> pd.DataFrame:
+    """
+    Считывает csv файл в DataFrame
+    """
     try:
         if(not filename.endswith(".csv")):
             filename += ".csv"
@@ -24,12 +27,18 @@ def read_csv(filename: str) -> pd.DataFrame:
 
 
 def col(df: pd.DataFrame, columns: list[str]) -> None:
+    """
+    Задает название колонкам
+    """
     if len(df.columns) != len(columns):
         raise Exception("Error")
     df.columns = columns
 
 
 def get_squares(df: pd.DataFrame)->list:
+    """
+    Считает площадь каждой картинки и возвращет имя
+    """
     res = []
     for path in df.iloc[:, 1]:
         img = puller(path)
@@ -37,21 +46,33 @@ def get_squares(df: pd.DataFrame)->list:
     return res
 
 
-def append_squares(df: pd.DataFrame, squares: list) -> None:
-    df["площадь"] = squares
+def append_squares(df: pd.DataFrame, squares: list, name:str) -> None:
+    """
+    Создает колонку с заданным названием
+    """
+    df[name] = squares
 
 
-def sort_df(df: pd.DataFrame) -> pd.DataFrame:
+def sort_df(df: pd.DataFrame, ) -> pd.DataFrame:
+    """
+    Сортировка по площади
+    """
     res = df.sort_values("площадь")
     return res
 
 
 def filter(df: pd.DataFrame, condition: bool) -> pd.DataFrame:
+    """
+    Фильтрация по заданному условию
+    """
     res = df[condition]
     return res
 
 
 def graphic(df: pd.DataFrame) -> plt.Figure:
+    """
+    Создание и вывод графика площадей
+    """
     x = np.linspace(1, len(df), len(df))
     y = df["площадь"].values
 
@@ -81,6 +102,7 @@ def save_to_csv(filename: str, df: pd.DataFrame) -> None:
         filename += '.csv'
     df.to_csv(filename)
 
+
 def main():
     parser = argparse.ArgumentParser(description="Извлечение данных из файла на основе шаблонов.")
     parser.add_argument("--csv", "-c", default = "data", type = str, help = "Считываемый csv файл")
@@ -97,7 +119,7 @@ def main():
     print(df.head())
 
     squares = get_squares(df)
-    append_squares(df, squares)
+    append_squares(df, squares, "площадь")
     print(df)
 
     df1 = sort_df(df)
