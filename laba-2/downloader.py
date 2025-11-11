@@ -1,5 +1,6 @@
 import os
 import random
+
 from icrawler.builtin import BingImageCrawler
 
 

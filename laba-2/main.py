@@ -1,7 +1,8 @@
-import annotator
 import argparse
-import downloader
 import os
+
+import annotator
+import downloader
 from iterator import ImageIterator
 
 
@@ -59,6 +60,7 @@ def main() -> None:
             annotation_path=args.annotation_path,
             absolute_paths=downloaded_paths
         )
+        print("CSV annotation created.")
         print("\nIterator demo:")
         try:
             image_iterator = ImageIterator(args.annotation_path)

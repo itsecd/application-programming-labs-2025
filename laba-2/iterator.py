@@ -23,9 +23,9 @@ class ImageIterator:
                     if row:
                         self.paths.append(row[0])
         except FileNotFoundError:
-            print(f"No CSV file by path: {self.annotation_path}")
+            raise FileNotFoundError(f"No CSV file by path: {self.annotation_path}")
         except Exception as e:
-            print(f"Error while working with CSV file: {e}")
+            raise Exception(f"Error while working with CSV file: {e}")
 
     def __iter__(self) -> Iterator:
         """

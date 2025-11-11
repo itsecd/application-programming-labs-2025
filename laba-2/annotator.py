@@ -18,6 +18,5 @@ def create_annotation(annotation_path: str, absolute_paths: list[str]) -> None:
             for path in absolute_paths:
                 relative_path = os.path.relpath(path)
                 writer.writerow([path, relative_path])
-        print("CSV annotation created.")
     except IOError as e:
-        print(f"Error occurred while creating CSV: {e}")
+        raise IOError(f"Error occurred while creating CSV: {e}")
