@@ -1,9 +1,11 @@
 import os
 import argparse
+
 import numpy as np
 import pandas as pd
 import soundfile as sf
 import matplotlib.pyplot as plt
+
 from track_iterator import TrackIterator
 
 
