@@ -1,13 +1,13 @@
+import argparse
 import sys
 import re 
 
 def fopen() -> list:
-    if len(sys.argv) < 2:
-        print("не достаточно аргументов, не хватает пути к файлу")
-        sys.exit(1)
-    a = sys.argv[1]
+    parser = argparse.ArgumentParser()
+    parser.add_argument('path', type=str)
+    arg = parser.parse_args()
     try:
-            with open(a, 'r', encoding='utf-8') as file:
+            with open(arg.path, 'r', encoding='utf-8') as file:
                 lines = file.readlines()
     except FileNotFoundError as er:
             print(er, " Неверное название файла")
