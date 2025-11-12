@@ -48,6 +48,22 @@ def extract_operator_codes(lines: List[str], pattern: str) -> List[str]:
     return operator_codes
 
 
+def count_codes(codes: List[str]) -> Dict[str, int]:
+    """
+    Подсчитывает количество вхождений каждого кода оператора.
+    
+    Args:
+        codes (List[str]): Список кодов операторов
+        
+    Returns:
+        Dict[str, int]: Словарь с кодами и их количеством
+    """
+    code_counts = {}
+    for code in codes:
+        code_counts[code] = code_counts.get(code, 0) + 1
+    return code_counts
+
+
 def main() -> None:
  
     parser = argparse.ArgumentParser()
