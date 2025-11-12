@@ -7,6 +7,8 @@ Var_12 Определите, какой код оператора чаще вс�
 import argparse
 import re
 from typing import List, Dict, Tuple, Optional
+
+
 def open_file(file_path: str) -> Optional[List[str]]:
     """
     Открывает файл и возвращает список строк.
