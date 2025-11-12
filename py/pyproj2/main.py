@@ -97,17 +97,17 @@ def parse_size_range(ranges: str) -> tuple:
     sizes = ranges.split('-')
     min_size = sizes[0].split('x')
     max_size = sizes[1].split('x')
-    min_h = int(min_size[0])
-    min_w = int(min_size[1])
-    max_h = int(max_size[0])
-    max_w = int(max_size[1])
+    min_h = int(min_size[1])
+    min_w = int(min_size[0])
+    max_h = int(max_size[1])
+    max_w = int(max_size[0])
 
     if min_h > max_h:
         raise ValueError('Минимальная высота изображения не может быть больше максимальной')
     if min_w > max_w:
         raise ValueError('Минимальная ширина изображения не может быть больше максимальной')
 
-    return (min_h, min_w), (max_h, max_w)
+    return (min_w, min_h,), (max_w, max_h)
 
 
 def main():
@@ -139,11 +139,11 @@ def main():
 
 
     except IndexError:
-        print('Ошибка в вводе --ranges')
+        print('Ошибка в вводе ranges')
     except ValueError as e:
         print(e)
     except NotADirectoryError:
-        print('Ошибка в вводе --directory')
+        print('Ошибка в вводе directory')
 
 if __name__ == "__main__":
     main()
