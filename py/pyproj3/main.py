@@ -25,14 +25,6 @@ def change_size(image: numpy.ndarray, new_size: tuple[int, int]) -> numpy.ndarra
     )
 
 
-def print_size(image: numpy.ndarray) -> None:
-    """
-    выводим ширину и высоту изображения
-    """
-    size = image.shape
-    print(f"ширина = {size[1]}, высота = {size[0]}")
-
-
 def size_format(size: str) -> tuple[int, int]:
     """
     приводим строчное обозначение размера в формат кортежа
@@ -60,7 +52,8 @@ def main():
         image = cv2.imread(args.path_in)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        print_size(image)
+        size = image.shape
+        print(f"ширина = {size[1]}, высота = {size[0]}")
 
         show_image(image)
 
