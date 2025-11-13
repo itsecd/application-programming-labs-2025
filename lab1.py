@@ -31,4 +31,11 @@ for profile in profiles:
             if 30 <= age <= 40:
                 matching_profiles.append(profile)
 
+"""Вывод результатов и сохранение в файл"""
 print(f"Количество людей возрастом от 30 до 40 лет: {len(matching_profiles)}")
+
+with open('profiles_30_40.txt', 'w', encoding='utf-8') as output_file:
+    for profile in matching_profiles:
+        output_file.write(profile + '\n\n')
+
+print("Анкеты сохранены в файл 'profiles_30_40.txt'")
