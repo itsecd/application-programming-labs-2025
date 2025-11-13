@@ -11,7 +11,6 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--output", help="Путь для сохранения результата")
     parser.add_argument("--delay", type=float, default=0.3, help="Задержка эхо в секундах")
     parser.add_argument("--decay", type=float, default=0.6, help="Коэффициент затухания")
-    parser.add_argument("--samplerate", type=int, default=44100 , help="Частота дискретизации для сохранения")
     return parser.parse_args()
 
 
@@ -22,9 +21,7 @@ def main() -> int:
 
     try:
         audio_data, file_samplerate = load_audio(args.input)
-
-    
-        samplerate = args.samplerate if args.samplerate else file_samplerate
+        samplerate =  file_samplerate
 
         delay_samples = int(args.delay * samplerate)
         echo_data = create_echo(audio_data, delay_samples, args.decay)
