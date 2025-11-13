@@ -1,105 +1,81 @@
 import argparse
-from datetime import datetime
-import re
+import os
+import csv
+
+from icrawler.builtin import BingImageCrawler
 
 
-def read_file(file_name: str) -> str:
-    """Чтение файла"""
-    try:
-        with open(file_name, "r", encoding="utf-8") as file:
-            text_file = file.read()
-            return text_file
-    except FileNotFoundError:
-        raise FileNotFoundError("Файл не найден")
-
-
-def parsing() -> str:
+def parsing() -> tuple[str, str]:
     """передача аргументов через командную строку"""
     parser = argparse.ArgumentParser()
-    parser.add_argument("file_name", type=str, help="type filename")
+    parser.add_argument("file_path", type=str)
+    parser.add_argument("annotation_path", type=str)
     args = parser.parse_args()
-    return args.file_name
+    return args.file_path, args.annotation_path
 
 
-def is_date_valid(card: str) -> bool:
-    """проверка даты на валидность"""
-    date = re.search(r"(\d{1,2})([-/.])(\d{1,2})\2(\d{4})", card)
-    if not date:
-        return False
-    day = date.group(1)
-    month = date.group(3)
-    year = date.group(4)
-    try:
-        date = datetime.strptime(f"{day}.{month}.{year}", "%d.%m.%Y")
-        if date.year < 1900:
-            return False
-        return True
-    except ValueError:
-        return False
+def download_images(filename_images: str) -> None:
+    """Скачивание картинок"""
+    if os.path.exists(filename_images) == 0:
+        os.mkdir(filename_images)
+    while len(os.listdir(filename_images)) < 50:
+        Bing_crawler = BingImageCrawler(storage={"root_dir": filename_images})
+        Bing_crawler.crawl(
+            keyword="dog",
+            filters=dict(color="gray"),
+            max_num=1000,
+        )
 
 
-def get_cards(data: str) -> dict[int, str]:
-    """запись анкет в словарь(для упрощения доступа к отдельным анкетам)"""
-    cards_dict = {}
-    cards = re.split(r"\d+\)\n", data)
-    for i in range(1, len(cards)):
-        is_valid = is_date_valid(cards[i])
-        if is_valid:
-            cards_dict[i] = cards[i]
-    return cards_dict
+def make_annotation_file(filename_annotation: str, filename_images: str) -> None:
+    """Создание и запись файла аннотации"""
+    if os.path.exists(filename_images):
+        with open(filename_annotation, mode="w", newline="", encoding="utf-8") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Absolute Path", "Relative Path"])
+            for i in os.listdir(filename_images):
+                path = os.path.join(filename_images, i)
+                path_full = os.path.abspath(path)
+                writer.writerow([path_full, path])
 
 
-def get_age(cards: dict, index: int) -> datetime:
-    """парсинг и возврат даты в формате datetime"""
-    date = re.search(r"(\d{1,2})([-/.])(\d{1,2})\2(\d{4})", cards[index])
-    day = date.group(1)
-    month = date.group(3)
-    year = date.group(4)
-    return datetime.strptime(f"{day}.{month}.{year}", "%d.%m.%Y")
+class Path_Iterator:
+    """Итератор по пути"""
 
+    def __init__(self, source: str):
+        self.items = []
+        self.counter = 0
+        if os.path.isfile(source):
+            with open(source, newline="", encoding="utf-8") as file:
+                reader = csv.reader(file)
+                next(reader)
+                for row in reader:
+                    self.items.append(row)
+        else:
+            for file in os.listdir(source):
+                path = os.path.join(source, file)
+                path_full = os.path.abspath(path)
+                self.items.append([path_full, path])
 
-def get_oldest_and_youngest(cards: dict) -> tuple[int, str, int, str]:
-    """поиск самого младшего и самого старшего человека, вывод их анкет"""
-    oldest_age = None
-    youngest_age = None
-    oldest_id = None
-    youngest_id = None
-    for i in cards:
-        age = get_age(cards, i)
-        if i == 1:
-            oldest_age = age
-            youngest_age = age
-            oldest_id = i
-            youngest_id = i
-        if oldest_age > age:
-            oldest_age = age
-            oldest_id = i
-        if youngest_age < age:
-            youngest_age = age
-            youngest_id = i
-    oldest = datetime.now().year - oldest_age.year
-    if (datetime.now().month, datetime.now().day) < (oldest_age.month, oldest_age.day):
-        oldest -= 1
-    youngest = datetime.now().year - youngest_age.year
-    if (datetime.now().month, datetime.now().day) < (
-        youngest_age.month,
-        youngest_age.day,
-    ):
-        youngest -= 1
-    
-    return oldest, oldest_id, youngest, youngest_id
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.counter < len(self.items):
+            path = self.items[self.counter]
+            self.counter += 1
+            return path
+        else:
+            raise StopIteration
 
 
 def main():
     try:
-        file_name = parsing()
-        data = read_file(file_name)
-        cards = get_cards(data)
-        oldest, oldest_id, youngest, youngest_id = get_oldest_and_youngest(cards)
-        print(f"Самый старый человек: \nВозраст: {oldest} \nАнкета: \n{cards[oldest_id]}")
-        print(
-            f"Самый молодой человек: \nВозраст: {youngest} \nАнкета: \n{cards[youngest_id]}"
-        )
+        filename_images, filename_annotation = parsing()
+        download_images(filename_images)
+        make_annotation_file(filename_annotation, filename_images)
+        for path in Path_Iterator(filename_annotation):
+            print(path)
     except Exception as ex:
         print("Ошибка: ", ex)
 
