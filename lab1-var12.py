@@ -3,7 +3,6 @@ from collections import Counter
 import re
 
 
-
 def student_name() -> None:
     """Вывод информации о студенте"""
     print("Студент: Илья Магров Сергеевич\nГруппа: 6214-100503D\nВариант: 12\n")
