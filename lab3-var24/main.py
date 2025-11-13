@@ -20,9 +20,8 @@ def main() -> int:
     args = parse_arguments()
 
     try:
-        audio_data, file_samplerate = load_audio(args.input)
-        samplerate =  file_samplerate
-
+        audio_data, samplerate = load_audio(args.input)
+        
         delay_samples = int(args.delay * samplerate)
         echo_data = create_echo(audio_data, delay_samples, args.decay)
 
@@ -30,11 +29,9 @@ def main() -> int:
 
         save_audio(echo_data, args.output, samplerate)
 
-        
     except Exception as e:
         print(f"Ошибка при выполнении программы: {e}")
         
-
 
 if __name__ == "__main__":
     main()
