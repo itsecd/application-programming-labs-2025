@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-def binarize_image(image: np.ndarray, threshold: int):
+def binarize_image(image: np.ndarray, threshold: int) -> np.ndarray:
     """
     Convert image to binary type and returns it.
     :param image: Image to be processed.

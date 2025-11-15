@@ -1,4 +1,5 @@
 import argparse
+from argparse import ArgumentTypeError
 
 from binarizer import binarize_image
 from image_handler import read_image, save_image
@@ -9,7 +10,7 @@ def parse_arguments() -> argparse.Namespace:
     """
     Adds and parses command-line arguments.
     """
-    parser = argparse.ArgumentParser(description="Web scraper for downloading snake images by color.")
+    parser = argparse.ArgumentParser(description="Tool to convert image to a binary version of itself.")
     parser.add_argument(
         '--input_path',
         '-i',
@@ -19,17 +20,29 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         '--output_path',
         '-o',
-        required=True,
         help='Filepath to save the processed image.'
     )
     parser.add_argument(
         '--threshold',
         '-t',
-        type=int,
+        type=check_threshold_range,
         default=127,
         help='Threshold for binarization (0-255). Default 127.'
     )
     return parser.parse_args()
+
+
+def check_threshold_range(arg: str) -> int:
+    """
+    Checks if value in valid range.
+    """
+    try:
+        value = int(arg)
+        if not (0 <= value <= 255):
+            raise ArgumentTypeError(f"Invalid threshold value: {value}. Must be between 0 and 255.")
+        return value
+    except ValueError:
+        raise ArgumentTypeError(f"Threshold value weren't able convert to integer, value: {arg}")
 
 
 def main() -> None:
@@ -49,8 +62,10 @@ def main() -> None:
 
         print(f"Resolution of original image: {original_image.shape}")
 
-        save_image(args.output_path, binary_image)
-        print(f"Image saved successfully to '{args.output_path}'")
+        if args.output_path:
+            save_image(args.output_path, binary_image)
+            print(f"Image saved successfully to '{args.output_path}'")
+
         display_images(original_image, binary_image)
 
     except Exception as e:

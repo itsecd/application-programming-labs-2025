@@ -1,11 +1,11 @@
-import matplotlib.pyplot as plt
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 
 
 def display_images(original_image: np.ndarray, binary_image: np.ndarray) -> None:
     """
-    SDisplay images with help of Matplotlib.
+    Display images with help of Matplotlib.
     :param original_image: Original image.
     :param binary_image: Binary Image.
     """
