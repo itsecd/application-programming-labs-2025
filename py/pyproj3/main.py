@@ -25,14 +25,6 @@ def change_size(image: numpy.ndarray, new_size: tuple[int, int]) -> numpy.ndarra
     )
 
 
-def print_size(image: numpy.ndarray) -> None:
-    """
-    выводим ширину и высоту изображения
-    """
-    size = image.shape
-    print(f"ширина = {size[1]}, высота = {size[0]}")
-
-
 def size_format(size: str) -> tuple[int, int]:
     """
     приводим строчное обозначение размера в формат кортежа
@@ -55,20 +47,23 @@ def main():
 
         args = parser.parse_args()
 
-        size = size_format(args.size)
+        new_size = size_format(args.size)
 
         image = cv2.imread(args.path_in)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        print_size(image)
+        size = image.shape
+        print(f"ширина = {size[1]}, высота = {size[0]}")
 
         show_image(image)
 
-        resized_image = change_size(image, size)
+        resized_image = change_size(image, new_size)
 
         show_image(resized_image)
 
         cv2.imwrite(args.path_out, resized_image)
+
+
 
     except cv2.error as e:
         print(e)
