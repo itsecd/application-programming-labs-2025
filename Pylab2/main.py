@@ -1,12 +1,18 @@
 import argparse
 import os
+
 from config import NATURE_SOUNDS_URL
-from web_scraper import fetch_nature_sounds
 from file_utils import download_sounds
 from iterator import AudioFileIterator
+from web_scraper import fetch_nature_sounds
 
 
 def parse_args():
+    """Parse command line arguments for the Mixkit nature sounds downloader.
+    
+    Returns:
+        argparse.Namespace: Parsed command line arguments
+    """
     parser = argparse.ArgumentParser(
         description="Mixkit nature sounds downloader"
     )
@@ -29,7 +35,7 @@ def parse_args():
     parser.add_argument(
         "--max_files",
         type=int,
-        default=1000,
+        default=100,
         help="Maximum number of files"
     )
 
@@ -37,6 +43,7 @@ def parse_args():
 
 
 def main():
+    """Main function to orchestrate the nature sounds downloading process."""
     args = parse_args()
 
     print("Downloading nature sounds from Mixkit.co")
@@ -44,13 +51,18 @@ def main():
     print(f"Annotation: {args.csv}")
     print(f"Target: from {args.min_files} to {args.max_files} files")
 
+    # Check for existing files
     existing_files = []
     if os.path.exists(args.folder):
-        existing_files = [f for f in os.listdir(args.folder) if f.endswith('.mp3')]
+        existing_files = [
+            f for f in os.listdir(args.folder) 
+            if f.endswith('.mp3')
+        ]
         print(f"Found {len(existing_files)} existing files")
 
     print("\nSearching for nature sounds...")
     
+    # Define categories to search
     categories = [
         "https://mixkit.co/free-sound-effects/nature/",
         "https://mixkit.co/free-sound-effects/forest/", 
@@ -59,10 +71,12 @@ def main():
         "https://mixkit.co/free-sound-effects/birds/"
     ]
     
+    # Collect sounds from all categories
     all_sounds = []
     for category_url in categories:
         print(f"\nParsing category: {category_url}")
-        sounds = fetch_nature_sounds(category_url, args.max_files - len(all_sounds))
+        remaining_slots = args.max_files - len(all_sounds)
+        sounds = fetch_nature_sounds(category_url, remaining_slots)
         all_sounds.extend(sounds)
         
         if len(all_sounds) >= args.max_files:
@@ -75,8 +89,10 @@ def main():
 
     print(f"\nTotal sounds found: {len(all_sounds)}")
 
+    # Download sounds and create annotation
     downloaded_count = download_sounds(all_sounds, args.folder, args.csv)
     
+    # Print download results
     print(f"\nDownload results:")
     print(f"Successfully downloaded: {downloaded_count} files")
     print(f"Skipped: {len(all_sounds) - downloaded_count} files")
@@ -87,6 +103,7 @@ def main():
     else:
         print(f"Success! Downloaded {downloaded_count} files")
 
+    # Demonstrate iterator functionality if files were downloaded
     if downloaded_count > 0:
         print("\n" + "=" * 50)
         print("ITERATOR DEMONSTRATION")
