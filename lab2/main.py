@@ -12,52 +12,50 @@ from typing import List, Tuple
 from icrawler.builtin import GoogleImageCrawler
 
 
-class ImageDownloadManager:
-    """Управляет загрузкой изображений."""
-    
-    IMG_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff'}
-    
-    def download_images(self, keyword: str, output_dir: Path, 
-                       date_range: Tuple[Tuple[int, int, int], Tuple[int, int, int]], 
-                       max_num: int) -> bool:
-        """Загружает изображения для указанного диапазона дат."""
-        try:
-            output_dir.mkdir(parents=True, exist_ok=True)
-            crawler = GoogleImageCrawler(storage={'root_dir': str(output_dir)})
-            
-            # Пытаемся использовать фильтрацию по датам
-            try:
-                crawler.crawl(keyword=keyword, filters={'date': date_range}, max_num=max_num)
-                print(f"Успешная загрузка с фильтрацией по датам: {date_range}")
-            except Exception:
-                # Если фильтрация не работает - загружаем без фильтра
-                crawler.crawl(keyword=keyword, max_num=max_num)
-                print(f"Загружены изображения без фильтрации по датам")
-            
-            return True
-        except Exception as e:
-            print(f"Ошибка при загрузке: {e}")
-            return False
-    
+IMG_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff'}
+
+
+def download_images(keyword: str, output_dir: Path, 
+                   date_range: Tuple[Tuple[int, int, int], Tuple[int, int, int]], 
+                   max_num: int) -> bool:
+    """Загружает изображения для указанного диапазона дат."""
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        crawler = GoogleImageCrawler(storage={'root_dir': str(output_dir)})
         
-    def create_annotation(self, root_dir: Path, csv_path: Path) -> bool:
-        """Создает CSV-аннотацию с путями к файлам."""
+        # Пытаемся использовать фильтрацию по датам
         try:
-            root_dir = root_dir.resolve()
-            csv_path.parent.mkdir(parents=True, exist_ok=True)
-            
-            with csv_path.open('w', newline='', encoding='utf-8') as file:
-                writer = csv.writer(file, delimiter=';')
-                writer.writerow(['Абсолютный путь', 'Относительный путь'])
-                
-                for file_path in root_dir.rglob('*'):
-                    if file_path.is_file() and file_path.suffix.lower() in self.IMG_EXTENSIONS:
-                        abs_path = file_path.resolve()
-                        rel_path = abs_path.relative_to(root_dir)
-                        writer.writerow([str(abs_path), str(rel_path)])
-            return True
+            crawler.crawl(keyword=keyword, filters={'date': date_range}, max_num=max_num)
+            print(f"Успешная загрузка с фильтрацией по датам: {date_range}")
         except Exception:
-            return False
+            # Если фильтрация не работает - загружаем без фильтра
+            crawler.crawl(keyword=keyword, max_num=max_num)
+            print(f"Загружены изображения без фильтрации по датам")
+        
+        return True
+    except Exception as e:
+        print(f"Ошибка при загрузке: {e}")
+        return False
+
+
+def create_annotation(root_dir: Path, csv_path: Path) -> bool:
+    """Создает CSV-аннотацию с путями к файлам."""
+    try:
+        root_dir = root_dir.resolve()
+        csv_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        with csv_path.open('w', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file, delimiter=';')
+            writer.writerow(['Абсолютный путь', 'Относительный путь'])
+            
+            for file_path in root_dir.rglob('*'):
+                if file_path.is_file() and file_path.suffix.lower() in IMG_EXTENSIONS:
+                    abs_path = file_path.resolve()
+                    rel_path = abs_path.relative_to(root_dir)
+                    writer.writerow([str(abs_path), str(rel_path)])
+        return True
+    except Exception:
+        return False
 
 
 class ImagePathIterator:
@@ -93,7 +91,7 @@ class ImagePathIterator:
             base_dir = base_dir.resolve()
             for file_path in source_path.rglob('*'):
                 if (file_path.is_file() and 
-                    file_path.suffix.lower() in ImageDownloadManager.IMG_EXTENSIONS):
+                    file_path.suffix.lower() in IMG_EXTENSIONS):
                     abs_path = file_path.resolve()
                     rel_path = abs_path.relative_to(base_dir)
                     self._items.append([str(abs_path), str(rel_path)])
@@ -141,7 +139,6 @@ def main() -> None:
         if not validate_arguments(args):
             sys.exit(1)
         
-        download_manager = ImageDownloadManager()
         output_dir = Path(args.output_dir)
         
         # Загрузка изображений для каждого диапазона
@@ -149,7 +146,7 @@ def main() -> None:
             date_range = parse_date_range(date_range_str)
             range_dir = output_dir / f"range_{i}"
             
-            success = download_manager.download_images(
+            success = download_images(  
                 keyword=args.keyword,
                 output_dir=range_dir,
                 date_range=date_range,
@@ -161,7 +158,7 @@ def main() -> None:
         
         # Создание аннотации
         csv_path = Path(args.annotation_file)
-        if not download_manager.create_annotation(output_dir, csv_path):
+        if not create_annotation(output_dir, csv_path):
             print("Ошибка: не удалось создать аннотацию", file=sys.stderr)
             sys.exit(1)
         
