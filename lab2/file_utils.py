@@ -1,9 +1,9 @@
 import csv
-from config import HEADERS
 import os
 import re
 import requests
 from typing import List, Dict
+from config import HEADERS
 
 
 def good_filename(name: str) -> str:
