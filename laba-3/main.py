@@ -53,7 +53,8 @@ def main() -> None:
 
     print("Args for script:")
     print(f"    Filepath to the original image: '{args.input_path}'")
-    print(f"    Filepath to save the processed image: '{args.output_path}'")
+    if args.output_path:
+        print(f"    Filepath to save the processed image: '{args.output_path}'")
     print(f"    Threshold for binarization: {args.threshold}")
 
     try:
