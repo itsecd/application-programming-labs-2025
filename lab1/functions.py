@@ -4,7 +4,9 @@ from typing import List, Dict, Tuple, Optional
 
 
 def read_file(file_path: str) -> str:
-    # Читает содержимое файла.
+    """
+    Читает содержимое файла.
+    """
     try:
         with open(file_path, "r", encoding="utf-8") as file:
             return file.read()
@@ -15,7 +17,9 @@ def read_file(file_path: str) -> str:
 
 
 def parse_profiles(text: str) -> List[Dict[str, str]]:
-    # Парсит текст и извлекает данные анкет.
+    """ 
+    Парсит текст и извлекает данные анкет. 
+    """
     pattern = (
         r"(?:^\s*(\d+)\)\s*[\r\n]+)?"
         r"Фамилия:\s*(.+?)\s*[\r\n]+"
@@ -48,7 +52,9 @@ def parse_profiles(text: str) -> List[Dict[str, str]]:
 
 
 def is_valid_date(date_str: str) -> bool:
-    # Проверка корректности даты рождения.
+    """
+    Проверка корректности даты рождения. 
+    """
     pattern = r"^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$"
     m = re.match(pattern, date_str.strip())
     if not m:
@@ -67,7 +73,9 @@ def is_valid_date(date_str: str) -> bool:
 
 
 def parse_date(date_str: str) -> datetime:
-    # Преобразует строку с датой в объект datetime.
+    """
+    Преобразует строку с датой в объект datetime. 
+    """
     if not is_valid_date(date_str):
         raise ValueError(f"Формат даты неверный {date_str}")
 
@@ -77,7 +85,9 @@ def parse_date(date_str: str) -> datetime:
 
 
 def calculate_age(birthdate: datetime) -> int:
-    # Считает возраст (его вывод будет в конце анкеты).
+    """
+    Считает возраст (его вывод будет в конце анкеты). 
+    """
     today = datetime.today()
     age = today.year - birthdate.year
     if (today.month, today.day) < (birthdate.month, birthdate.day):
@@ -86,7 +96,9 @@ def calculate_age(birthdate: datetime) -> int:
 
 
 def find_oldest_and_youngest(profiles: List[Dict[str, str]]) -> Tuple[Dict, Dict]:
-    # Ищет самого старого и самого молодого человека.
+    """
+    Ищет самого старого и самого молодого человека. 
+    """
     if not profiles:
         raise ValueError("Пустой список анкет")
 
@@ -109,7 +121,9 @@ def find_oldest_and_youngest(profiles: List[Dict[str, str]]) -> Tuple[Dict, Dict
 
 
 def format_profile(profile: Dict) -> str:
-    # Форматирование.
+    """ 
+    Форматирование. 
+    """
     number = profile.get("number")
     header = f"Номер анкеты: {number}\n" if number is not None else ""
     return (
