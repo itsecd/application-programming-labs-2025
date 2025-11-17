@@ -51,7 +51,7 @@ def count_samples_ratio(audio_path: str, min_amplitude: float) -> float:
         Отношение сэмплов выше порога к общему количеству сэмплов
     """
     try:
-        # Используем sf.read напрямую - это работает с MP3
+        # Использую sf.read напрямую, так как with open не будет работать с MP3 (точнее будет, но некоторые файлы не сможет обработать)
         audio, samplerate = sf.read(audio_path)
         samples = np.where(np.abs(audio.flatten()) > min_amplitude)[0]
         return float(len(samples) / np.prod(audio.shape))
