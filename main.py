@@ -1,8 +1,10 @@
 import argparse
 import os
 from datetime import datetime
-from downloader import ImageDownloader
+
 from annotation_manager import AnnotationManager, ImageIterator
+from downloader import ImageDownloader
+
 
 def main():
     """
@@ -10,11 +12,17 @@ def main():
     Организует весь процесс: скачивание -> создание аннотации -> тестирование.
     """
     try:
-        parser = argparse.ArgumentParser(description='Скачивание изображений обезьян за текущий год')
-        parser.add_argument('--folder', type=str, required=True, 
-                          help='Папка для сохранения изображений')
-        parser.add_argument('--annotation', type=str, required=True,
-                          help='CSV файл для сохранения аннотаций')
+        parser = argparse.ArgumentParser(
+            description='Скачивание изображений обезьян за текущий год'
+        )
+        parser.add_argument(
+            '--folder', type=str, required=True,
+            help='Папка для сохранения изображений'
+        )
+        parser.add_argument(
+            '--annotation', type=str, required=True,
+            help='CSV файл для сохранения аннотаций'
+        )
         args = parser.parse_args()
 
         # Определяем текущий год для информационных сообщений
@@ -60,9 +68,9 @@ def main():
         print("\nРабота программы завершена!")
 
     except KeyboardInterrupt:
-        print("\n Программа прервана пользователем")
+        print("\nПрограмма прервана пользователем")
     except Exception as e:
-        print(f"\n Критическая ошибка: {e}")
+        print(f"\nКритическая ошибка: {e}")
 
 
 if __name__ == '__main__':
