@@ -7,34 +7,25 @@ def parse_ankets(file_path: str) -> list:
     Читает анкеты из файла.
     """
     ankets = []
-    current_anket = {}
-    field_names = [
-        "last_name", "first_name", "middle_name",
-        "birth_date", "email", "city"
-    ]
-    field_count = 0
-
+    
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
-            for line in file:
-                line = line.strip()
+            lines = [line.strip() for line in file if line.strip()]
 
-                if not line and current_anket:
-                    if field_count == 6:
-                        ankets.append(current_anket)
-                    current_anket = {}
-                    field_count = 0
-                    continue
+        i = 0
+        while i + 6 < len(lines):
+            ankets.append({
+                "Фамилия":   lines[i + 1],
+                "Имя":  lines[i + 2],
+                "Пол": lines[i + 3],
+                "Дата рождения":  lines[i + 4],
+                "email":       lines[i + 5],
+                "Город":        lines[i + 6]
+            })
+            i += 7
 
-                if line:
-                    if field_count == 0:
-                        current_anket = {field_names[0]: line}
-                    elif field_count < 6:
-                        current_anket[field_names[field_count]] = line
-                    field_count += 1
-
-        if current_anket and field_count == 6:
-            ankets.append(current_anket)
+        if not ankets:
+            print("Анкеты не найдены.")
 
     except FileNotFoundError:
         print(f"Ошибка: Файл {file_path} не найден")
@@ -48,8 +39,8 @@ def check_email(contact: str) -> str:
     Проверяет, похожа ли строка на email.
     """
     pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|ru|org|net)$"
-    if re.match(pattern, contact):
-        return contact
+    if re.match(pattern, contact.strip()):
+        return contact.strip()
     else:
         raise ValueError("Неверный email")
 
