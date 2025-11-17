@@ -1,22 +1,37 @@
+# main.py
 import pandas as pd
 import os
 import sys
+from pandas import DataFrame
 from image_processor import calculate_brightness_range
 from dataframe_operations import sort_by_brightness_range, filter_by_brightness_range
 from plot_generator import create_brightness_plot
 
 
-def load_and_process_data(input_file):
+def load_and_process_data(input_file: str) -> DataFrame | None:
     """Загружает и обрабатывает данные из CSV файла."""
     if not os.path.exists(input_file):
-        print(f"Ошибка: Файл {input_file} не найден!")
-        sys.exit(1)
+        return None
     
     df = pd.read_csv(input_file)
     return df
 
 
-def print_dataframe_info(df, title):
+def add_brightness_range_column(df: DataFrame) -> DataFrame:
+    """Добавляет колонку с диапазоном яркости и удаляет строки с ошибками."""
+    df['brightness_range'] = df['absolute_path'].apply(calculate_brightness_range)
+    
+    initial_count = len(df)
+    df = df.dropna(subset=['brightness_range'])
+    final_count = len(df)
+    
+    if initial_count != final_count:
+        print(f"Предупреждение: {initial_count - final_count} изображений не удалось обработать")
+    
+    return df
+
+
+def print_dataframe_info(df: DataFrame, title: str) -> None:
     """Выводит информацию о DataFrame."""
     print("=" * 60)
     print(title)
@@ -27,7 +42,7 @@ def print_dataframe_info(df, title):
     print(f"Колонки: {list(df.columns)}")
 
 
-def main():
+def main() -> None:
     if len(sys.argv) != 2:
         print("Использование: python main.py <input_csv_file>")
         print("Пример: python main.py annotation.csv")
@@ -37,6 +52,10 @@ def main():
     
     # 1. Загрузка данных и формирование DataFrame
     df = load_and_process_data(input_file)
+    if df is None:
+        print(f"Ошибка: Файл {input_file} не найден!")
+        sys.exit(1)
+    
     print_dataframe_info(df, "1. ЗАГРУЗКА ДАННЫХ И ФОРМИРОВАНИЕ DATAFRAME")
     
     # 2. Информация о колонках
@@ -53,14 +72,7 @@ def main():
     print("=" * 60)
     
     print("Вычисление диапазона яркости для изображений...")
-    df['brightness_range'] = df['absolute_path'].apply(calculate_brightness_range)
-    
-    initial_count = len(df)
-    df = df.dropna(subset=['brightness_range'])
-    final_count = len(df)
-    
-    if initial_count != final_count:
-        print(f"Предупреждение: {initial_count - final_count} изображений не удалось обработать")
+    df = add_brightness_range_column(df)
     
     print("\nDataFrame с новой колонкой:")
     print(df.head(10))

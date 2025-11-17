@@ -1,8 +1,8 @@
-import numpy as np
 from PIL import Image
+import numpy as np
 
 
-def calculate_brightness_range(image_path):
+def calculate_brightness_range(image_path: str) -> float | None:
     """Вычисляет диапазон яркости изображения (max-min) по всем каналам."""
     try:
         img = Image.open(image_path)
@@ -10,5 +10,4 @@ def calculate_brightness_range(image_path):
         brightness_range = img_array.max() - img_array.min()
         return brightness_range
     except Exception as e:
-        print(f"Ошибка при обработке {image_path}: {e}")
         return None

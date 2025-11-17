@@ -1,7 +1,11 @@
 import matplotlib.pyplot as plt
+from pandas import DataFrame
 
 
-def create_brightness_plot(sorted_df, output_filename='brightness_range_sorted_plot.png'):
+def create_brightness_plot(
+    sorted_df: DataFrame, 
+    output_filename: str = 'brightness_range_sorted_plot.png'
+) -> str:
     """Создает график зависимости яркости от порядка в отсортированном списке."""
     plt.figure(figsize=(14, 8))
     
