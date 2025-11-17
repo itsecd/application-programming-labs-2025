@@ -1,10 +1,12 @@
 """Модуль для обработки аудиоданных и создания DataFrame."""
-import pandas as pd
-import numpy as np
 from pathlib import Path
-import librosa
 import warnings
 from typing import List, Dict, Optional
+
+import pandas as pd
+import numpy as np
+import librosa
+
 import config
 
 warnings.filterwarnings('ignore')
@@ -29,7 +31,6 @@ class AudioProcessor:
             return df
             
         except Exception as e:
-            print(f"Ошибка при загрузке аннотации: {e}")
             raise
     
     def analyze_audio_file(self, file_path: Path) -> Optional[Dict[str, float]]:
@@ -57,7 +58,6 @@ class AudioProcessor:
             }
             
         except Exception as e:
-            print(f"Ошибка анализа файла {file_path.name}: {e}")
             return None
     
     def extract_instrument_from_filename(self, filename: str) -> str:
@@ -135,7 +135,6 @@ class AudioProcessor:
             return df
             
         except Exception as e:
-            print(f"Ошибка при добавлении колонки диапазонов: {e}")
             return df
     
     def sort_by_amplitude_range(self, df: pd.DataFrame, ascending: bool = True) -> pd.DataFrame:
@@ -152,17 +151,15 @@ class AudioProcessor:
             annotation_df = self.load_annotation_data()
             
             if annotation_df.empty:
-                print("Аннотация пуста или не загружена")
                 return
             
             self.df = self.create_audio_dataframe()
             
             if self.df.empty:
-                print("Не удалось создать DataFrame")
                 return
             
             self.df = self.add_amplitude_range_bins(self.df)
             
         except Exception as e:
-            print(f"Ошибка при обработке аудиоданных: {e}")
+
             raise
