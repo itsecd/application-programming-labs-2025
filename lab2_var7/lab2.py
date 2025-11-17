@@ -26,11 +26,10 @@ def download_colored_snakes(colors: list[str], total_count: int, output_dir: str
     for color, count in zip(colors, counts):
         print(f"  {color}: {count}")
     
-
+    crawler = BingImageCrawler(storage={'root_dir': output_dir})
+    
     for color, count in zip(colors, counts):
         print(f"Скачиваем {count} изображений цвета '{color}'...")
-        
-        crawler = BingImageCrawler(storage={'root_dir': output_dir})
         crawler.crawl(keyword=f"snake {color}", max_num=count)
 
 
@@ -53,6 +52,33 @@ def create_annotation(output_dir: str, annotation_file: str) -> None:
     print(f"Создан файл аннотации: {annotation_file} ({len(image_paths)} записей)")
 
 
+class ImageIterator:
+    """Итератор по путям к файлам из CSV аннотации"""
+    
+    def __init__(self, annotation_file: str):
+        self.annotation_file = annotation_file
+        self.data = []
+        self.index = 0
+
+    def __iter__(self):
+        # Загружаем данные при начале итерации
+        if os.path.exists(self.annotation_file):
+            with open(self.annotation_file, 'r', encoding='utf-8-sig') as file:
+                reader = csv.reader(file)
+                next(reader)  # пропускаем заголовок
+                self.data = [row for row in reader]
+        self.index = 0
+        return self
+
+    def __next__(self):
+        if self.index < len(self.data):
+            result = self.data[self.index]
+            self.index += 1
+            return result
+        else:
+            raise StopIteration
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='Скачивание изображений змей по цветам')
     parser.add_argument('-c', '--colors', nargs='+', required=True,
@@ -69,6 +95,13 @@ def main() -> None:
     try:
         download_colored_snakes(args.colors, args.total_count, args.output_dir)
         create_annotation(args.output_dir, args.annotation)
+
+        print("\nДемонстрация итератора:")
+        iterator = ImageIterator(args.annotation)
+        
+        for i, (abs_path, rel_path) in enumerate(iterator):
+            print(f"  {i+1}. {os.path.basename(rel_path)}")
+            
         print("Готово! Все изображения скачаны.")
     except Exception as e:
         print(f"Произошла ошибка: {e}")
