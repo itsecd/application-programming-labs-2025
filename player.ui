@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>526</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>FxntmPlayer</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: #1F1A38;</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QPushButton" name="Play_button">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>410</y>
+      <width>50</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #DD99BB;
+    color: white;
+    border-radius: 25px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #7B506F;
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>Assets/play-1003-svgrepo-com.svg</normaloff>Assets/play-1003-svgrepo-com.svg</iconset>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="NextTrack_button">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>410</y>
+      <width>50</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #DD99BB;
+    color: white;
+    border-radius: 25px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #7B506F;
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>Assets/103453_chapter_controls_next_icon.svg</normaloff>Assets/103453_chapter_controls_next_icon.svg</iconset>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PrevTrack_button">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>410</y>
+      <width>50</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #DD99BB;
+    color: white;
+    border-radius: 25px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #7B506F;
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>Assets/103454_chapter_controls_previous_icon.svg</normaloff>Assets/103454_chapter_controls_previous_icon.svg</iconset>
+    </property>
+   </widget>
+   <widget class="QLabel" name="MusicName_label">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>260</y>
+      <width>321</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Tw Cen MT Condensed Extra Bold</family>
+      <pointsize>14</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 14pt &quot;Tw Cen MT Condensed Extra Bold&quot;;
+color: white;
+</string>
+    </property>
+    <property name="text">
+     <string>Music track</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="Stop_button">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>350</y>
+      <width>50</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #DD99BB;
+    color: white;
+    border-radius: 25px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #7B506F;
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>Assets/9035124_stop_icon.svg</normaloff>
+      <normalon>Assets/stop-svgrepo-com.svg</normalon>Assets/9035124_stop_icon.svg</iconset>
+    </property>
+   </widget>
+   <widget class="QLabel" name="AlbumCoverLabel">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>50</y>
+      <width>200</width>
+      <height>200</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: white;
+border-radius: 15;</string>
+    </property>
+    <property name="text">
+     <string>Album Cover here</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="TimerLabel">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>290</y>
+      <width>101</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: white;</string>
+    </property>
+    <property name="text">
+     <string>Timer</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="addButton">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: #DD99BB;
+border-radius: 10;</string>
+    </property>
+    <property name="text">
+     <string>Добавить</string>
+    </property>
+   </widget>
+   <widget class="QSlider" name="soundSlider">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>350</y>
+      <width>20</width>
+      <height>111</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QSlider::groove:vertical {
+    background: #DD99BB;
+    border: 1px solid #ff9ac9;
+    width: 8px;
+    margin: 0px;
+    border-radius: 4px;
+}
+
+QSlider::handle:vertical {
+    background: white;
+    border: 2px solid #e8e8e8;
+    height: 16px;
+    width: 16px;
+    margin: 0px -4px;
+    border-radius: 8px;
+}
+
+QSlider::handle:vertical:hover {
+    background: #f5f5f5;
+    border: 2px solid #d0d0d0;
+}
+
+QSlider::handle:vertical:pressed {
+    background: #eeeeee;
+    border: 2px solid #c0c0c0;
+}
+
+QSlider::sub-page:vertical {
+    background: #DD99BB;
+    border-radius: 4px;
+}
+
+QSlider::add-page:vertical {
+    background: #ffb6d9;
+    border-radius: 4px;
+}</string>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="volume_Label">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>310</y>
+      <width>21</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: white;</string>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QSlider" name="music_Slider">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>310</y>
+      <width>261</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QSlider::groove:horizontal {
+    height: 12px;
+    background: #eaeaea;
+    border-radius: 6px;
+}
+
+QSlider::sub-page:horizontal {
+    background: #e88db5;
+    border-radius: 6px;
+}
+
+QSlider::handle:horizontal {
+    background: white;
+    border: 1px solid #e88db5;
+    width: 8px;
+    height: 16px;
+    margin: -2px 0;
+    border-radius: 4px;
+}
+
+QSlider {
+    padding: 0px;
+}</string>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
