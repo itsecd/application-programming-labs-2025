@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import pandas as pd
 
+BRIGHTNESS_LABELS = ["0-31", "32-63", "64-95", "96-127", "128-159", "160-191", "192-223", "224-255"]
+
 
 def get_image_brightness(absolute_path: str) -> float:
     """
@@ -37,7 +39,15 @@ def load_and_enrich_data(annotation_path: str) -> pd.DataFrame:
 
     # right=False -> [0,32), ...
     bins = [0, 32, 64, 96, 128, 160, 192, 224, 256]
-    lab = ["0-31", "32-63", "64-95", "96-127", "128-159", "160-191", "192-223", "224-255"]
-    df['brightness_range'] = pd.cut(df['brightness'], bins=bins, labels=lab, right=False)
+    df['brightness_range'] = pd.cut(df['brightness'], bins=bins, labels=BRIGHTNESS_LABELS, right=False)
 
     return df
+
+
+def save_data(df_to_save: pd.DataFrame, output_csv_path: str) -> None:
+    """
+    Saves DataFrame to a CSV.
+    :param df_to_save: DataFrame to save.
+    :param output_csv_path: Filepath to save the DataFrame in CSV.
+    """
+    df_to_save.to_csv(output_csv_path, index=False)
