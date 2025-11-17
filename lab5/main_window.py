@@ -1,12 +1,14 @@
-import sys
-import os
 import csv
+import os
+import sys
 from pathlib import Path
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QMessageBox)
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QMessageBox)
 
-#Импортирую image_iterator
+from ui_main_window import Ui_MainWindow
+
 try:
     from image_iterator import ImageIterator
     HAS_ITERATOR = True
@@ -15,14 +17,12 @@ except ImportError:
     HAS_ITERATOR = False
     print("ImageIterator не найден, используется режим совместимости")
 
-# Импортирую сгенерированный интерфейс
-from ui_main_window import Ui_MainWindow
 
 class ImageViewer(QMainWindow):
     def __init__(self):
         super().__init__()
         
-        # Загружаю интерфейс из .ui файла
+        
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         
@@ -60,18 +60,16 @@ class ImageViewer(QMainWindow):
     
     def select_source(self):
         """Выбор источника данных"""
-        choice = QMessageBox.question(
-            self,
+        choice = QMessageBox.question(self,
             "Выбор источника",
             "Выберите тип источника данных:\n\n"
-            "Да - CSV файл аннотации\n"
-            "Нет - Папка с изображениями",
-            QMessageBox.Yes | QMessageBox.No
+            "ONE - CSV файл аннотации\n"
+            "TWO - Папка с изображениями",
+            QMessageBox.ONE | QMessageBox.TWO
         )
         
-        if choice == QMessageBox.Yes:
-            file_path, _ = QFileDialog.getOpenFileName(
-                self,
+        if choice == QMessageBox.ONE:
+            file_path, _ = QFileDialog.getOpenFileName(self,
                 "Выберите CSV файл аннотации",
                 "",
                 "CSV Files (*.csv)"
@@ -79,7 +77,7 @@ class ImageViewer(QMainWindow):
             if file_path:
                 self.load_csv_source(file_path)
                 
-        elif choice == QMessageBox.No:
+        elif choice == QMessageBox.TWO:
             folder_path = QFileDialog.getExistingDirectory(
                 self,
                 "Выберите папку с изображениями"

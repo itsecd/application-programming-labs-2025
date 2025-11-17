@@ -56,12 +56,6 @@ class Ui_MainWindow(object):
         self.label.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setText("")
-        
-        pixmap = QtGui.QPixmap("../../../Users/Настя/Desktop/bears/additional/000012.jpg")
-        if not pixmap.isNull():
-            scaled_pixmap = pixmap.scaled(self.label.size(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
-            self.label.setPixmap(scaled_pixmap)
-        
         self.label.setScaledContents(False)  
         self.label.setObjectName("label")
         self.horizontalLayout.addWidget(self.label)
