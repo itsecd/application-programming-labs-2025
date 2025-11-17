@@ -1,8 +1,10 @@
 """Модуль для генерации графиков."""
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
 import config
 
 
@@ -30,7 +32,6 @@ class PlotGenerator:
             plt.close()
             
         except Exception as e:
-            print(f"Ошибка при создании гистограммы: {e}")
             raise
     
     def create_sorted_amplitude_plot(self, df: pd.DataFrame, output_file: Path) -> None:
@@ -48,5 +49,4 @@ class PlotGenerator:
             plt.close()
             
         except Exception as e:
-            print(f"Ошибка при создании графика: {e}")
             raise
