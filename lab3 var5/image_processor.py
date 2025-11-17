@@ -18,22 +18,21 @@ class ImageProcessor:
         Загружает изображение из файла.
 
         :return: массив NumPy с изображением
+        :raises: ValueError, Exception
         """
-        try:
-            self.image = cv2.imread(self.input_path)
-            if self.image is None:
-                raise ValueError(f"Ошибка загрузки изображения из '{self.input_path}'")
-            return self.image
-        except Exception as e:
-            print(f"Ошибка при чтении изображения: {e}")
-            raise
+        self.image = cv2.imread(self.input_path)
+        if self.image is None:
+            raise ValueError(f"Ошибка загрузки изображения из '{self.input_path}'")
+        return self.image
 
-    def show_image_info(self) -> None:
+    def get_image_info(self) -> str:
         """
-        Выводит информацию о размере изображения.
+        Возвращает информацию о размере изображения.
+
+        :return: строка с информацией о размере
         """
         height, width, _ = self.image.shape
-        print(f"Размер изображения: {width}x{height}")
+        return f"Размер изображения: {width}x{height}"
 
     def invert_colors(self) -> np.ndarray:
         """
@@ -48,13 +47,9 @@ class ImageProcessor:
         Сохраняет обработанное изображение в файл.
 
         :param processed_image: массив NumPy с обработанным изображением
+        :raises: Exception
         """
-        try:
-            cv2.imwrite(self.output_path, processed_image)
-            print(f"Обработанное изображение сохранено в '{self.output_path}'.")
-        except Exception as e:
-            print(f"Ошибка при сохранении изображения: {e}")
-            raise
+        cv2.imwrite(self.output_path, processed_image)
 
     def display_images(self, original_image: np.ndarray, processed_image: np.ndarray) -> None:
         """
@@ -76,16 +71,21 @@ class ImageProcessor:
         plt.show()
 
 
-def process_image(input_path: str, output_path: str) -> None:
+def process_image(input_path: str, output_path: str) -> bool:
     """
     Основная функция для обработки изображения.
 
     :param input_path: путь к исходному изображению
     :param output_path: путь для сохранения обработанного изображения
+    :return: True если обработка прошла успешно, False в противном случае
     """
-    processor = ImageProcessor(input_path, output_path)
-    loaded_image = processor.load_image()
-    processor.show_image_info()
-    inverted_image = processor.invert_colors()
-    processor.save_image(inverted_image)
-    processor.display_images(loaded_image, inverted_image)
+    try:
+        processor = ImageProcessor(input_path, output_path)
+        loaded_image = processor.load_image()
+        image_info = processor.get_image_info()
+        inverted_image = processor.invert_colors()
+        processor.save_image(inverted_image)
+        processor.display_images(loaded_image, inverted_image)
+        return True, image_info
+    except Exception as e:
+        return False, str(e)
