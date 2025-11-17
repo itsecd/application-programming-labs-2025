@@ -63,12 +63,12 @@ class ImageViewer(QMainWindow):
         choice = QMessageBox.question(self,
             "Выбор источника",
             "Выберите тип источника данных:\n\n"
-            "ONE - CSV файл аннотации\n"
-            "TWO - Папка с изображениями",
-            QMessageBox.ONE | QMessageBox.TWO
+            "YES - CSV файл аннотации\n"
+            "NO - Папка с изображениями",
+            QMessageBox.YES | QMessageBox.NO
         )
         
-        if choice == QMessageBox.ONE:
+        if choice == QMessageBox.YES:
             file_path, _ = QFileDialog.getOpenFileName(self,
                 "Выберите CSV файл аннотации",
                 "",
@@ -77,7 +77,7 @@ class ImageViewer(QMainWindow):
             if file_path:
                 self.load_csv_source(file_path)
                 
-        elif choice == QMessageBox.TWO:
+        elif choice == QMessageBox.NO:
             folder_path = QFileDialog.getExistingDirectory(
                 self,
                 "Выберите папку с изображениями"
