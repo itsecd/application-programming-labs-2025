@@ -1,4 +1,5 @@
 import os
+import csv
 import random
 import argparse
 
@@ -33,6 +34,25 @@ def download_colored_snakes(colors: list[str], total_count: int, output_dir: str
         crawler.crawl(keyword=f"snake {color}", max_num=count)
 
 
+def create_annotation(output_dir: str, annotation_file: str) -> None:
+    """
+    Создание CSV файла с аннотацией путей к изображениям
+    """
+
+    image_paths = [
+        [os.path.abspath(os.path.join(output_dir, f)), os.path.join(output_dir, f)]
+        for f in os.listdir(output_dir) 
+        if f.lower().endswith(('.jpg', '.jpeg', '.png'))
+    ]
+    
+    data = [["Абсолютный путь", "Относительный путь"]] + image_paths
+    
+    with open(annotation_file, "w", newline="", encoding="utf-8-sig") as file:
+        csv.writer(file).writerows(data)
+    
+    print(f"Создан файл аннотации: {annotation_file} ({len(image_paths)} записей)")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='Скачивание изображений змей по цветам')
     parser.add_argument('-c', '--colors', nargs='+', required=True,
@@ -41,11 +61,14 @@ def main() -> None:
                        help='Общее количество изображений (50-1000)')
     parser.add_argument('-o', '--output_dir', type=str, default='snake_images',
                        help='Папка для сохранения изображений')
+    parser.add_argument('-a', '--annotation', type=str, default='annotation.csv',  # НОВЫЙ АРГУМЕНТ
+                       help='Файл для аннотации (CSV)')
     
     args = parser.parse_args()
     
     try:
         download_colored_snakes(args.colors, args.total_count, args.output_dir)
+        create_annotation(args.output_dir, args.annotation)
         print("Готово! Все изображения скачаны.")
     except Exception as e:
         print(f"Произошла ошибка: {e}")
