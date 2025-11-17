@@ -25,7 +25,7 @@ def load_and_enrich_data(annotation_path: str) -> pd.DataFrame:
     :return: DataFrame.
     """
     try:
-        df = pd.read_csv(annotation_path)
+        df = pd.read_csv(annotation_path, header=None)
     except FileNotFoundError:
         raise FileNotFoundError(f"Can't found file at: {annotation_path}")
 

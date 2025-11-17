@@ -1,6 +1,7 @@
 import argparse
 
 import csv_utility
+import dataframe_utility
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -41,6 +42,16 @@ def main() -> None:
 
     try:
         dataframe = csv_utility.load_and_enrich_data(args.annotation_path)
+
+        df_sorted = dataframe_utility.sort_by_brightness(dataframe)
+        df_filtered = dataframe_utility.filter_by_brightness_range(df_sorted, "32-63")
+
+        print("\nOriginal DataFrame: ")
+        print(dataframe)
+        print("\nSorted DataFrame: ")
+        print(df_sorted)
+        print("\nFiltered DataFrame: ")
+        print(df_filtered)
 
     except Exception as e:
         print(f"Error occurred: {e}")
