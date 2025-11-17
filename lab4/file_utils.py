@@ -3,16 +3,14 @@ import numpy as np
 import pandas as pd
 import soundfile as sf
 
+
 def get_audio_path(csv_path: str) -> pd.DataFrame:
     """
     Загружает пути к аудиофайлам из исходного csv файла.
     """
 
     df = pd.read_csv(csv_path)
-    df = df.rename(columns={
-        "absolute_path": "absolute_path",
-        "relative_path": "relative_path"
-    })
+
     return df[["absolute_path", "relative_path"]]
 
 
