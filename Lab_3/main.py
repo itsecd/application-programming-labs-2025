@@ -5,8 +5,9 @@ import soundfile as sf
 import sys
 import os
 
+from typing import Tuple, Optional, Union
 
-def read_audio_file(file_path):
+def read_audio_file(file_path: str)-> Tuple[int, np.ndarray]:
     """
     Чтение аудиофайла с помощью soundfile
     Возвращает частоту дискретизации и аудиоданные
@@ -19,7 +20,7 @@ def read_audio_file(file_path):
         sys.exit(1)
 
 
-def print_audio_info(sample_rate, audio_data):
+def print_audio_info(sample_rate: int, audio_data: np.ndarray)-> float:
     """Отображение информации об аудиофайле"""
     duration = len(audio_data) / sample_rate
     print(f"Частота дискретизации: {sample_rate} Hz")
@@ -38,7 +39,7 @@ def print_audio_info(sample_rate, audio_data):
     return duration
 
 
-def trim_audio(audio_data, sample_rate, start_time, end_time):
+def trim_audio(audio_data: np.ndarray, sample_rate: int, start_time: float, end_time: float)-> np.ndarray:
     """
     Обрезка аудио в указанном временном интервале
     start_time: время начала (секунды)
@@ -62,7 +63,7 @@ def trim_audio(audio_data, sample_rate, start_time, end_time):
     return trimmed_audio
 
 
-def plot_audio_comparison(original_audio, trimmed_audio, sample_rate, original_duration, start_time, end_time):
+def plot_audio_comparison(original_audio: np.ndarray, trimmed_audio: np.ndarray, original_duration: float, start_time: float, end_time: float) -> None:
     """Построение графика сравнения исходного и обрезанного аудио"""
     time_original = np.linspace(0, original_duration, len(original_audio))
     time_trimmed = np.linspace(start_time, end_time, len(trimmed_audio))
@@ -102,7 +103,7 @@ def plot_audio_comparison(original_audio, trimmed_audio, sample_rate, original_d
     plt.show()
 
 
-def save_audio_file(file_path, sample_rate, audio_data):
+def save_audio_file(file_path: str, sample_rate: int, audio_data: np.ndarray)-> None:
     """Сохранение аудиофайла с помощью soundfile"""
     try:
         sf.write(file_path, audio_data, sample_rate)
@@ -112,7 +113,8 @@ def save_audio_file(file_path, sample_rate, audio_data):
         sys.exit(1)
 
 
-def main():
+def main()-> None:
+    "Основая Функция."
     parser = argparse.ArgumentParser(description='Обрезка аудио в указанном временном интервале')
     parser.add_argument('input_file', help='Путь к входному аудиофайлу')
     parser.add_argument('output_file', help='Путь для сохранения выходного аудиофайла')
@@ -151,7 +153,7 @@ def main():
     print_audio_info(sample_rate, trimmed_audio)
     
     print("\nОтображение графика сравнения...")
-    plot_audio_comparison(original_audio, trimmed_audio, sample_rate, original_duration, args.start_time, args.end_time)
+    plot_audio_comparison(original_audio, trimmed_audio, original_duration, args.start_time, args.end_time)
     
     print("\nСохранение обрезанного аудио...")
     save_audio_file(args.output_file, sample_rate, trimmed_audio)
