@@ -1,9 +1,8 @@
-import numpy as np
 import os
+import numpy as np
 import soundfile as sf
 
-
-def load_audio(path: str):
+def load_audio(path: str) -> tuple:
     """
     Загружает аудиофайл и возвращает данные и частоту дискретизации.
     """
