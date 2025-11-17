@@ -1,5 +1,7 @@
 import argparse
 
+import csv_utility
+
 
 def parse_arguments() -> argparse.Namespace:
     """
@@ -25,6 +27,7 @@ def parse_arguments() -> argparse.Namespace:
     )
     return parser.parse_args()
 
+
 def main() -> None:
     """
     Main function.
@@ -37,8 +40,8 @@ def main() -> None:
     print(f"    Filepath to save the histogram: '{args.output_plot_path}'")
 
     try:
-        #code
-        print("")
+        dataframe = csv_utility.load_and_enrich_data(args.annotation_path)
+
     except Exception as e:
         print(f"Error occurred: {e}")
 
