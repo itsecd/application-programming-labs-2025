@@ -1,9 +1,11 @@
 """Основной модуль программы для анализа аудиоданных."""
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
+
+import config
 from audio_processor import AudioProcessor
 from plot_generator import PlotGenerator
-import config
 
 
 def main() -> None:
@@ -62,7 +64,6 @@ def main() -> None:
         
     except Exception as e:
         print(f"Ошибка: {e}")
-
 
 if __name__ == "__main__":
     main()
