@@ -1,27 +1,19 @@
-import numpy as np
 import os
+import numpy as np
 import pandas as pd
 import soundfile as sf
 
-
-def get_audio_path(folder: str) -> pd.DataFrame:
+def get_audio_path(csv_path: str) -> pd.DataFrame:
     """
-    Сканирует директорию и формирует DataFrame.
+    Загружает пути к аудиофайлам из исходного csv файла.
     """
 
-    audio_files = []
-    for root, _, files in os.walk(folder):
-        for f in files:
-            if f.lower().endswith((".wav",
-                                   ".mp3",
-                                   ".ogg",
-                                   ".m4a")):
-                abs_path = os.path.join(root, f)
-                rel_path = os.path.relpath(abs_path, folder)
-                audio_files.append((abs_path, rel_path))
-    return pd.DataFrame(audio_files, columns=[
-        "absolute_path", "relative_path"
-    ])
+    df = pd.read_csv(csv_path)
+    df = df.rename(columns={
+        "absolute_path": "absolute_path",
+        "relative_path": "relative_path"
+    })
+    return df[["absolute_path", "relative_path"]]
 
 
 def calc_min_ampl(path: str) -> float | None:

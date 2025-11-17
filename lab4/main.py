@@ -20,7 +20,7 @@ def parse_args():
         description="Анализ аудиофалов"
     )
     parser.add_argument("--input", required=True,
-                        help="Путь к исходным файлам")
+                        help="Путь к исходному csv файлу")
     parser.add_argument("--output_df", default="output/df.csv",
                         help="Путь для сохранения DataFrame")
     parser.add_argument("--output_img", default="output/plt.jpg",
@@ -33,8 +33,8 @@ def parse_args():
 def main():
     try:
         args = parse_args()
-        if not os.path.isdir(args.input):
-            raise FileNotFoundError(f"Неверно указан путь: {args.input}")
+        if not os.path.exists(args.input):
+            raise FileNotFoundError(f"csv файл не найден: {args.input}")
 
         print("Анализ файлов...")
         df = get_audio_path(args.input)
