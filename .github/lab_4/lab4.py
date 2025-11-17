@@ -13,7 +13,6 @@ def puller(img1: str) -> np.ndarray:
         raise FileNotFoundError
     return res
 
-
 def read_csv(filename: str) -> pd.DataFrame:
     """
     Считывает csv файл в DataFrame
@@ -67,6 +66,21 @@ def filter(df: pd.DataFrame, condition: bool) -> pd.DataFrame:
     """
     res = df[condition]
     return res
+
+
+def show_img(img: np.ndarray) -> None:
+    """
+    Демонстрация картинки
+    (не пригодилось)
+    """
+    if len(img.shape) == 3 and img.shape[2] == 3:
+        img_show = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    else: 
+        img_show = img
+    plt.imshow(img_show)
+    plt.axis('off')
+    plt.show()
+
 
 
 def graphic(df: pd.DataFrame) -> plt.Figure:
