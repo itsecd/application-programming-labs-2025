@@ -32,7 +32,7 @@ class ImageDownloader:
         global_downloaded_images = 0
 
         for keyword in self.keywords:
-            images_num = random.randint(1, 10)
+            images_num = random.randint(10, 50)
 
             print(f"Скачивание {images_num} изображений для ключевого слова: '{keyword}'")
 
