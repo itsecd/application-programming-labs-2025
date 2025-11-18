@@ -17,13 +17,14 @@ def csv_check(path: str, paths: list) -> None:
 
 def parsing() -> argparse.ArgumentParser:
     """
-    осушествляет парсинг аргументов
+    осуществляет парсинг аргументов
     """
     parser = argparse.ArgumentParser(description="создает датафреймы и реализует их сортировку и сохранение полученых датафреймов и графиков на их основе")
 
     parser.add_argument("annotation", type=str, help="абсолютный путь до файла анотации")
     parser.add_argument("dataframe_paths", nargs=3, type=str, help="пути для установки полученых датафреймов(3)")
     parser.add_argument("graph_paths", nargs=3, type=str, help="пути для сохранения графиков")
+    parser.add_argument("filter_width", type=int, help="ширина для фильтрации датафрейма")
 
     return parser
 
@@ -44,7 +45,7 @@ def create_data(path: str) -> pd.DataFrame:
     """
     Создает DataFrame по аннотации
     """
-    column_names = ['Абсолютеный путь', 'Относительный путь']
+    column_names = ['absolute_path', 'relative_path']
 
     df = pd.read_csv(path, names=column_names, header=None)
 
@@ -58,20 +59,20 @@ def filter_data(data: pd.DataFrame, value: int, equation: bool) -> pd.DataFrame:
     False - возвращет все строки с шириной меньше value
     """
     if equation:
-        filtered = data[data["Ширина"] > value]
+        filtered = data[data["width"] > value]
     else:
-        filtered = data[data["Ширина"] < value]
+        filtered = data[data["width"] < value]
     return filtered
 
 
-def install_graphs(df: pd.DataFrame, path: str) -> None:
+def install_graph(df: pd.DataFrame, path: str) -> None:
     """
-    накладывает графики по DataFrame d, s и f, затем выводит их на экран и сохраняет их по path
+    создает график по DataFrame, затем выводит его на экран и сохраняет его по path
     """
-    plt.plot(df['Ширина'])
+    plt.plot(df['width'])
 
-    plt.xlabel('Индекс')
-    plt.ylabel('Ширина')
+    plt.xlabel('index')
+    plt.ylabel('width')
 
     plt.savefig(path)
     plt.show()
