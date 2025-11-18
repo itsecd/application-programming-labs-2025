@@ -1,40 +1,10 @@
 import argparse
 
 import cv2
-import numpy
-import matplotlib.pyplot as plt
+
+import imageworker
 
 
-def show_image(image: numpy.ndarray) -> None:
-    """
-    ввыводим изображение при помощи matplotlib
-    """
-    plt.imshow(image)
-    plt.axis('off')
-    plt.show()
-
-
-def change_size(image: numpy.ndarray, new_size: tuple[int, int]) -> numpy.ndarray:
-    """
-    изменяем ширину и высоту изображения
-    """
-    return cv2.resize(
-        image,
-        new_size,
-        interpolation=cv2.INTER_LINEAR
-    )
-
-
-def size_format(size: str) -> tuple[int, int]:
-    """
-    приводим строчное обозначение размера в формат кортежа
-    """
-    size = size.split('X')
-    if len(size) != 2:
-        raise ValueError('размер изображения должен быть в формате widthXheight')
-    width = int(size[0])
-    height = int(size[1])
-    return width, height
 
 def main():
     try:
@@ -47,19 +17,19 @@ def main():
 
         args = parser.parse_args()
 
-        size = size_format(args.size)
+        new_size = imageworker.size_format(args.size)
 
         image = cv2.imread(args.path_in)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         size = image.shape
+        print(size)
         print(f"ширина = {size[1]}, высота = {size[0]}")
 
-        show_image(image)
 
-        resized_image = change_size(image, size)
+        resized_image = imageworker.change_size(image, new_size)
 
-        show_image(resized_image)
+        imageworker.show_image(image, resized_image)
 
         cv2.imwrite(args.path_out, resized_image)
 
