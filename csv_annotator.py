@@ -3,26 +3,38 @@ import os
 from pathlib import Path
 
 
-def create_annotation_csv(image_dir: str, csv_path: str) -> int:
-    """Создаёт CSV с метаданными изображений"""
-    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp'}
-    image_dir_path = Path(image_dir).resolve()
-    files_info = []
+class ImagePathIterator:
+    """Итератор по путям к изображениям из CSV или папки."""
 
-    for filename in sorted(os.listdir(image_dir)):
-        if Path(filename).suffix.lower() in image_extensions:
-            abs_path = str(image_dir_path / filename)
-            rel_path = os.path.relpath(abs_path, start=os.getcwd())
-            files_info.append({
-                'filename': filename,
-                'absolute_path': abs_path,
-                'relative_path': rel_path
-            })
+    def __init__(self, source: str):
+        self.paths = []
 
-    with open(csv_path, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=['filename', 'absolute_path', 'relative_path'])
-        writer.writeheader()
-        writer.writerows(files_info)
+        if os.path.isfile(source) and source.endswith('.csv'):
+            with open(source, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                self.paths = [row['absolute_path'] for row in reader]
+        elif os.path.isdir(source):
+            image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp'}
+            self.paths = [
+                str(Path(source) / f)
+                for f in os.listdir(source)
+                if Path(f).suffix.lower() in image_extensions
+            ]
+        else:
+            raise ValueError("Источник должен быть CSV-файлом или папкой")
 
-    print(f"Создан CSV с {len(files_info)} записями: {csv_path}")
-    return len(files_info)
+        self.index = 0
+
+    def __iter__(self):
+        self.index = 0
+        return self
+
+    def __next__(self):
+        if self.index < len(self.paths):
+            path = self.paths[self.index]
+            self.index += 1
+            return path
+        raise StopIteration
+
+    def __len__(self):
+        return len(self.paths)
