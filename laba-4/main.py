@@ -29,11 +29,18 @@ def parse_arguments() -> argparse.Namespace:
         help='Filepath to save the histogram.'
     )
     parser.add_argument(
+        '--brightness_range',
+        '-br',
+        default=[0, 127, 256],
+        nargs='+',
+        type=int,
+        help='Brightness ranges to filter by (e.g.: 0 67 140 256)'
+    )
+    parser.add_argument(
         '--filter_range',
         '-f',
-        default="32-63",
-        choices=data_processing.BRIGHTNESS_LABELS,
-        help='Brightness range to filter by (e.g.: "32-63")'
+        default="0-126",
+        help='Brightness range to filter by (e.g.: 0-66)'
     )
     return parser.parse_args()
 
@@ -48,10 +55,13 @@ def main() -> None:
     print(f"    Filepath to the original CSV annotation: '{args.annotation_path}'")
     print(f"    Filepath to save the DataFrame in CSV: '{args.output_csv_path}'")
     print(f"    Filepath to save the histogram: '{args.output_plot_path}'")
+    print(f"    Brightness ranges: '{args.brightness_range}'")
     print(f"    Brightness range to filter by: '{args.filter_range}'")
 
     try:
-        dataframe = data_processing.load_and_enrich_data(args.annotation_path)
+        original_dataframe = data_processing.load_data(args.annotation_path)
+        enriched_dataframe = data_processing.enrich_data(original_dataframe)
+        dataframe = data_processing.add_range(enriched_dataframe, args.brightness_range)
 
         df_sorted = dataframe_utility.sort_by_brightness(dataframe)
         df_filtered = dataframe_utility.filter_by_brightness_range(df_sorted, args.filter_range)
