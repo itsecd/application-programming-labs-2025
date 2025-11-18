@@ -2,8 +2,6 @@ import cv2
 import numpy as np
 import pandas as pd
 
-BRIGHTNESS_LABELS = ["0-31", "32-63", "64-95", "96-127", "128-159", "160-191", "192-223", "224-255"]
-
 
 def get_image_brightness(absolute_path: str) -> float:
     """
@@ -16,13 +14,13 @@ def get_image_brightness(absolute_path: str) -> float:
         if image is not None:
             return image.mean()
     except Exception as e:
-        print(f"Can't get image at: {absolute_path} : {e}")
+        raise Exception(f"Can't get image at: {absolute_path} : {e}")
     return np.nan
 
 
-def load_and_enrich_data(annotation_path: str) -> pd.DataFrame:
+def load_data(annotation_path: str) -> pd.DataFrame:
     """
-    Load CSV, add titles and new column with brightness to DataFrame.
+    Load CSV, add titles.
     :param annotation_path: Filepath to the original CSV annotation.
     :return: DataFrame.
     """
@@ -33,13 +31,35 @@ def load_and_enrich_data(annotation_path: str) -> pd.DataFrame:
 
     df.columns = ['absolute_path', 'relative_path']
 
-    df['brightness'] = df['absolute_path'].apply(get_image_brightness)
+    return df
 
+
+def enrich_data(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    And new column with brightness to DataFrame.
+    :param df: DataFrame to edit.
+    :return: DataFrame.
+    """
+    df['brightness'] = df['absolute_path'].apply(get_image_brightness)
     df.dropna(subset=['brightness'], inplace=True)
 
+    return df
+
+
+def add_range(df: pd.DataFrame, bins: list[int]) -> pd.DataFrame:
+    """
+    And new column with brightness to DataFrame.
+    :param df: DataFrame to edit.
+    :param bins: List of integers with ranges for brightness.
+    :return: DataFrame.
+    """
     # right=False -> [0,32), ...
-    bins = [0, 32, 64, 96, 128, 160, 192, 224, 256]
-    df['brightness_range'] = pd.cut(df['brightness'], bins=bins, labels=BRIGHTNESS_LABELS, right=False)
+
+    labels = []
+    for i in range(len(bins) - 1):
+        labels.append(f"{bins[i]}-{bins[i + 1] - 1}")
+
+    df['brightness_range'] = pd.cut(df['brightness'], bins=bins, labels=labels, right=False)
 
     return df
 
@@ -50,4 +70,5 @@ def save_data(df_to_save: pd.DataFrame, output_csv_path: str) -> None:
     :param df_to_save: DataFrame to save.
     :param output_csv_path: Filepath to save the DataFrame in CSV.
     """
+    # df_final = df_to_save['absolute_path', 'relative_path', 'brightness_range']
     df_to_save.to_csv(output_csv_path, index=False)
