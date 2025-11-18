@@ -1,6 +1,6 @@
+import argparse
 import csv
 import os
-import argparse
 import random
 from typing import List, Iterator
 from icrawler.builtin import BingImageCrawler
