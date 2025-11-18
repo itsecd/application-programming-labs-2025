@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 
 from window_design import Ui_MainWindow
+from image_iterator import ImageIterator
 
 class BearViewer(QMainWindow):
     def __init__(self):
@@ -15,8 +16,8 @@ class BearViewer(QMainWindow):
         
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.images = []
-        self.current_index = 0
+        self.image_iterator = None
+        self.current_image_path = None
         self.ui.btn_next.clicked.connect(self.next_image)
         self.ui.btn_prev.clicked.connect(self.prev_image)
         self.ui.menu_open.triggered.connect(self.open_annotation)
@@ -39,59 +40,89 @@ class BearViewer(QMainWindow):
         )
         if file_path:
             self.load_annotation(file_path)
+        else:
+            # Если выбран каталог вместо файла
+            directory = QFileDialog.getExistingDirectory(
+                self,
+                "Выберите папку с изображениями"
+            )
+            if directory:
+                self.load_directory(directory)
     
     def load_annotation(self, csv_file):
-        """Загрузить изображения из CSV файла"""
+        """Загрузить изображения из CSV файла через итератор"""
         try:
-            self.images = []
+            self.image_iterator = ImageIterator(csv_file)
+            self.show_current_image()
+            self.update_status(f"Загружено изображений из CSV: {len(self.image_iterator.paths)}")
             
-            with open(csv_file, 'r', encoding='utf-8') as file:
-                reader = csv.DictReader(file)
-                
-                for row in reader:
-                    # Ищем путь к изображению в колонках
-                    if 'absolute_path' in row and row['absolute_path']:
-                        path = row['absolute_path']
-                        if os.path.exists(path):
-                            self.images.append(path)
-                    
-                    elif 'relative_path' in row and row['relative_path']:
-                        rel_path = row['relative_path']
-                        abs_path = os.path.join(os.path.dirname(csv_file), rel_path)
-                        if os.path.exists(abs_path):
-                            self.images.append(abs_path)
-            
-            if self.images:
-                self.current_index = 0
-                self.show_current_image()
-                self.update_status(f"Загружено {len(self.images)} изображений")
-            else:
-                self.ui.image_label.setText("В файле не найдено изображений")
-                
         except Exception as e:
-            self.ui.image_label.setText(f"Ошибка загрузки:\n{str(e)}")
+            self.ui.image_label.setText(f"Ошибка загрузки CSV:\n{str(e)}")
+            self.image_iterator = None
+    
+    def load_directory(self, directory):
+        """Загрузить изображения из директории через итератор"""
+        try:
+            self.image_iterator = ImageIterator(directory)
+            self.show_current_image()
+            self.update_status(f"Загружено изображений из папки: {len(self.image_iterator.paths)}")
+            
+        except Exception as e:
+            self.ui.image_label.setText(f"Ошибка загрузки папки:\n{str(e)}")
+            self.image_iterator = None
     
     def next_image(self):
-        """Следующее изображение"""
-        if not self.images:
+        """Следующее изображение через итератор"""
+        if not self.image_iterator or not self.image_iterator.paths:
             return
-        self.current_index = (self.current_index + 1) % len(self.images)
-        self.show_current_image()
+        
+        try:
+            # Используем итератор для получения следующего изображения
+            self.current_image_path = next(self.image_iterator)
+            self.display_image(self.current_image_path)
+            self.update_status()
+            
+        except StopIteration:
+            # Достигнут конец - начинаем сначала
+            self.image_iterator.counter = 0
+            if self.image_iterator.paths:
+                self.current_image_path = self.image_iterator.paths[0]
+                self.display_image(self.current_image_path)
+                self.update_status()
     
     def prev_image(self):
-        """Предыдущее изображение"""
-        if not self.images:
+        """Предыдущее изображение через итератор"""
+        if not self.image_iterator or not self.image_iterator.paths:
             return
-        self.current_index = (self.current_index - 1) % len(self.images)
-        self.show_current_image()
+        
+        # Для предыдущего изображения просто уменьшаем счетчик
+        if self.image_iterator.counter > 0:
+            self.image_iterator.counter -= 1
+        else:
+            # Если в начале - переходим к последнему
+            self.image_iterator.counter = len(self.image_iterator.paths) - 1
+        
+        self.current_image_path = self.image_iterator.paths[self.image_iterator.counter]
+        self.display_image(self.current_image_path)
+        self.update_status()
     
     def show_current_image(self):
-        """Показать текущее изображение"""
-        if not self.images:
+        """Показать текущее изображение через итератор"""
+        if not self.image_iterator or not self.image_iterator.paths:
+            self.ui.image_label.setText("Нет изображений для отображения")
             return
-            
-        image_path = self.images[self.current_index]
         
+        try:
+            # Получаем первое изображение через итератор
+            self.current_image_path = next(self.image_iterator)
+            self.display_image(self.current_image_path)
+            self.update_status()
+            
+        except StopIteration:
+            self.ui.image_label.setText("Нет изображений для отображения")
+    
+    def display_image(self, image_path):
+        """Отобразить изображение по пути"""
         if not os.path.exists(image_path):
             self.ui.image_label.setText(f"Файл не найден:\n{Path(image_path).name}")
             return
@@ -111,16 +142,15 @@ class BearViewer(QMainWindow):
         )
         
         self.ui.image_label.setPixmap(scaled_pixmap)
-        self.update_status()
     
     def update_status(self, message=None):
         """Обновить статусную строку"""
         if message:
             self.ui.status_bar.showMessage(message)
-        elif self.images:
-            current = self.current_index + 1
-            total = len(self.images)
-            filename = Path(self.images[self.current_index]).name
+        elif self.image_iterator and self.image_iterator.paths and self.current_image_path:
+            current = self.image_iterator.counter
+            total = len(self.image_iterator.paths)
+            filename = Path(self.current_image_path).name
             self.ui.status_bar.showMessage(f"Изображение {current}/{total} | {filename}")
         else:
             self.ui.status_bar.showMessage("Нет изображений")
@@ -128,8 +158,8 @@ class BearViewer(QMainWindow):
     def resizeEvent(self, event):
         """При изменении размера окна перерисовываем изображение"""
         super().resizeEvent(event)
-        if self.images:
-            self.show_current_image()
+        if self.current_image_path:
+            self.display_image(self.current_image_path)
 
 def main():
     app = QApplication(sys.argv)
