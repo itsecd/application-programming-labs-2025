@@ -1,9 +1,12 @@
 import os
 import re
+from typing import List
+
 import requests
 from bs4 import BeautifulSoup
-from typing import List
+
 from annotation import create_annotation
+
 
 class MusicDownloader:
     """
@@ -15,20 +18,23 @@ class MusicDownloader:
     def __init__(self, download_dir: str):
         """
         Инициализация загрузчика, подготовка директории и HTTP-сессии.
+
         :param download_dir: путь к директории для сохранения аудиофайлов
         """
         self.download_dir = download_dir
         os.makedirs(download_dir, exist_ok=True)
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-        })
+        self.session.headers.update(
+            {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+        )
 
     def parse_duration(self, duration_str: str) -> int:
         """
         Преобразует строку 'm:ss' в секунды.
-        :param duration_str: строка длительности
-        :return: длительность в секундах, либо 0 при ошибке"""
+
+        :param duration_str: строка длительности в формате 'm:ss'
+        :return: длительность в секундах или 0 при ошибке
+        """
         try:
             minutes, seconds = map(int, duration_str.strip().split(":"))
             return minutes * 60 + seconds
@@ -37,7 +43,9 @@ class MusicDownloader:
 
     def get_tracks_from_page(self, min_sec: int, max_sec: int) -> List[dict]:
         """
-        Парсит страницу mixkit и возвращает список треков с прямыми ссылками и длительностью.
+        Парсит страницу mixkit и возвращает список треков с прямыми
+        ссылками и длительностью.
+
         :param min_sec: минимальная длительность трека в секундах
         :param max_sec: максимальная длительность трека в секундах
         :return: список треков в виде словарей (title, duration, url)
@@ -49,7 +57,7 @@ class MusicDownloader:
 
         soup = BeautifulSoup(response.text, "html.parser")
         items = soup.select("div.item-grid__item")
-        tracks = []
+        tracks: List[dict] = []
 
         for item in items:
             title_el = item.select_one("h2.item-grid-card__title")
@@ -61,23 +69,24 @@ class MusicDownloader:
 
             title = title_el.get_text(strip=True)
             duration = self.parse_duration(duration_el.get_text(strip=True))
-            mp3_url = player_el.get("data-audio-player-preview-url-value")
+            mp3_url = player_el.get(
+                "data-audio-player-preview-url-value"
+            )
 
             if not mp3_url or not mp3_url.startswith("http"):
                 mp3_url = f"https://mixkit.co{mp3_url}"
 
             if min_sec <= duration <= max_sec:
-                tracks.append({
-                    "title": title,
-                    "duration": duration,
-                    "url": mp3_url
-                })
+                tracks.append(
+                    {"title": title, "duration": duration, "url": mp3_url}
+                )
 
         return tracks
-    
+
     def download_file(self, url: str, save_path: str) -> bool:
         """
         Скачивает файл по ссылке и сохраняет на диск.
+
         :param url: прямая ссылка на MP3-файл
         :param save_path: путь сохранения файла
         :return: True если успешно, иначе False
@@ -95,19 +104,25 @@ class MusicDownloader:
                 os.remove(save_path)
             return False
 
-    def download_music(self, count: int, min_sec: int, max_sec: int, csv_path: str) -> None:
+    def download_music(
+        self, count: int, min_sec: int, max_sec: int, csv_path: str
+    ) -> None:
         """
-        Ищет треки по длительности, скачивает нужное количество и создаёт аннотацию.
+        Ищет треки по длительности, скачивает нужное количество и
+        создаёт аннотацию.
+
         :param count: количество треков для скачивания
         :param min_sec: минимальная длительность трека в секундах
         :param max_sec: максимальная длительность трека в секундах
         :param csv_path: путь сохранения CSV-аннотации
         :return: None
         """
-        print(f"🔍 Поиск треков длительностью от {min_sec} до {max_sec} секунд...")
+        print(
+            f"🔍 Поиск треков длительностью от {min_sec} до "
+            f"{max_sec} секунд..."
+        )
 
         found_tracks = self.get_tracks_from_page(min_sec, max_sec)
-        
         found_tracks = found_tracks[:count]
 
         if not found_tracks:
@@ -117,12 +132,19 @@ class MusicDownloader:
 
         print(f"🎧 Найдено {len(found_tracks)} треков. Начинаем загрузку...")
 
-        downloaded_paths = []
+        downloaded_paths: List[str] = []
         for i, track in enumerate(found_tracks, 1):
-            safe_title = re.sub(r"[^\w\s-]", "", track["title"]).replace(" ", "_")[:80]
-            save_path = os.path.join(self.download_dir, f"{i:03d}_{safe_title}.mp3")
+            safe_title = re.sub(r"[^\w\s-]", "", track["title"]).replace(
+                " ", "_"
+            )[:80]
+            save_path = os.path.join(
+                self.download_dir, f"{i:03d}_{safe_title}.mp3"
+            )
             if self.download_file(track["url"], save_path):
-                print(f"  ✅ [{i}] {track['title']} ({track['duration']} сек)")
+                print(
+                    f"  ✅ [{i}] {track['title']} "
+                    f"({track['duration']} сек)"
+                )
                 downloaded_paths.append(save_path)
             else:
                 print(f"  ❌ Ошибка скачивания: {track['title']}")
