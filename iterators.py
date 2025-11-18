@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 class ImagePathIterator:
-    """Итератор по путям к изображениям из CSV или папки"""
+    """Итератор по путям к изображениям из CSV или папки."""
 
     def __init__(self, source: str):
         self.paths = []
