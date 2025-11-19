@@ -27,4 +27,19 @@ def add_amplitude(df):
         amplitudes.append(amplitude)
     df['amplitude'] = amplitudes
     return df    
-        
+
+
+def sort_by_amplitude(df):
+    """
+    Сортирует датафрейм по амплитуде (от меньшей к большей)
+    """
+    df = df.sort_values('amplitude', na_position='last').reset_index(drop=True)
+    return df
+
+
+
+def main():
+   return 0
+
+if __name__ == '__main__':
+    main()
