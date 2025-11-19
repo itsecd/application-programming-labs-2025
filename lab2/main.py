@@ -21,23 +21,26 @@ def download_images(keyword: str, output_dir: Path,
     """Загружает изображения для указанного диапазона дат."""
     try:
         output_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        print(f"Ошибка создания директории {output_dir}: {e}")
+        return False
+    
+    # Инициализируем crawler
+    try:
         crawler = GoogleImageCrawler(storage={'root_dir': str(output_dir)})
-        
-        # Пытаемся использовать фильтрацию по датам
-        try:
-            crawler.crawl(keyword=keyword, filters={'date': date_range}, max_num=max_num)
-            print(f"Успешная загрузка с фильтрацией по датам: {date_range}")
-        except Exception:
-            # Если фильтрация не работает - загружаем без фильтра
-            crawler.crawl(keyword=keyword, max_num=max_num)
-            print(f"Загружены изображения без фильтрации по датам")
-        
+    except Exception as e:
+        print(f"Ошибка инициализации GoogleImageCrawler: {e}")
+        return False
+    
+    # Пытаемся загрузить с фильтром дат
+    try:
+        crawler.crawl(keyword=keyword, filters={'date': date_range}, max_num=max_num)
+        print(f"Успешная загрузка с фильтрацией по датам: {date_range}")
         return True
     except Exception as e:
-        print(f"Ошибка при загрузке: {e}")
-        return False
-
-
+        print(f"Ошибка при загрузке с фильтром дат: {e}")
+    
+    
 def create_annotation(root_dir: Path, csv_path: Path) -> bool:
     """Создает CSV-аннотацию с путями к файлам."""
     try:
