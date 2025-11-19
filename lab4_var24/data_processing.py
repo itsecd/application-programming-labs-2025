@@ -1,6 +1,7 @@
-import pandas as pd 
+import pandas as pd
 import soundfile as sf
-import matplotlib.pyplot as plt
+import numpy as np
+
 
 def create_df(path_csv):
     """
@@ -9,21 +10,19 @@ def create_df(path_csv):
     return pd.read_csv(path_csv, usecols=[1, 2])
 
 
-
 def get_amplitude(path_audio):
     """
     Получение средней амплитуды
     """
-    data,  = sf.read(path_audio)
+    data, sr = sf.read(path_audio)
     mean_amp = np.mean(np.abs(data))
     return mean_amp
-
 
 
 def add_amplitude(df):
     amplitudes = []
     for idx, row in df.iterrows():
-        amplitude = get_amplitude(row['absolute_path'])
+        amplitude = get_amplitude(row['abs_path'])
         amplitudes.append(amplitude)
     df['amplitude'] = amplitudes
     return df    
@@ -37,9 +36,11 @@ def sort_by_amplitude(df):
     return df
 
 
-
-def main():
-   return 0
-
-if __name__ == '__main__':
-    main()
+def filtr_amplitude(df, min_ampl, max_ampl):
+    filtered_df = df.copy()
+    
+    filtered_df = filtered_df[filtered_df['amplitude'] >= min_ampl]
+    
+    filtered_df = filtered_df[filtered_df['amplitude'] <= max_ampl]
+    
+    return filtered_df
