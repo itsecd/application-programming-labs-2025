@@ -5,12 +5,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def reverse_img(img: np.ndarray) -> np.ndarray:
+def reverse_img(img: np.ndarray, vertical: bool = False) -> np.ndarray:
     """Reverse image row by row"""
-    n, m = img.shape[0], img.shape[1]
-    for i in range(n):
-        img[i] = img[i][::-1]
-    return img
+    return img[:, ::-1] if not vertical else img[::-1, :]
 
 
 def get_args() -> list[str]:
@@ -22,10 +19,13 @@ def get_args() -> list[str]:
     parser.add_argument(
         '-o', '--output', help='Path to output image file'
     )
+    parser.add_argument(
+        '-v', '--is_vertical', help='Do vertical reverse need?'
+    )
     args = parser.parse_args()
     if args.source is None or args.output is None:
         return None
-    return [args.source, args.output]
+    return [args.source, args.output, bool(args.is_vertical)]
 
 
 def show(img, rev_img) -> None:
@@ -44,7 +44,7 @@ def show(img, rev_img) -> None:
 def main() -> None:
     """Main function"""
     try:
-        source, output = get_args()
+        source, output, vertical = get_args()
         img = cv2.imread(source)
     except TypeError:
         print("Usage: python main.py -s source.jpg -o out.jpg")
@@ -54,7 +54,7 @@ def main() -> None:
         return
 
     print(f"Image size: {img.shape[1]}*{img.shape[0]}")
-    rev_img = reverse_img(img.copy())
+    rev_img = reverse_img(img.copy(), vertical)
     show(img, rev_img)
 
     try:
