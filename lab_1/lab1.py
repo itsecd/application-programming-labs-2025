@@ -31,6 +31,26 @@ def open_file(file_path: str) -> Optional[List[str]]:
         return None
 
 
+def extract_operator_codes(lines: List[str], pattern: str) -> List[str]:
+    """
+    Извлекает коды операторов из строк, содержащих телефонные номера.
+    
+    Args:
+        lines (List[str]): Список строк для обработки
+        pattern (str): Регулярное выражение для поиска номеров
+        
+    Returns:
+        List[str]: Список кодов операторов
+    """
+    operator_codes = []
+    for line in lines:
+        if "Номер" in line:
+            match = re.search(pattern, line)
+            if match:
+                operator_codes.append(match.group(1))
+    return operator_codes
+
+
 def main() -> None:
  
     parser = argparse.ArgumentParser()
