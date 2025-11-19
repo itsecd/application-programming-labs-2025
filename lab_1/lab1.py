@@ -67,6 +67,26 @@ def count_codes(codes: List[str]) -> Dict[str, int]:
     return code_counts
 
 
+def max_code(code_counts: Dict[str, int]) -> Tuple[str, int]:
+    """
+    Находит код оператора с максимальным количеством повторений.
+    
+    Args:
+        code_counts (Dict[str, int]): Словарь с кодами и их количеством
+        
+    Returns:
+        Tuple[str, int]: Кортеж (код, количество)
+        
+    Raises:
+        ValueError: Если словарь пуст
+    """
+    if not code_counts:
+        raise ValueError("No operator codes found")
+    
+    most_frequent_code = max(code_counts, key=code_counts.get)
+    return most_frequent_code, code_counts[most_frequent_code]
+
+
 def main() -> None:
  
     parser = argparse.ArgumentParser()
