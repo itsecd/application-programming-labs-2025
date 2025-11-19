@@ -4,6 +4,53 @@ from icrawler.builtin import BingImageCrawler
 import argparse
 
 
+class ImageFileIterator:
+    """Итерируемый объект для получения путей к файлам из CSV или директории.
+
+    Поддерживает два режима источника:
+        - CSV-файл: читает второй столбец как абсолютный путь к файлу.
+        - Директория: рекурсивно перечисляет все файлы.
+
+    Объект можно итерировать многократно — каждый вызов __iter__
+    создаёт новый генератор.
+
+    Args:
+        source (Path): Путь к CSV-файлу или директории.
+
+    Raises:
+        FileNotFoundError: Если source не существует.
+        ValueError: Если source не является CSV-файлом и не директорией.
+    """
+    def __init__(self, source: Path):
+        if not source.exists():
+            raise FileNotFoundError(f"Источник не найден: {source}")
+        if not (source.is_file() and source.suffix.lower() == '.csv') and not source.is_dir():
+            raise ValueError("source должен быть .csv файлом или директорией")
+        self._source = source  
+
+    def __iter__(self):
+  
+        if self._source.is_file() and self._source.suffix.lower() == '.csv':
+            return self._csv_path_generator(self._source)
+        else:
+            return self._file_generator(self._source)
+        
+    def _csv_path_generator(self, csv_path: Path):
+        with open(csv_path, newline='', encoding='utf-8-sig') as f:
+            reader = csv.reader(f, delimiter=';')
+            for row in reader:
+                if len(row) >= 2:
+                    path_str = row[1].strip()
+                    if path_str:
+                        yield Path(path_str)
+
+    def _file_generator(self, root: Path):
+        for path in root.rglob("*"):
+            if path.is_file():
+                yield path
+
+
+
 def cra(query: list[str], images_dir: Path, count: int) -> None:
     """Скачивает изображения с Bing по заданным ключевым словам.
 
