@@ -1,10 +1,20 @@
 import pandas as pd 
+import soundfile as sf
 
-def load_csv(path_csv):
+def create_df(path_csv):
     """
-    Читаем csv файл
+    Формируем датафрейм из csv файла
     """
-    return pd.read_csv(path_csv)
+    return pd.read_csv(path_csv, usecols=[1, 2])
 
+
+
+def get_amplitude(path_audio):
+    """
+    Получение средней амплитуды
+    """
+    data,  = sf.read(path_audio)
+    mean_amp = np.mean(np.abs(data))
+    return mean_amp
 
 
