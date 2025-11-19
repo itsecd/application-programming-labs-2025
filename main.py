@@ -1,13 +1,8 @@
 import argparse
 
 import cv2
-import matplotlib.pyplot as plt
-import numpy as np
 
-
-def reverse_img(img: np.ndarray, vertical: bool = False) -> np.ndarray:
-    """Reverse image row by row"""
-    return img[:, ::-1] if not vertical else img[::-1, :]
+import image
 
 
 def get_args() -> list[str]:
@@ -28,19 +23,6 @@ def get_args() -> list[str]:
     return [args.source, args.output, bool(args.is_vertical)]
 
 
-def show(img: np.ndarray, rev_img: np.ndarray) -> None:
-    """Show source and reversed image"""
-
-    fig, axes = plt.subplots(1, 2)
-    axes[0].imshow(img)
-    axes[1].imshow(rev_img)
-
-    axes[0].set_title("Source")
-    axes[1].set_title("Result")
-
-    plt.show()
-
-
 def main() -> None:
     """Main function"""
     try:
@@ -54,8 +36,8 @@ def main() -> None:
         return
 
     print(f"Image size: {img.shape[1]}*{img.shape[0]}")
-    rev_img = reverse_img(img.copy(), vertical)
-    show(img, rev_img)
+    rev_img = image.reverse_img(img.copy(), vertical)
+    image.show(img, rev_img)
 
     try:
         cv2.imwrite(output, rev_img)
