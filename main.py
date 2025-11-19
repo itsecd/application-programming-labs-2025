@@ -28,7 +28,7 @@ def get_args() -> list[str]:
     return [args.source, args.output, bool(args.is_vertical)]
 
 
-def show(img, rev_img) -> None:
+def show(img: np.ndarray, rev_img: np.ndarray) -> None:
     """Show source and reversed image"""
 
     fig, axes = plt.subplots(1, 2)
