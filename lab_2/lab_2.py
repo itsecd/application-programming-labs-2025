@@ -29,6 +29,42 @@ def cra(query: list[str], images_dir: Path, count: int) -> None:
         crawler.crawl(keyword=keyword, max_num=count)
 
 
+def annotation_downloaded_files(images_dir: Path, annotation: Path) -> None:
+    """Создаёт CSV-аннотацию для изображений .
+
+    Формат строки: filename;absolute_path;relative_path.
+    Относительный путь вычисляется от текущей рабочей директории (cwd).
+    Поддерживает только прямые поддиректории в images_dir (не рекурсивно).
+
+    Args:
+        images_dir (Path): Директория с подпапками, содержащими изображения.
+        annotation (Path): Путь к выходному CSV-файлу.
+
+    Side Effects:
+        Создаёт родительские директории для annotation и записывает файл.
+        Если images_dir не существует — создаёт пустой CSV.
+    """
+    annotation.parent.mkdir(parents=True, exist_ok=True)
+
+    if not images_dir.exists():
+        with open(annotation, 'w', encoding='utf-8-sig') as f:
+            pass  # пустой файл
+        return
+
+    rows = []
+    for subdir in images_dir.iterdir():
+        if subdir.is_dir():
+            for img in subdir.iterdir():
+                if img.is_file():
+                    abs_path = img.resolve()
+                    rel_path = abs_path.relative_to(Path.cwd())
+                    rows.append([img.name, str(abs_path), str(rel_path)])
+
+    with open(annotation, 'w', newline='', encoding='utf-8-sig') as f:
+        writer = csv.writer(f, delimiter=';')
+        writer.writerows(rows)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Скачивание изображений и создание аннотации")
     parser.add_argument('--images_dir', type=Path, required=True ,help='images_dir например "images" ')
