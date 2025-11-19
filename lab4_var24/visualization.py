@@ -23,5 +23,5 @@ def plot_amplitude_histogram(df, output_path='amplitude_histogram.png'):
         plt.text(i, v + 0.5, str(v), ha='center', va='bottom', fontweight='bold')
     plt.grid(axis='y', alpha=0.3, linestyle='--')
     plt.tight_layout()
-    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    
     plt.show()
