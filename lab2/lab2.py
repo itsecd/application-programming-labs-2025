@@ -2,11 +2,12 @@ import argparse
 import csv
 import os
 from pathlib import Path
+from typing import List, Iterator, Optional
 from icrawler.builtin import BingImageCrawler 
 
 class ImageIterator:
     """Итератор для перебора путей к изображениям"""
-    def __init__(self, annotation_file=None, image_dir=None):
+    def __init__(self, annotation_file=None, image_dir=None) -> None:
         if annotation_file:
             self.paths = self._load_from_annotation(annotation_file)
         elif image_dir:
@@ -16,7 +17,7 @@ class ImageIterator:
         
         self.index = 0
     
-    def _load_from_annotation(self, annotation_file):
+    def _load_from_annotation(self, annotation_file) -> List[str]:
         """Загрузка путей из CSV файла"""
         paths = []
         with open(annotation_file, 'r', encoding='utf-8') as file:
@@ -26,7 +27,7 @@ class ImageIterator:
                 paths.append(row[0])  # Берем абсолютный путь
         return paths
     
-    def _load_from_directory(self, image_dir):
+    def _load_from_directory(self, image_dir) -> List[str]:
         """Загрузка путей из директории"""
         image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp'}
         paths = []
@@ -35,17 +36,17 @@ class ImageIterator:
                 paths.append(str(file_path.absolute()))
         return paths
     
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return self
     
-    def __next__(self):
+    def __next__(self) -> str:
         if self.index < len(self.paths):
             path = self.paths[self.index]
             self.index += 1
             return path
         raise StopIteration
 
-def download_images(keyword, output_dir, total_images, size_ranges):
+def download_images(keyword, output_dir, total_images, size_ranges) -> None:
     """Скачивание изображений с фильтрацией по размерам"""
     os.makedirs(output_dir, exist_ok=True)
      
@@ -70,7 +71,7 @@ def download_images(keyword, output_dir, total_images, size_ranges):
             file_idx_offset=0
         )
 
-def create_annotation(output_dir, annotation_file):
+def create_annotation(output_dir, annotation_file) -> None:
     """Создание CSV аннотации"""
     with open(annotation_file, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
@@ -83,7 +84,7 @@ def create_annotation(output_dir, annotation_file):
                     rel_path = os.path.relpath(abs_path)
                     writer.writerow([abs_path, rel_path])
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description='Скачивание изображений и создание аннотации')
     parser.add_argument('--output', '-o', required=True, help='Путь к папке для сохранения изображений')
     parser.add_argument('--annotation', '-a', required=True, help='Путь к файлу аннотации')
