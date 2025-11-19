@@ -1,4 +1,5 @@
 import argparse
+
 from data_processing import create_df, add_amplitude, sort_by_amplitude, filtr_amplitude
 from visualization import plot_amplitude_histogram
 
@@ -17,6 +18,14 @@ def main():
         args = parse_arguments()
         df = create_df(args.input_csv)
         df = add_amplitude(df)
+        print("До сортировки\n\n\n")
+        print(df)
+        df = sort_by_amplitude(df)
+        print("После\n\n\n")
+        print(df)
+        print("\n\n\n")
+        kf = filtr_amplitude(df, args.min, args.max)
+        print(kf)
         plot_amplitude_histogram(df)
     except Exception as e:
         print(f"Ошибка при выполнении программы: {e}")
