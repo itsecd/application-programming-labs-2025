@@ -1,6 +1,6 @@
 import argparse
 import cv2
-import matplotlib
+import matplotlib.pyplot as plt
 
 
 def parsing() -> tuple[str, str, int]:
@@ -24,10 +24,10 @@ def main():
             (shape[1] / 2, shape[0] / 2), rotation_angle, 1.0
         )
         modded_image = cv2.warpAffine(image, rotation_matrix, (shape[1], shape[0]))
-        matplotlib.pyplot.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-        matplotlib.pyplot.show()
-        matplotlib.pyplot.imshow(cv2.cvtColor(modded_image, cv2.COLOR_BGR2RGB))
-        matplotlib.pyplot.show()
+        plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        plt.show()
+        plt.imshow(cv2.cvtColor(modded_image, cv2.COLOR_BGR2RGB))
+        plt.show()
         cv2.imwrite(destination_path, modded_image)
     except Exception as exp:
         print(exp)
