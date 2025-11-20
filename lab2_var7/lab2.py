@@ -2,8 +2,25 @@ import os
 import csv
 import random
 import argparse
+import time
 
 from icrawler.builtin import BingImageCrawler
+
+
+def parse_arguments() -> argparse.Namespace:
+    """
+    Парсинг аргументов командной строки
+    """
+    parser = argparse.ArgumentParser(description='Скачивание изображений змей по цветам')
+    parser.add_argument('-c', '--colors', nargs='+', required=True,
+                       help='Список цветов для поиска')
+    parser.add_argument('-t', '--total_count', type=int, required=True,
+                       help='Общее количество изображений (50-1000)')
+    parser.add_argument('-o', '--output_dir', type=str, default='snake_images',
+                       help='Папка для сохранения изображений')
+    parser.add_argument('-a', '--annotation', type=str, default='annotation.csv',
+                       help='Файл для аннотации (CSV)')
+    return parser.parse_args()
 
 
 def download_colored_snakes(colors: list[str], total_count: int, output_dir: str) -> None:
@@ -28,6 +45,9 @@ def download_colored_snakes(colors: list[str], total_count: int, output_dir: str
     
     crawler = BingImageCrawler(storage={'root_dir': output_dir})
     
+    time.sleep(5)
+
+
     for color, count in zip(colors, counts):
         print(f"Скачиваем {count} изображений цвета '{color}'...")
         crawler.crawl(keyword=f"snake {color}", max_num=count)
@@ -53,7 +73,9 @@ def create_annotation(output_dir: str, annotation_file: str) -> None:
 
 
 class ImageIterator:
-    """Итератор по путям к файлам из CSV аннотации"""
+    """
+    Итератор по путям к файлам из CSV аннотации
+    """
     
     def __init__(self, annotation_file: str):
         self.annotation_file = annotation_file
@@ -61,11 +83,10 @@ class ImageIterator:
         self.index = 0
 
     def __iter__(self):
-        # Загружаем данные при начале итерации
         if os.path.exists(self.annotation_file):
             with open(self.annotation_file, 'r', encoding='utf-8-sig') as file:
                 reader = csv.reader(file)
-                next(reader)  # пропускаем заголовок
+                next(reader)
                 self.data = [row for row in reader]
         self.index = 0
         return self
@@ -80,17 +101,7 @@ class ImageIterator:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description='Скачивание изображений змей по цветам')
-    parser.add_argument('-c', '--colors', nargs='+', required=True,
-                       help='Список цветов для поиска')
-    parser.add_argument('-t', '--total_count', type=int, required=True,
-                       help='Общее количество изображений (50-1000)')
-    parser.add_argument('-o', '--output_dir', type=str, default='snake_images',
-                       help='Папка для сохранения изображений')
-    parser.add_argument('-a', '--annotation', type=str, default='annotation.csv',  # НОВЫЙ АРГУМЕНТ
-                       help='Файл для аннотации (CSV)')
-    
-    args = parser.parse_args()
+    args = parse_arguments()
     
     try:
         download_colored_snakes(args.colors, args.total_count, args.output_dir)
