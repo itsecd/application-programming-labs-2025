@@ -9,7 +9,7 @@ from pathlib import Path
 FILE = 'annotation.csv'
 
 COLORS = ["red", "green", "blue", "yellow", "black", "white"]
-
+IMAGE_EXT = {'.jpg', '.jpeg', '.png'}
 
 def parse_args() -> argparse.Namespace:
     """Принимает цвет и кол-во PNG в виде аргумента."""
@@ -52,7 +52,7 @@ def valid_colors(colors: list[str]) -> list[str]:
 
 def validate_total_images(total_images: int) -> None:
     """Проверка кол-ва фотографий"""
-    if not (50 <= total_images <= 1000):
+    if not (10 <= total_images <= 1000):
         raise ValueError("Количество изображений должно быть от 50 до 1000.")
 
 
@@ -86,20 +86,19 @@ def search_download(selected_colors: list[str], images_per_color: int, remainder
         search_keyword = f"turtle {color}"
         print(f"Скачивание {count} изображений по запросу: '{search_keyword}'")
 
-        Bing_crawler = BingImageCrawler(
+        crawler = BingImageCrawler(
             storage={"root_dir": os.path.join(base_dir, color)}
         )
-        Bing_crawler.crawl(keyword=search_keyword, max_num=count)
+        crawler.crawl(keyword=search_keyword, max_num=count)
 
     print(f"Загрузка завершена. Изображения сохранены в папку '{base_dir}'.")
 
 def collect_image_paths(base_dir: str):
     """Собирает все .jpg/.jpeg/.png файлы в base_dir рекурсивно."""
-    image_extensions = {'.jpg', '.jpeg', '.png'}
     paths = []
     base_path = Path(base_dir).resolve() #resolve - абсолютный путь
     for file_path in base_path.rglob('*'):
-        if file_path.suffix.lower() in image_extensions:
+        if file_path.suffix.lower() in IMAGE_EXT:
             relative = file_path.relative_to(Path.cwd()) #Path.cwd() — текущая рабочая директория (откуда запущен скрипт).
             absolute = file_path.resolve() #абс.путь до png
             paths.append((str(absolute), str(relative)))
@@ -133,9 +132,8 @@ class ImageIterator:
                 self.paths = [row['absolute_path'] for row in reader]
         elif source_path.is_dir():
             # Сканируем папку
-            image_ext = {'.jpg', '.jpeg', '.png', '.bmp', '.webp'}
             for file in source_path.rglob('*'):
-                if file.suffix.lower() in image_ext:
+                if file.suffix.lower() in IMAGE_EXT:
                     self.paths.append(str(file.resolve()))
         else:
             raise ValueError(f"Источник '{source}' не является ни существующей папкой, ни CSV-файлом.")
@@ -171,11 +169,11 @@ def main():
     
     #csv
     write_annotation_csv(collect_image_paths(create_dir()))
-    # Пример использования итератора
+    # итератор
     print("\n🔍 Пример: первые 3 пути через ImageIterator:")
     try:
-        it = ImageIterator(FILE)  # или ImageIterator('turtle_images')
-        for i, path in enumerate(it):
+        iter = ImageIterator(FILE)  # или ImageIterator('turtle_images')
+        for i, path in enumerate(iter):
             if i >= 3:
                 break
             print(f"  {i+1}. {path}")
