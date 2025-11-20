@@ -52,7 +52,7 @@ def valid_colors(colors: list[str]) -> list[str]:
 
 def validate_total_images(total_images: int) -> None:
     """Проверка кол-ва фотографий"""
-    if not (10 <= total_images <= 1000):
+    if not (50 <= total_images <= 1000):
         raise ValueError("Количество изображений должно быть от 50 до 1000.")
 
 
@@ -163,22 +163,16 @@ def main():
         images_per_color, reminder = distribute_num_images(selected_colors, total_images)
         search_download(selected_colors, images_per_color, reminder, create_dir())
         
-    except Exception as e:
-        print(f"Ошибка: {e}", file=sys.stderr)
-        sys.exit(1)
-    
-    #csv
-    write_annotation_csv(collect_image_paths(create_dir()))
-    # итератор
-    print("\n🔍 Пример: первые 3 пути через ImageIterator:")
-    try:
+        write_annotation_csv(collect_image_paths(create_dir()))
+        print("\n Пример: первые 3 пути через ImageIterator:")
         iter = ImageIterator(FILE)  # или ImageIterator('turtle_images')
         for i, path in enumerate(iter):
             if i >= 3:
                 break
             print(f"  {i+1}. {path}")
     except Exception as e:
-        print(f"⚠️ Ошибка при итерации: {e}")
+        print(f"Ошибка: {e}", file=sys.stderr)
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
