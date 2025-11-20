@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-def plot_amplitude_histogram(df, output_path='amplitude_histogram.png'):
+def plot_amplitude_histogram(df: pd.DataFrame, output_path: str = 'amplitude_histogram.png') -> None:
     """
     Строит гистограмму распределения файлов по 5 диапазонам амплитуды
     """

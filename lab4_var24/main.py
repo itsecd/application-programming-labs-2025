@@ -5,7 +5,9 @@ from visualization import plot_amplitude_histogram
 
 
 def parse_arguments() -> argparse.Namespace:
-    """Парсит аргументы командной строки"""
+    """
+    Парсит аргументы командной строки
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_csv", help="Путь к csv")
     parser.add_argument("--min", type=float, help="минимальное значение фильтрации")
@@ -14,6 +16,9 @@ def parse_arguments() -> argparse.Namespace:
 
 
 def main():
+    """
+    основная функция программы
+    """
     try:
         args = parse_arguments()
         df = create_df(args.input_csv)
