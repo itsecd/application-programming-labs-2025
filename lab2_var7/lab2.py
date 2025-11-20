@@ -11,6 +11,7 @@ def parse_arguments() -> argparse.Namespace:
     """
     Парсинг аргументов командной строки
     """
+
     parser = argparse.ArgumentParser(description='Скачивание изображений змей по цветам')
     parser.add_argument('-c', '--colors', nargs='+', required=True,
                        help='Список цветов для поиска')
@@ -43,13 +44,17 @@ def download_colored_snakes(colors: list[str], total_count: int, output_dir: str
     for color, count in zip(colors, counts):
         print(f"  {color}: {count}")
     
-    crawler = BingImageCrawler(storage={'root_dir': output_dir})
-    
     time.sleep(5)
 
 
     for color, count in zip(colors, counts):
-        print(f"Скачиваем {count} изображений цвета '{color}'...")
+        
+        color_dir = os.path.join(output_dir, color)
+        os.makedirs(color_dir, exist_ok=True)
+        
+        print(f"Скачиваем {count} изображений цвета '{color}' в папку '{color_dir}'...")
+        
+        crawler = BingImageCrawler(storage={'root_dir': color_dir})
         crawler.crawl(keyword=f"snake {color}", max_num=count)
 
 
@@ -58,11 +63,13 @@ def create_annotation(output_dir: str, annotation_file: str) -> None:
     Создание CSV файла с аннотацией путей к изображениям
     """
 
-    image_paths = [
-        [os.path.abspath(os.path.join(output_dir, f)), os.path.join(output_dir, f)]
-        for f in os.listdir(output_dir) 
-        if f.lower().endswith(('.jpg', '.jpeg', '.png'))
-    ]
+    image_paths = []
+    for root, dirs, files in os.walk(output_dir):
+        for file in files:
+            if file.lower().endswith(('.jpg', '.jpeg', '.png')):
+                abs_path = os.path.abspath(os.path.join(root, file))
+                rel_path = os.path.relpath(os.path.join(root, file))
+                image_paths.append([abs_path, rel_path])
     
     data = [["Абсолютный путь", "Относительный путь"]] + image_paths
     
