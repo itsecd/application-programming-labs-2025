@@ -11,11 +11,11 @@ from iterator import FilePathIterator
 def min_amplitude(file_path: Path) -> float:
     """
     Возвращает минимальную амплитуду (по модулю) аудиофайла.
-    Если файл невозможно прочитать — возвращает 0.
+    Если файл невозможно прочитать — возвращает 0.0.
     """
     if not file_path.exists():
         print(f"[WARNING] File does not exist: {file_path}")
-        return 0.0
+        return -1
     
     data, samplerate = sf.read(file_path)
     abs_data = np.abs(data)
@@ -26,21 +26,19 @@ def set_dataframe (src: Path) -> pd.DataFrame:
     Создаёт DataFrame из CSV-файла (abs_path, rel_path)
     и вычисляет минимальную амплитуду для каждого файла.
     """
-    absolute_paths = []
-    relative_paths = []
     amplitudes = []
 
-    it = FilePathIterator(src)
-    for p in it:
-        abs_path = p['abs_path']
-        rel_path = p.get('rel_path', '')
+    df = pd.read_csv(src)
 
-        absolute_paths.append(abs_path)
-        relative_paths.append(rel_path)
-        amplitudes.append(min_amplitude(Path(abs_path)))
+    for path in df["abs_path"]:
+        min_ampl = min_amplitude(Path(path))
+        if min_ampl == -1:
+            amplitudes.append(None)
+        else:
+            amplitudes.append(min_ampl)
     
-    df = pd.DataFrame({"abs_path": absolute_paths, "rel_path": relative_paths, "amplitudes": amplitudes})
-
+    df["amplitudes"] = amplitudes
+    df = df.dropna(how="any")
     return df
 
 def sort_amplitudes(df: pd.DataFrame) -> pd.DataFrame:
