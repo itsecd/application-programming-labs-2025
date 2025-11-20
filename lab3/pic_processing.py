@@ -10,7 +10,7 @@ def img_show(img: np.ndarray) -> None:
 
 def img_read(file_path: str) -> np.ndarray:
     img = cv2.imread(file_path)
-    shape = img.shape()
+    shape = img.shape
     print(
         f"Ширина изображения в пикселях: {shape[1]} \n Высота изображения в пикселях:{shape[0]}"
     )
@@ -18,7 +18,7 @@ def img_read(file_path: str) -> np.ndarray:
 
 
 def img_rotation(img: np.ndarray, rotation_angle: int) -> np.ndarray:
-    shape = img.shape()
+    shape = img.shape
     rotation_matrix = cv2.getRotationMatrix2D(
         (shape[1] / 2, shape[0] / 2), rotation_angle, 1.0
     )

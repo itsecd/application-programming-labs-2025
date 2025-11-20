@@ -15,8 +15,6 @@ def parsing() -> tuple[str, str, int]:
 def main():
     try:
         file_path, destination_path, rotation_angle = parsing()
-        destination_path = "modded.jpg"
-        rotation_angle = 30
         img = pic_processing.img_read(file_path)
         pic_processing.img_show(img)
         img_modded = pic_processing.img_rotation(img, rotation_angle)
