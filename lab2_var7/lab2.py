@@ -7,6 +7,9 @@ import time
 from icrawler.builtin import BingImageCrawler
 
 
+ALLOWED_COLORS = ["red", "green", "blue", "yellow", "black", "white", "orange", "purple", "brown", "gray"]
+
+
 def parse_arguments() -> argparse.Namespace:
     """
     Парсинг аргументов командной строки
@@ -14,7 +17,7 @@ def parse_arguments() -> argparse.Namespace:
 
     parser = argparse.ArgumentParser(description='Скачивание изображений змей по цветам')
     parser.add_argument('-c', '--colors', nargs='+', required=True,
-                       help='Список цветов для поиска')
+                       help='Список цветов для поиска. Допустимые цвета: {", ".join(ALLOWED_COLORS)}')
     parser.add_argument('-t', '--total_count', type=int, required=True,
                        help='Общее количество изображений (50-1000)')
     parser.add_argument('-o', '--output_dir', type=str, default='snake_images',
@@ -24,6 +27,27 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def validate_colors(colors: list[str]) -> list[str]:
+    """
+    Проверка корректности введенных цветов
+    """
+
+    validated_colors = []
+    invalid_colors = []
+    
+    for color in colors:
+        cleaned_color = color.strip().lower()
+        if cleaned_color in ALLOWED_COLORS:
+            validated_colors.append(cleaned_color)
+        else:
+            invalid_colors.append(color)
+    
+    if invalid_colors:
+        raise ValueError(f"Недопустимые цвета: {invalid_colors}. Допустимые цвета: {', '.join(ALLOWED_COLORS)}")
+    
+    return validated_colors
+
+
 def download_colored_snakes(colors: list[str], total_count: int, output_dir: str) -> None:
     """
     Скачивание изображений змей разных цветов в одну папку
@@ -31,6 +55,8 @@ def download_colored_snakes(colors: list[str], total_count: int, output_dir: str
 
     if not 50 <= total_count <= 1000:
         raise ValueError("Общее количество должно быть от 50 до 1000")
+    
+    colors = validate_colors(colors)
     
     os.makedirs(output_dir, exist_ok=True)
     print(f"Папка создана: {os.path.abspath(output_dir)}")
@@ -48,7 +74,7 @@ def download_colored_snakes(colors: list[str], total_count: int, output_dir: str
 
 
     for color, count in zip(colors, counts):
-        
+
         color_dir = os.path.join(output_dir, color)
         os.makedirs(color_dir, exist_ok=True)
         
