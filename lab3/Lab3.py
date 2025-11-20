@@ -2,7 +2,7 @@ import argparse
 
 import pic_processing
 
-"""
+
 def parsing() -> tuple[str, str, int]:
     parser = argparse.ArgumentParser()
     parser.add_argument("file_path", type=str, help="Enter file path")
@@ -10,12 +10,11 @@ def parsing() -> tuple[str, str, int]:
     parser.add_argument("rotation_angle", type=int, help="Enter rotation angle")
     args = parser.parse_args()
     return args.file_path, args.destination_path, args.rotation_angle
-"""
+
 
 def main():
     try:
-        """file_path, destination_path, rotation_angle = parsing()"""
-        file_path = "C:\study\3_semester\application_programming\application-programming-labs-2025\lab3\dogs\dog.jpg"
+        file_path, destination_path, rotation_angle = parsing()
         destination_path = "modded.jpg"
         rotation_angle = 30
         img = pic_processing.img_read(file_path)
