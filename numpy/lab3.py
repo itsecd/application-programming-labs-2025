@@ -8,6 +8,7 @@ import sys
 
 
 def image_handler(path: str):
+    """Обработка изображения"""
     img_bgr = cv2.imread(path)
     if img_bgr is None:
         raise FileNotFoundError(f"Не удалось открыть изображение по пути: {path}")
@@ -20,6 +21,7 @@ def image_handler(path: str):
 
 
 def display_images(images: list[np.ndarray]) -> None:
+    """Вывод изображений"""
     plt.figure(figsize=(10, 5))
 
     plt.subplot(1, 2, 1)
@@ -36,6 +38,7 @@ def display_images(images: list[np.ndarray]) -> None:
 
 
 def args_parse() -> argparse.Namespace:
+    """Парсинг аргументов"""
     parser = argparse.ArgumentParser(description="Инверсия цветов изображения.")
     parser.add_argument("--input", required=True, help="Путь к исходному изображению.")
     parser.add_argument("--output", required=True, help="Путь к обработанному изображению.")
@@ -43,6 +46,7 @@ def args_parse() -> argparse.Namespace:
 
 
 def main():
+    """Главная функция"""
     args = args_parse()
 
     img_rgb, negative_rgb, shape = image_handler(args.input)
