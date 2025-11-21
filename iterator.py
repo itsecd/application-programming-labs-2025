@@ -4,9 +4,10 @@ from typing import Iterator, List
 
 class Iterator:
     def __init__(self, csv_path: str) -> None:
-        self.paths = self.paths_get()
+        self.csv_path = csv_path 
+        self.paths = self.paths_get()  
         self.index = 0
-        self.csv_path = csv_path
+
 
 
 
@@ -33,7 +34,7 @@ class Iterator:
             r = csv.reader(file)
 
             next(r)
-            for row in reader:
+            for row in r:
                 paths.append(row[0])
 
         return paths

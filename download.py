@@ -31,5 +31,5 @@ def crawler_initial(crawler_name: str, craw_res: str) -> Any:
     if crawler_name not in crawlers_accept:
         raise ValueError(f"bad crawler source: {crawler_name}")
 
-    return crawlers[crawler_name](storage={'craw_res': craw_res})
+    return crawlers_accept[crawler_name](storage={'root_dir': craw_res})
 
