@@ -5,20 +5,37 @@ from icrawler.builtin import BingImageCrawler
 
 
 class FileIterator:
-    def __init__(self, annotation_file=None, images_dir=None) -> None:
-        self.root_dir = root_dir
+    def __init__(self, source) -> None:
         self.files = []
+        
+
+        if os.path.isdir(source):
+            for root, dirs, files in os.walk(source):
+                for file in files:
+                    self.files.append(os.path.join(root, file))
+
+        elif os.path.isfile(source):
+            with open(source, 'r', encoding='utf-8') as file:
+                reader = csv.reader(file, delimiter=";")
+                next(reader)
+                for row in reader:
+                    if row[0] != "":
+                        self.files.append(row[0])
+
+        else:
+            raise ValueError("Необходимо указать файл аннотации или папку с изображениями")
+
+        self.index = 0 
 
     def __iter__(self):
         return self
 
-    def __next__(self):
-
-        if self.counter < self.limit:
-            self.counter += 1
-            return self.counter
-        else:
-            raise StopIteration
+    def __next__(self) -> str:
+        if self.index < len(self.files):
+            path = self.files[self.index]
+            self.index+=1
+            return path
+        raise StopIteration
 
 
 
@@ -64,7 +81,7 @@ def download_images(output_dir=str, keywords=set) -> None:
         os.makedirs(category_dir, exist_ok=True)
 
         crawler = BingImageCrawler(storage={'root_dir': category_dir}, downloader_threads=4)
-        crawler.crawl(keyword=kword, max_num=2)
+        crawler.crawl(keyword=kword)
 
 
 def main() -> None:
@@ -72,6 +89,14 @@ def main() -> None:
     args = parse_args()
     download_images(args.output, args.keywords)
     create_annotation(args.output, args.annotation)
+
+    files_iterator = FileIterator(args.output)
+    for file in files_iterator:
+        print(file)
+
+    files_iterator = FileIterator(args.annotation)
+    for file in files_iterator:
+        print(file)
 
 
 if __name__ == "__main__":
