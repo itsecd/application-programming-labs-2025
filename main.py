@@ -1,285 +1,113 @@
 import argparse
 import os
-import re
-import sys
-from typing import List, Optional, Pattern, Tuple
-from dataclasses import dataclass
-from datetime import datetime
 
+from dataframe_manager import DataFrameManager
+from image_analyzer import ImageAnalyzer
+from visualizer import Visualizer
 
-class Validators:
-    """Класс с регулярными выражениями для валидации данных."""
-
-    MOSCOW_PATTERN: Pattern = re.compile(r'^(г\.\s*)?Москва$', re.IGNORECASE)
-
-    PERSON_PATTERN: Pattern = re.compile(
-        r'Фамилия:\s*(.+)\s*'
-        r'Имя:\s*(.+)\s*'
-        r'Пол:\s*(.+)\s*'
-        r'Дата рождения:\s*(.+)\s*'
-        r'Номер телефона или email:\s*(.+)\s*'
-        r'Город:\s*(.+)',
-        re.IGNORECASE | re.MULTILINE | re.DOTALL
-    )
-
-    NAME_PATTERN: Pattern = re.compile(r'^[А-ЯЁA-Z][а-яёa-z]*$')
-
-    GENDER_PATTERN: Pattern = re.compile(
-        r'^(М|м|Мужской|мужской|Ж|ж|Женский|женский)$'
-    )
-
-    DATE_PATTERN: Pattern = re.compile(r'^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$')
-
-    PHONE_PATTERN: Pattern = re.compile(
-        r'^(8|\+7)[\s(-]*(\d{3})[\s)-]*(\d{3})[\s-]*(\d{2})[\s-]*(\d{2})$'
-    )
-
-    EMAIL_PATTERN: Pattern = re.compile(
-        r'^[a-zA-Z0-9._%+-]{1,64}@(gmail\.com|mail\.ru|yandex\.ru)$'
-    )
-
-
-@dataclass
-class Person:
-    """Класс для представления анкеты человека."""
-
-    last_name: str
-    first_name: str
-    gender: str
-    birth_date: str
-    contact: str
-    city: str
-    is_valid: bool = True
-    validation_errors: List[str] = None
-
-    def __post_init__(self):
-        """Проверка валидности данных после создания объекта."""
-        if self.validation_errors is None:
-            self.validation_errors = []
-        self._validate_person()
-
-    def _validate_person(self) -> None:
-        """Проверяет валидность всех данных анкеты."""
-        self.is_valid = True
-        self.validation_errors = []
-
-        if not Validators.NAME_PATTERN.match(self.last_name):
-            self.is_valid = False
-            self.validation_errors.append(f"Неверный формат фамилии: {self.last_name}")
-
-        if not Validators.NAME_PATTERN.match(self.first_name):
-            self.is_valid = False
-            self.validation_errors.append(f"Неверный формат имени: {self.first_name}")
-
-        if not Validators.GENDER_PATTERN.match(self.gender):
-            self.is_valid = False
-            self.validation_errors.append(f"Неверный формат пола: {self.gender}")
-
-        if not self._validate_date(self.birth_date):
-            self.is_valid = False
-            self.validation_errors.append(f"Неверный формат даты рождения: {self.birth_date}")
-
-        if not (Validators.PHONE_PATTERN.match(self.contact.replace(' ', '')) or
-                Validators.EMAIL_PATTERN.match(self.contact)):
-            self.is_valid = False
-            self.validation_errors.append(f"Неверный формат контакта: {self.contact}")
-
-    def _validate_date(self, date_str: str) -> bool:
-        """Проверяет валидность даты рождения."""
-        match = Validators.DATE_PATTERN.match(date_str)
-        if not match:
-            return False
-
-        day, month, year = map(int, match.groups())
-
-        current_year = datetime.now().year
-        if year < 1900 or year > current_year:
-            return False
-
-        if month < 1 or month > 12:
-            return False
-
-        days_in_month = [
-            31,
-            29 if year % 4 == 0 and (year % 100 != 0 or year % 400 == 0) else 28,
-            31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-        ]
-
-        return 1 <= day <= days_in_month[month - 1]
-
-    @classmethod
-    def from_string(cls, data: str) -> Optional['Person']:
-        """
-        Создает объект Person из строки с данными анкеты.
-
-        Args:
-            data: Строка с данными анкеты.
-
-        Returns:
-            Объект Person или None если данные некорректны.
-        """
-        cleaned_data = re.sub(r'^\d+\)\s*', '', data.strip(), flags=re.MULTILINE)
-
-        match = Validators.PERSON_PATTERN.search(cleaned_data)
-        if match:
-            return cls(
-                last_name=match.group(1).strip(),
-                first_name=match.group(2).strip(),
-                gender=match.group(3).strip(),
-                birth_date=match.group(4).strip(),
-                contact=match.group(5).strip(),
-                city=match.group(6).strip()
-            )
-        return None
-
-    def is_from_moscow(self) -> bool:
-        """
-        Проверяет, проживает ли человек в Москве.
-
-        Returns:
-            True если человек из Москвы, иначе False.
-        """
-        return bool(Validators.MOSCOW_PATTERN.match(self.city))
-
-    def to_string(self) -> str:
-        """
-        Преобразует объект Person в строку для сохранения.
-
-        Returns:
-            Строка с данными анкеты.
-        """
-        return (f"{self.last_name}\n{self.first_name}\n{self.gender}\n"
-                f"{self.birth_date}\n{self.contact}\n{self.city}\n")
-
-    def __str__(self) -> str:
-        """Строковое представление объекта."""
-        status = "✓" if self.is_valid else "✗"
-        return f"{status} {self.last_name} {self.first_name}, {self.city}"
-
-
-class FileParser:
-    """Класс для работы с файлами анкет."""
-
-    @staticmethod
-    def read_people_from_file(filename: str) -> Tuple[List[Person], List[Person]]:
-        """
-        Читает анкеты людей из файла.
-
-        Args:
-            filename: Имя файла для чтения.
-
-        Returns:
-            Кортеж (валидные_анкеты, невалидные_анкеты).
-
-        Raises:
-            FileNotFoundError: Если файл не существует.
-            IOError: При ошибках чтения файла.
-        """
-        if not os.path.exists(filename):
-            raise FileNotFoundError(f"Файл {filename} не найден")
-
-        try:
-            with open(filename, 'r', encoding='utf-8') as file:
-                content = file.read()
-
-            profiles = content.strip().split('\n\n')
-
-            valid_people = []
-            invalid_people = []
-
-            for profile in profiles:
-                if profile.strip():
-                    person = Person.from_string(profile)
-                    if person:
-                        if person.is_valid:
-                            valid_people.append(person)
-                        else:
-                            invalid_people.append(person)
-                    else:
-                        print("Предупреждение: не удалось распарсить анкету")
-
-            return valid_people, invalid_people
-
-        except Exception as e:
-            raise IOError(f"Ошибка при чтении файла {filename}: {str(e)}")
-
-    @staticmethod
-    def save_people_to_file(people: List[Person], filename: str) -> None:
-        """
-        Сохраняет список людей в файл.
-
-        Args:
-            people: Список объектов Person для сохранения.
-            filename: Имя файла для сохранения.
-
-        Raises:
-            IOError: При ошибках записи в файл.
-        """
-        try:
-            with open(filename, 'w', encoding='utf-8') as file:
-                for i, person in enumerate(people, 1):
-                    file.write(f"{i})\n")
-                    file.write(f"Фамилия: {person.last_name}\n")
-                    file.write(f"Имя: {person.first_name}\n")
-                    file.write(f"Пол: {person.gender}\n")
-                    file.write(f"Дата рождения: {person.birth_date}\n")
-                    file.write(f"Номер телефона или email: {person.contact}\n")
-                    file.write(f"Город: {person.city}\n\n")
-
-        except Exception as e:
-            raise IOError(f"Ошибка при записи в файл {filename}: {str(e)}")
-
-
-def main() -> None:
-    """
-    Главная функция для чтения анкет из входного файла,
-    проверки валидности, фильтрации по Москве и сохранения результатов.
-    """
-    parser = argparse.ArgumentParser(description="Обработка анкеты людей.")
-    parser.add_argument("input_file", help="Имя входного файла с анкетами")
-    parser.add_argument("output_file", help="Имя файла для сохранения анкет из Москвы")
-    args = parser.parse_args()
-
-    input_filename = args.input_file
-    output_filename = args.output_file
-
+def main():
+    """Главная функция приложения."""
     try:
-        if not os.path.exists(input_filename):
-            print(f"Ошибка: файл {input_filename} не найден")
-            sys.exit(1)
+        parser = argparse.ArgumentParser(
+            description='Анализ яркости изображений и создание графиков'
+        )
+        parser.add_argument(
+            '--annotation', type=str, required=True,
+            help='CSV файл с аннотациями изображений'
+        )
+        parser.add_argument(
+            '--output_df', type=str, required=True,
+            help='Файл для сохранения обогащенного DataFrame'
+        )
+        parser.add_argument(
+            '--output_plot', type=str, required=True,
+            help='Файл для сохранения графика распределения'
+        )
+        args = parser.parse_args()
 
-        valid_people, invalid_people = FileParser.read_people_from_file(input_filename)
+        print("=== Анализ яркости изображений ===")
+        print(f"Файл аннотации: {args.annotation}")
+        print(f"Выходной DataFrame: {args.output_df}")
+        print(f"Выходной график: {args.output_plot}")
+        print("=" * 50)
 
-        print(f"Прочитано анкет: {len(valid_people) + len(invalid_people)}")
-        print(f"Валидных анкет: {len(valid_people)}")
-        print(f"Невалидных анкет: {len(invalid_people)}")
+        print("\n1. Создаем DataFrame из аннотации...")
+        df_manager = DataFrameManager()
+        df = df_manager.create_from_annotation(args.annotation)
 
-        if invalid_people:
-            print("\nНевалидные анкеты:")
-            for person in invalid_people:
-                print(f"  - {person}")
-                for error in person.validation_errors:
-                    print(f"    Ошибка: {error}")
+        if len(df) == 0:
+            print("Ошибка: в аннотации нет данных!")
+            return
 
-        moscow_people = [person for person in valid_people if person.is_from_moscow()]
+        print("\n2. Поиск существующих изображений...")
+        valid_image_paths = df_manager.get_valid_image_paths()
 
-        print(f"\nНайдено людей из Москвы: {len(moscow_people)}")
-        if moscow_people:
-            print("\nСписок людей из Москвы:")
-            for person in moscow_people:
-                print(f"  - {person}")
+        if len(valid_image_paths) == 0:
+            print("Ошибка: не найдено ни одного существующего изображения!")
+            print("Убедитесь, что:")
+            print(" - Папка с изображениями существует")
+            print(" - Файлы изображений присутствуют в папке")
+            print(" - Относительные пути в аннотации верны")
+            return
 
-            FileParser.save_people_to_file(moscow_people, output_filename)
-            print(f"\nАнкеты сохранены в файл: {output_filename}")
-        else:
-            print("Людей из Москвы не найдено")
+        print("\n3. Анализируем яркость изображений...")
+        analyzer = ImageAnalyzer()
+        visualizer = Visualizer()
 
-    except FileNotFoundError as e:
-        print(f"Ошибка: {e}")
-    except IOError as e:
-        print(f"Ошибка ввода-вывода: {e}")
+        brightness_data = []
+
+        for idx, image_path in enumerate(valid_image_paths):
+            if idx % 5 == 0 and idx > 0:
+                print(f"  Обработано {idx}/{len(valid_image_paths)} изображений...")
+
+            stats = analyzer.get_brightness_stats(image_path)
+            brightness_data.append(stats)
+
+        print(f"  Успешно проанализировано {len(brightness_data)} изображений")
+
+        print("\n4. Добавляем данные о яркости в DataFrame...")
+        df_manager.add_brightness_columns(valid_image_paths, brightness_data)
+        df_manager.print_brightness_stats()
+
+        print("\n5. Демонстрация функций сортировки и фильтрации...")
+
+        df_sorted = df_manager.sort_by_brightness()
+
+        # Фильтрация по диапазонам
+        for brightness_range in ["0-85", "86-170", "171-255"]:
+            filtered_df = df_manager.filter_by_brightness(brightness_range)
+            if len(filtered_df) > 0:
+                first_file = filtered_df.iloc[0]
+                filename = os.path.basename(first_file['relative_path'])
+                print(f"  Пример с диапазоном '{brightness_range}': {filename}")
+
+        print("\n6. Создаем графики...")
+
+        # Гистограммы по каналам
+        visualizer.plot_channel_histograms(df_manager.df, "channel_histograms.png")
+
+        # Распределение по диапазонам яркости
+        visualizer.plot_brightness_distribution(df_sorted, args.output_plot)
+
+        print("\n7. Сохраняем результаты...")
+        df_manager.save_to_csv(args.output_df)
+
+        print("\n" + "=" * 50)
+        print("ОТЧЕТ:")
+        print(f"Всего записей в аннотации: {len(df)}")
+        print(f"Найдено изображений: {len(valid_image_paths)}")
+        print(f"Проанализировано: {len(brightness_data)}")
+        print(f"DataFrame сохранен в: {args.output_df}")
+        print(f"График распределения сохранен в: {args.output_plot}")
+        print(f"Гистограммы каналов сохранены в: channel_histograms.png")
+
+        print("\nРабота программы завершена успешно!")
+
+    except KeyboardInterrupt:
+        print("\nПрограмма прервана пользователем")
     except Exception as e:
-        print(f"Неожиданная ошибка: {e}")
+        print(f"\nКритическая ошибка: {e}")
+        raise  
 
 
 if __name__ == '__main__':
