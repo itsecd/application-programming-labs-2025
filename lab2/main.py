@@ -1,13 +1,13 @@
-import argparse
 import csv
 import os
+import argparse
 from icrawler.builtin import BingImageCrawler
 
 
 class FileIterator:
+
     def __init__(self, source) -> None:
         self.files = []
-        
 
         if os.path.isdir(source):
             for root, dirs, files in os.walk(source):
@@ -23,32 +23,21 @@ class FileIterator:
                         self.files.append(row[0])
 
         else:
-            raise ValueError("Необходимо указать файл аннотации или папку с изображениями")
+            raise ValueError(
+                "Необходимо указать файл аннотации или папку с изображениями")
 
-        self.index = 0 
+        self.index = 0
 
-    def __iter__(self):
+    def __iter__(self) -> "FileIterator":
         return self
 
     def __next__(self) -> str:
         if self.index < len(self.files):
             path = self.files[self.index]
-            self.index+=1
+            self.index += 1
             return path
         raise StopIteration
 
-
-
-def create_annotation(output_dir, annotation_file) -> None:
-
-    with open(annotation_file, 'w', newline='', encoding="utf-8") as file:
-        writer = csv.writer(file, delimiter=';')
-        writer.writerow(["Abs path", "Rel path"])
-        for root, dirs, files in os.walk(output_dir):
-            for file in files:
-                abs_path = os.path.abspath(os.path.join(root, file))
-                rel_path = os.path.relpath(abs_path)
-                writer.writerow([abs_path, rel_path])
 
 def parse_args() -> argparse.Namespace:
     """
@@ -80,23 +69,40 @@ def download_images(output_dir=str, keywords=set) -> None:
         category_dir = os.path.join(output_dir, kword)
         os.makedirs(category_dir, exist_ok=True)
 
-        crawler = BingImageCrawler(storage={'root_dir': category_dir}, downloader_threads=4)
+        crawler = BingImageCrawler(storage={'root_dir': category_dir},
+                                   downloader_threads=4)
         crawler.crawl(keyword=kword)
 
 
+def create_annotation(output_dir, annotation_file) -> None:
+    """Создание .csv файла, в котором располагаются пути к скачанным файлам"""
+    with open(annotation_file, 'w', newline='', encoding="utf-8") as file:
+        writer = csv.writer(file, delimiter=';')
+        writer.writerow(["Abs path", "Rel path"])
+        for root, dirs, files in os.walk(output_dir):
+            for file in files:
+                abs_path = os.path.abspath(os.path.join(root, file))
+                rel_path = os.path.relpath(abs_path)
+                writer.writerow([abs_path, rel_path])
+
+
 def main() -> None:
-    """"""
     args = parse_args()
-    download_images(args.output, args.keywords)
-    create_annotation(args.output, args.annotation)
 
-    files_iterator = FileIterator(args.output)
-    for file in files_iterator:
-        print(file)
+    try:
+        download_images(args.output, args.keywords)
+        create_annotation(args.output, args.annotation)
 
-    files_iterator = FileIterator(args.annotation)
-    for file in files_iterator:
-        print(file)
+        files_iterator = FileIterator(args.output)
+        for file in files_iterator:
+            print(file)
+
+        files_iterator = FileIterator(args.annotation)
+        for file in files_iterator:
+            print(file)
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
+
 
 
 if __name__ == "__main__":
