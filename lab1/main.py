@@ -67,6 +67,7 @@ def handle(profiles: list[dict], filename: str = "profiles.txt") -> None:
         write_to_file(bad_profiles)
         for i in range(len(bad_profiles)):
             print_profile(bad_profiles[i], i + 1)
+        write_to_file(profiles, "data.txt")
 
 
 def write_to_file(profiles: list[dict], name: str = "profiles.txt") -> None:
