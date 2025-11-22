@@ -1,0 +1,56 @@
+import csv
+import os
+from typing import Iterator
+
+
+class AudioFileIterator:
+    """
+    Итератор для работы с путями к аудиофайлам.
+    """
+
+    def __init__(self, source: str):
+        self.paths = []
+        self.source_path = source
+
+        if os.path.isdir(source):
+            for root, _, files in os.walk(source):
+                for f in files:
+                    if f.lower().endswith(('.mp3', '.wav', '.ogg', '.m4a')):
+                        self.paths.append(os.path.join(root, f))
+        elif os.path.isfile(source) and source.endswith(".csv"):
+            csv_dir = os.path.dirname(source)
+            with open(source, encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    if "absolute_path" in row and row["absolute_path"]:
+                        if os.path.exists(row["absolute_path"]):
+                            self.paths.append(row["absolute_path"])
+                        else:
+                            if "relative_path" in row and row["relative_path"]:
+                                relative_path = os.path.join(
+                                    csv_dir, row["relative_path"])
+                                if os.path.exists(relative_path):
+                                    self.paths.append(relative_path)
+                    elif "relative_path" in row and row["relative_path"]:
+                        relative_path = os.path.join(
+                            csv_dir, row["relative_path"])
+                        if os.path.exists(relative_path):
+                            self.paths.append(relative_path)
+        else:
+            raise ValueError(
+                "Источник должен быть путем к CSV файлу или папке")
+
+        self._index = 0
+
+    def __iter__(self) -> Iterator[str]:
+        return self
+
+    def __next__(self) -> str:
+        if self._index >= len(self.paths):
+            raise StopIteration
+        path = self.paths[self._index]
+        self._index += 1
+        return path
+
+    def __len__(self) -> int:
+        return len(self.paths)
