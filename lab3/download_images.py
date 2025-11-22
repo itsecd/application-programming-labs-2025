@@ -66,7 +66,6 @@ def parse_args() -> argparse.Namespace:
                         type=str,
                         required=True,
                         help="Путь к папке, где будут сохранены измененные изображения")
-
     return parser.parse_args()
 
 
@@ -78,7 +77,7 @@ def download_images(output_dir=str, keywords=set) -> None:
 
         crawler = BingImageCrawler(storage={'root_dir': category_dir},
                                    downloader_threads=4)
-        crawler.crawl(keyword=kword)
+        crawler.crawl(keyword=kword, max_num=5)
 
 
 def create_annotation(output_dir, annotation_file) -> None:
