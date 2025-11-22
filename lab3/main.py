@@ -16,15 +16,27 @@ def paint_frame(img: numpy.ndarray, height: int , width: int, thickness: int, co
 
     cv2.rectangle(img, (x1,y1), (x2,y2), color, thickness)
 
+
 def save_new_images(arr_imgs: dict, result_dir: str) -> None:
     """Сохранение изображений с рамками по ключевым словам в заданную директорию"""
     for path, framed_img in arr_imgs.items():
         category_dir = os.path.join(result_dir, os.path.basename(os.path.dirname(path)))
         os.makedirs(category_dir, exist_ok=True)
 
-        frame_img_path = os.path.join(category_dir, f"frame_{os.path.basename(path)}")
-        cv2.imwrite(frame_img_path, framed_img)
-        print(f"Сохранено: {frame_img_path}")
+        framed_img_path = os.path.join(category_dir, f"frame_{os.path.basename(path)}")
+        cv2.imwrite(framed_img_path, framed_img)
+        print(f"Сохранено: {framed_img_path}")
+
+
+def show_images(image: numpy.ndarray, image_shapes: str) -> None:
+    """Выводит изображение вместе с его размерами"""
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # OpenCV использует BGR
+    plt.figure(image_shapes)
+    plt.imshow(image_rgb)
+
+    plt.axis('off')  # убрать оси
+    plt.show()
+
 
 def main() -> None:
     args = parse_args()
@@ -34,7 +46,7 @@ def main() -> None:
         create_annotation(args.output, args.annotation)
         arr_framed_imgs = {}
 
-        files_iterator = FileIterator(args.output)
+        files_iterator = FileIterator(args.annotation)
         for path in files_iterator:
             image = cv2.imread(path)      
 
@@ -43,14 +55,8 @@ def main() -> None:
 
             paint_frame(image, height, width, int(width*0.02))
             arr_framed_imgs[path] = image
+            show_images(image, image_shapes)
 
-            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # OpenCV использует BGR
-            plt.figure(image_shapes)
-            plt.imshow(image_rgb)
-
-            plt.axis('off')  # убрать оси
-            plt.show()
-            
         save_new_images(arr_framed_imgs, args.result)
            
     except Exception as e:
