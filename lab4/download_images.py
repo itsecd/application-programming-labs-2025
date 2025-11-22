@@ -17,7 +17,7 @@ class FileIterator:
 
         elif os.path.isfile(source):
             with open(source, 'r', encoding='utf-8') as file:
-                reader = csv.reader(file, delimiter=";")
+                reader = csv.reader(file)
                 next(reader)
                 for row in reader:
                     if row[0] != "":
@@ -83,8 +83,8 @@ def download_images(output_dir=str, keywords=set) -> None:
 def create_annotation(output_dir, annotation_file) -> None:
     """Создание .csv файла, в котором располагаются пути к скачанным файлам"""
     with open(annotation_file, 'w', newline='', encoding="utf-8") as file:
-        writer = csv.writer(file, delimiter=';')
-        writer.writerow(["Abs path", "Rel path"])
+        writer = csv.writer(file)
+        writer.writerow(["abs_path", "rel_path"])
         for root, dirs, files in os.walk(output_dir):
             for file in files:
                 abs_path = os.path.abspath(os.path.join(root, file))
