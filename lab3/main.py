@@ -20,18 +20,18 @@ def main() -> None:
     try:
         # download_images(args.output, args.keywords)
         create_annotation(args.output, args.annotation)
-        img_array = []
+        image_array = []
 
         files_iterator = FileIterator(args.output)
         for path in files_iterator:
-            img = cv2.imread(path)      
+            image = cv2.imread(path)      
 
-            height, width, channels = img.shape
-            img_shapes = f"{height} height x {width} width ({channels} channels)"
+            height, width, channels = image.shape
+            image_shapes = f"{height} height x {width} width ({channels} channels)"
 
-            paint_frame(img, height, width, int(width*0.02))
-            img_array.append(img)
-            cv2.imshow(img_shapes, img)  # отображение
+            paint_frame(image, height, width, int(width*0.02))
+            image_array.append(image)
+            cv2.imshow(image_shapes, image)  # отображение
             cv2.waitKey(0)  
 
            

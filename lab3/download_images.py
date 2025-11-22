@@ -61,6 +61,12 @@ def parse_args() -> argparse.Namespace:
                         type=str,
                         default="annotation.csv",
                         help="Файл для записи путей к загруженным файлам")
+    parser.add_argument("--result",
+                        "-r",
+                        type=str,
+                        required=True,
+                        help="Путь к папке, где будут сохранены измененные изображения")
+
     return parser.parse_args()
 
 
