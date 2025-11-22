@@ -2,13 +2,16 @@ from download_images import parse_args, download_images, create_annotation, File
 import cv2
 import numpy
 
-def shape_str(img=numpy.ndarray) -> str:
-    height, width, channels = img.shape
-    return f"{height} height x {width} width ({channels} channels)"
+def paint_frame(img: numpy.ndarray, height: int , width: int, thickness: int, color: tuple = (123,0,50)) -> None:
+    """Рисование рамки на изображении"""
+    x1 = thickness//2
+    y1 = thickness//2
+    x2 = width - thickness//2
+    y2 = height - thickness//2
 
-def paint_frame(img=numpy.ndarray) -> None:
-    cv2.rectangle(img, (50, 50), (200, 150), (0, 255, 0), 3)
+    thickness = min(thickness, (x2-x1)//2, (y2-y1)//2)
 
+    cv2.rectangle(img, (x1,y1), (x2,y2), color, thickness)
 
 
 def main() -> None:
@@ -20,11 +23,13 @@ def main() -> None:
         img_array = []
 
         files_iterator = FileIterator(args.output)
-
         for path in files_iterator:
-            img = cv2.imread(path)
-            img_shapes = shape_str(img)
-            paint_frame(img)
+            img = cv2.imread(path)      
+
+            height, width, channels = img.shape
+            img_shapes = f"{height} height x {width} width ({channels} channels)"
+
+            paint_frame(img, height, width, int(width*0.02))
             img_array.append(img)
             cv2.imshow(img_shapes, img)  # отображение
             cv2.waitKey(0)  
@@ -32,7 +37,6 @@ def main() -> None:
            
     except Exception as e:
         print(f"Произошла ошибка: {e}")
-
 
 
 if __name__ == "__main__":
