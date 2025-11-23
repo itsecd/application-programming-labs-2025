@@ -45,5 +45,14 @@ def main():
     print("\nСкачивание")
     download_images(args.directory_img, result_list_colors, count)
 
+    # Создание аннотации
+    print("\nСоздание Аннотации")
+
+    data_path = give_abs_rel_path(args.directory_img)
+    headers = ["absolute_path", "relative_path"]
+    create_annotation(args.annotation_file, data_path, headers)
+
+    print("\nАннотация создана")
+
 if __name__ == '__main__':
     main()
