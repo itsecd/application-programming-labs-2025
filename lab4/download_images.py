@@ -71,6 +71,11 @@ def parse_args() -> argparse.Namespace:
                         type=str,
                         default="histogram.png",
                         help="Путь для сохранения гистограммы")
+    parser.add_argument("--dataframe",
+                        "-d",
+                        type=str,
+                        default="dataframe.csv",
+                        help="Путь для сохранения DataFrame'а")
     return parser.parse_args()
 
 

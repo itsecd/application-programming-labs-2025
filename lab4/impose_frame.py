@@ -1,9 +1,8 @@
 import cv2
 import numpy
 import os
-from download_images import parse_args, download_images, create_annotation, FileIterator
 import matplotlib.pyplot as plt 
-
+from download_images import parse_args, download_images, create_annotation, FileIterator
 
 def paint_frame(img: numpy.ndarray, height: int , width: int, thickness: int, color: tuple = (123,0,50)) -> None:
     """Рисование рамки на изображении"""
@@ -34,35 +33,7 @@ def show_images(image: numpy.ndarray, image_shapes: str) -> None:
     plt.figure(image_shapes)
     plt.imshow(image_rgb)
 
-    plt.axis('off')  # убрать оси
+    plt.axis('off')
     plt.show()
 
 
-def main() -> None:
-    args = parse_args()
-
-    try:
-        download_images(args.output, args.keywords)
-        create_annotation(args.output, args.annotation)
-        arr_framed_imgs = {}
-
-        files_iterator = FileIterator(args.annotation)
-        for path in files_iterator:
-            image = cv2.imread(path)      
-
-            height, width, channels = image.shape
-            image_shapes = f"{height} height x {width} width ({channels} channels)"
-
-            paint_frame(image, height, width, int(width*0.02))
-            arr_framed_imgs[path] = image
-            show_images(image, image_shapes)
-
-        save_new_images(arr_framed_imgs, args.result)
-           
-    except Exception as e:
-        print(f"Произошла ошибка: {e}")
-
-
-if __name__ == "__main__":
-    main()
-       

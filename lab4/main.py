@@ -9,7 +9,7 @@ def calc_range(img: numpy.ndarray) -> int:
     return numpy.ptp(img)
 
 
-def add_col2df(df: pd.core.frame.DataFrame, col_name: str, img_iter: FileIterator, func) -> None:
+def add_col2df(df: pd.DataFrame, col_name: str, img_iter: FileIterator, func) -> None:
     """Добавляет столбец к DataFrame'у"""
     df[col_name] = None; 
     for i, path in enumerate(img_iter):
@@ -17,19 +17,19 @@ def add_col2df(df: pd.core.frame.DataFrame, col_name: str, img_iter: FileIterato
         df.loc[i, col_name] = func(img)
 
 
-def sort_by_col(df: pd.core.frame.DataFrame, col_name: str,is_ascending: bool) -> None:
+def sort_by_col(df: pd.DataFrame, col_name: str,is_ascending: bool) -> None:
     """Сортирует DataFrame по указанному столбцу в заданном порядке"""
     df.sort_values(col_name, ascending=is_ascending, inplace=True)
     order = "возрастания" if is_ascending else "убывания"
     print(f"DataFrame отсортирован по столбцу {col_name} в порядке {order}.")
 
 
-def filter_by_range(df: pd.core.frame.DataFrame, col_name: str, min_value: int, max_value: int) -> pd.core.frame.DataFrame:
+def filter_by_range(df: pd.DataFrame, col_name: str, min_value: int, max_value: int) -> pd.core.frame.DataFrame:
     """Фильтрует DataFrame по указанному столбцу и диапазону"""
     return (df[(df[col_name] > min_value) & (df[col_name] < max_value)])
 
 
-def create_range_gist(df: pd.DataFrame, res_path: str) -> None:
+def create_range_gist(df: pd.DataFrame, save_path: str = None) -> None:
     """Создает график зависимости диапазона от номера в отсортированном DataFrame"""
     plt.hist(df['brightness_range'], bins=16)
 
@@ -38,19 +38,22 @@ def create_range_gist(df: pd.DataFrame, res_path: str) -> None:
     plt.ylabel('Количество файлов, подходящих под этот диапазон')
 
     plt.xticks(numpy.arange(0, 255, 16))
-    plt.savefig(res_path, dpi=300, bbox_inches='tight')
+    if save_path != None:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.show()
 
+def save_df(df: pd.DataFrame, save_path: str) -> None:
+    """Сохраняет DataFrame в CSV файл """
+    
 
 def main() -> None:
     args = parse_args()
 
     try:
-        # download_images(args.output, args.keywords)
+        download_images(args.output, args.keywords)
         create_annotation(args.output, args.annotation)
 
         df = pd.read_csv(args.annotation)
-
         new_col_name = "brightness_range"
         add_col2df(df, new_col_name, FileIterator(args.annotation), calc_range)
 
@@ -58,8 +61,7 @@ def main() -> None:
         # filtered_df = filter_by_range(df, new_col_name, 10, 100)
         print(df)
         create_range_gist(df, args.histogram)
-
-           
+        df.to_csv(args.dataframe, index=False, encoding='utf-8-sig')  #Сохранение DataFrame
     except Exception as e:
         print(f"Произошла ошибка: {e}")
 
