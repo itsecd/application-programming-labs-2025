@@ -40,6 +40,28 @@ def print_image_info(img: np.ndarray) -> None:
     shape = img.shape
     print(f"Размер исходного файла: {shape[1]}×{shape[0]}")
 
+def to_grayscale(img: np.ndarray) -> np.ndarray:
+
+    if img.ndim == 2:
+        if img.dtype != np.uint8:
+            if np.issubdtype(img.dtype, np.floating):
+                gray = np.clip(img * 255, 0, 255).astype(np.uint8)
+                return gray
+            else:
+                gray = img.astype(np.uint8)
+                return gray
+        return img.copy()
+
+
+    shape = img.shape
+
+    if shape[2] == 4:
+        bgr = img[:, :, :3]
+    else:
+        bgr = img
+    gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+    return gray
+
 
 def main():
     args = parse_args()
@@ -48,5 +70,6 @@ def main():
 
     print_image_info(img)
 
+    gray = to_grayscale(img)
 if __name__ == "__main__":
     main()
