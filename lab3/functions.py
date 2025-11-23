@@ -51,4 +51,5 @@ def save_image(image: np.ndarray, output_path: str) -> None:
     try:
         cv2.imwrite(output_path, image)
     except Exception as e:
+
         raise Exception(f"Ошибка в save_image: {e}")
