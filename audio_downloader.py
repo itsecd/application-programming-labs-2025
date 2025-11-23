@@ -13,7 +13,14 @@ class AudioFileDownloader:
         self.base_url = "https://mixkit.co"
         self.download_dir = Path(download_dir)
         self.download_dir.mkdir(parents=True, exist_ok=True)
-        
+    
+    def get_headers(self):
+        """Получить общие headers для всех запросов"""
+        return {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://mixkit.co/'
+        }
+    
     def get_theme_categories(self):
         """Получить список тем из раздела Sound Effects"""
         themes = [
@@ -72,11 +79,7 @@ class AudioFileDownloader:
             try:
                 url = theme_url if page == 1 else f"{theme_url}?page={page}"
                 
-                headers = {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                }
-                
-                response = requests.get(url, headers=headers, timeout=15)
+                response = requests.get(url, headers=self.get_headers(), timeout=15)
                 response.raise_for_status()
                 
                 soup = BeautifulSoup(response.content, 'html.parser')
@@ -120,12 +123,7 @@ class AudioFileDownloader:
     def get_final_download_url(self, download_url):
         """Получить финальную ссылку для скачивания"""
         try:
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Referer': 'https://mixkit.co/'
-            }
-            
-            response = requests.get(download_url, headers=headers, timeout=15, allow_redirects=True)
+            response = requests.get(download_url, headers=self.get_headers(), timeout=15, allow_redirects=True)
             response.raise_for_status()
             
             if response.history:
@@ -212,12 +210,7 @@ class AudioFileDownloader:
                 
                 print(f"{i}/{len(audio_links)}: {filename}")
                 
-                headers = {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                    'Referer': 'https://mixkit.co/'
-                }
-                
-                response = requests.get(audio_url, headers=headers, stream=True, timeout=60)
+                response = requests.get(audio_url, headers=self.get_headers(), stream=True, timeout=60)
                 response.raise_for_status()
                 
                 with open(filepath, 'wb') as f:
