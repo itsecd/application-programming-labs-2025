@@ -1,12 +1,14 @@
 import os
+from typing import Tuple, Optional
 
 import cv2
+import numpy as np
 
 
 class ImageProcessor:
     """Класс для обработки изображений."""
 
-    def load_image(self, image_path):
+    def load_image(self, image_path: str) -> np.ndarray:
         """
         Загружает изображение из файла.
 
@@ -26,12 +28,17 @@ class ImageProcessor:
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         return image_rgb
 
-    def swap_channels(self, image_path):
+    def swap_channels(
+        self, 
+        image_path: str, 
+        channel_order: Tuple[int, int, int] = (2, 0, 1)
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Меняет местами каналы изображения (R, G, B).
 
         Args:
             image_path: путь к исходному изображению
+            channel_order: новый порядок каналов (например: (2,0,1) для R->G, G->B, B->R)
 
         Returns:
             кортеж (оригинальное изображение, обработанное изображение)
@@ -39,12 +46,12 @@ class ImageProcessor:
         original_image = self.load_image(image_path)
         processed_image = original_image.copy()
 
-        processed_image[:, :, 0], processed_image[:, :, 1], processed_image[:, :, 2] = \
-            original_image[:, :, 2], original_image[:, :, 0], original_image[:, :, 1]
+        # Применяем новый порядок каналов
+        processed_image = processed_image[:, :, list(channel_order)]
 
         return original_image, processed_image
 
-    def save_image(self, image, output_path):
+    def save_image(self, image: np.ndarray, output_path: str) -> None:
         """
         Сохраняет изображение в файл.
 
