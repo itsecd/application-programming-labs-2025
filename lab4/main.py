@@ -15,18 +15,26 @@ def add_col2df(df: pd.core.frame.DataFrame, col_name: str, img_iter: FileIterato
         img = cv2.imread(path)
         df.loc[i, col_name] = func(img)
 
+def sort_by_col(df: pd.core.frame.DataFrame, col_name: str,is_ascending: bool) -> None:
+    """Сортирует DataFrame по указанному столбцу в заданном порядке"""
+    df.sort_values(col_name, ascending=is_ascending, inplace=True)
+    order = "возрастания" if is_ascending else "убывания"
+    print(f"DataFrame отсортирован по столбцу {col_name} в порядке {order}.")
+
+# def filter_by_col(df: pd.core.frame.DataFrame, col_name: str, min_brightness: int, max_brightness: int) -> None:
+#     """Фильтрует"""
+
 def main() -> None:
     args = parse_args()
-    # pd.set_option('display.max_colwidth', None)
-    pd.set_option('display.max_rows', None)
 
     try:
         # download_images(args.output, args.keywords)
         create_annotation(args.output, args.annotation)
         img_iter = FileIterator(args.annotation)
         df = pd.read_csv(args.annotation)
-        add_col2df(df, "brightness_range", img_iter, calc_brightness_range)
-
+        new_col_name = "brightness_range"
+        add_col2df(df, new_col_name, img_iter, calc_brightness_range)
+        sort_by_col(df, new_col_name, True)
         print(df)
            
     except Exception as e:
