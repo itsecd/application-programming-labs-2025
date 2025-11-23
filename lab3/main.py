@@ -1,73 +1,39 @@
 import argparse
-from typing import Tuple
-
 import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-
-
-def parse_arguments() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Поворот изображения на заданный угол."
-    )
-
-    parser.add_argument("path_in", type=str, help="Путь к исходному изображению")
-    parser.add_argument("path_out", type=str, help="Путь для сохранения результата")
-    parser.add_argument("angle", type=float, help="Угол поворота изображения")
-
-    return parser.parse_args()
-
-
-def load_image(path: str) -> np.ndarray:
-    """
-    загружает изображение из файла
-    """
-    pass
-
-
-def print_image_info(image: np.ndarray) -> None:
-    """
-    выводит информацию о размере загруженного изображения
-    """
-    pass
-
-
-def rotate_image(image: np.ndarray, angle: float) -> np.ndarray:
-    """
-    поворачивает изображение на заданный угол
-    """
-    pass
-
-
-def show_before_after(original: np.ndarray, transformed: np.ndarray) -> None:
-    """
-    отображает исходное и преобразованное изображение рядом
-    """
-    pass
-
-
-def save_image(path: str, image: np.ndarray) -> None:
-    """
-    сохраняет изображение в файл
-    """
-    pass
+import functions
 
 
 def main():
     try:
-        args = parse_arguments()
+        parser = argparse.ArgumentParser(
+            description="Поворачивает изображение на заданный угол."
+        )
 
-        image = load_image(args.path_in)
+        parser.add_argument("path_in", type=str, help="Путь до исходного изображения")
+        parser.add_argument("path_out", type=str, help="Путь сохранения результата")
+        parser.add_argument("angle", type=float, help="Угол поворота в градусах")
 
-        print_image_info(image)
-        rotated = rotate_image(image, args.angle)
+        args = parser.parse_args()
 
-        show_before_after(image, rotated)
+        image = cv2.imread(args.path_in)
+        if image is None:
+            raise FileNotFoundError("Файл изображения не найден.")
 
-        save_image(args.path_out, rotated)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    except Exception as exc:
-        print(f"Ошибка: {exc}")
+        h, w = image.shape[:2]
+        print(f"Размер изображения: {w}x{h} (ширина x высота)")
+
+        rotated = functions.rotate_image(image, args.angle)
+
+        functions.show_image(image, rotated)
+
+        rotated_bgr = cv2.cvtColor(rotated, cv2.COLOR_RGB2BGR)
+        cv2.imwrite(args.path_out, rotated_bgr)
+
+
+    except Exception as e:
+        print("Ошибка:", e)
 
 
 if __name__ == "__main__":
