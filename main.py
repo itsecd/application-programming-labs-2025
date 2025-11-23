@@ -87,6 +87,18 @@ def show_pair(original: np.ndarray, gray: np.ndarray) -> None:
     plt.tight_layout()
     plt.show()
 
+def save_image(path: str, img: np.ndarray) -> None:
+
+    if img.dtype != np.uint8:
+        if np.issubdtype(img.dtype, np.floating):
+            img_to_save = np.clip(img * 255.0, 0, 255).astype(np.uint8)
+        else:
+            img_to_save = img.astype(np.uint8)
+    else:
+        img_to_save = img
+
+    cv2.imwrite(path, img_to_save)
+
 def main():
     args = parse_args()
 
@@ -97,5 +109,8 @@ def main():
     gray = to_grayscale(img)
 
     show_pair(img, gray)
+
+    save_image(args.output, gray)
+
 if __name__ == "__main__":
     main()
