@@ -7,7 +7,7 @@ from icrawler.builtin import BingImageCrawler
 
 class FileIterator:
 
-    def __init__(self, source) -> None:
+    def __init__(self, source: str) -> None:
         self.files = []
 
         if os.path.isdir(source):
@@ -66,10 +66,15 @@ def parse_args() -> argparse.Namespace:
                         type=str,
                         required=False,
                         help="Путь к папке, где будут сохранены измененные изображения")
+    parser.add_argument("--histogram",
+                        "-g",
+                        type=str,
+                        default="histogram.png",
+                        help="Путь для сохранения гистограммы")
     return parser.parse_args()
 
 
-def download_images(output_dir=str, keywords=set) -> None:
+def download_images(output_dir: str, keywords: set) -> None:
     """Скачивание изображений по ключевым словам в заданную директорию """
     for kword in keywords:
         category_dir = os.path.join(output_dir, kword)
@@ -80,7 +85,7 @@ def download_images(output_dir=str, keywords=set) -> None:
         crawler.crawl(keyword=kword)
 
 
-def create_annotation(output_dir, annotation_file) -> None:
+def create_annotation(output_dir: str, annotation_file: str) -> None:
     """Создание .csv файла, в котором располагаются пути к скачанным файлам"""
     with open(annotation_file, 'w', newline='', encoding="utf-8") as file:
         writer = csv.writer(file)
