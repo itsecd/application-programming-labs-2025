@@ -62,6 +62,30 @@ def to_grayscale(img: np.ndarray) -> np.ndarray:
     gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
     return gray
 
+def show_pair(original: np.ndarray, gray: np.ndarray) -> None:
+    plt.figure()
+
+    plt.subplot(1, 2, 1)
+    if original.ndim == 2:
+        plt.imshow(original, cmap="gray")
+    else:
+        if original.shape[2] == 4:
+            bgr = original[:, :, :3]
+        else:
+            bgr = original
+        rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+        plt.imshow(rgb)
+
+    plt.title("Исходное")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(gray, cmap="gray")
+    plt.title("Полутоновое")
+    plt.axis("off")
+
+    plt.tight_layout()
+    plt.show()
 
 def main():
     args = parse_args()
@@ -71,5 +95,7 @@ def main():
     print_image_info(img)
 
     gray = to_grayscale(img)
+
+    show_pair(img, gray)
 if __name__ == "__main__":
     main()
