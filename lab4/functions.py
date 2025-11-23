@@ -49,4 +49,5 @@ def filter_by_range(df: pd.DataFrame, range_filter: str) -> pd.DataFrame:
     try:
         return df[df['range'] == range_filter]
     except Exception as e:
+
         raise Exception(f"Ошибка при фильтрации: {e}")
