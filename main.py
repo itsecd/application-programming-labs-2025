@@ -54,5 +54,10 @@ def main():
 
     print("\nАннотация создана")
 
+    #Демонстрация работы итератора
+    iterator = FileIterator(args.annotation_file)
+    for i in iterator:
+        print(i)
+
 if __name__ == '__main__':
     main()
