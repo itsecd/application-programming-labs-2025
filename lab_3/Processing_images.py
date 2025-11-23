@@ -4,16 +4,16 @@ from Add_a_frame import frame_adder
 
 
 def process_all_images(input_folder: str, output_folder: str) -> None:
-    """Обрабатывает все изображения в папке"""
-    print(f"Исходные изображения: {input_folder}")
-    print(f"Сохранение результатов: {output_folder}")
+    """РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ РІСЃРµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІ РїР°РїРєРµ"""
+    print(f"РСЃС…РѕРґРЅС‹Рµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ: {input_folder}")
+    print(f"РЎРѕС…СЂР°РЅРµРЅРёРµ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ: {output_folder}")
 
     if not os.path.exists(output_folder):
         try:
             os.mkdir(output_folder)
-            print(f"Создана папка: {output_folder}")
+            print(f"РЎРѕР·РґР°РЅР° РїР°РїРєР°: {output_folder}")
         except OSError as e:
-            print(f"Ошибка при создании папки: {e}")
+            print(f"РћС€РёР±РєР° РїСЂРё СЃРѕР·РґР°РЅРёРё РїР°РїРєРё: {e}")
             return
 
     try:
@@ -21,11 +21,11 @@ def process_all_images(input_folder: str, output_folder: str) -> None:
         total_images = len(image_iterator)
         
         if total_images == 0:
-            print("В папке не найдено изображений")
+            print("Р’ РїР°РїРєРµ РЅРµ РЅР°Р№РґРµРЅРѕ РёР·РѕР±СЂР°Р¶РµРЅРёР№")
             return
         
-        print(f"Найдено изображений: {total_images}")
-        print("Закройте окно matplotlib чтобы продолжить обработку следующего изображения")
+        print(f"РќР°Р№РґРµРЅРѕ РёР·РѕР±СЂР°Р¶РµРЅРёР№: {total_images}")
+        print("Р—Р°РєСЂРѕР№С‚Рµ РѕРєРЅРѕ matplotlib С‡С‚РѕР±С‹ РїСЂРѕРґРѕР»Р¶РёС‚СЊ РѕР±СЂР°Р±РѕС‚РєСѓ СЃР»РµРґСѓСЋС‰РµРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ")
         print()
         
         successful = 0
@@ -43,8 +43,8 @@ def process_all_images(input_folder: str, output_folder: str) -> None:
             print("-" * 30)  
         
         print("=" * 50)
-        print(f"Успешно: {successful} | Ошибок: {failed} | Всего: {total_images}")
-        print(f"Результаты в: {output_folder}")
+        print(f"РЈСЃРїРµС€РЅРѕ: {successful} | РћС€РёР±РѕРє: {failed} | Р’СЃРµРіРѕ: {total_images}")
+        print(f"Р РµР·СѓР»СЊС‚Р°С‚С‹ РІ: {output_folder}")
 
     except Exception as e:
-        print(f"Ошибка: {e}")
+        print(f"РћС€РёР±РєР°: {e}")

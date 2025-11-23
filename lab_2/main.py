@@ -22,6 +22,7 @@ def main() -> None:
         print(f"Файл аннотации: {args.annotation_file}")
         print(f"Диапазон изображений на слово: 1-50 (фиксировано)")
         print("=" * 50)
+
         downloader = ImageDownloader(keywords=args.keywords)
     
         total_downloaded = downloader.download_images(args.save_dir)

@@ -4,17 +4,17 @@ import matplotlib.pyplot as plt
 
 
 def frame_adder(image_path: str, output_dir: str, file_counter: int) -> bool:
-    """Накладывает рамку размером 20 пикселей на изображение"""
+    """РќР°РєР»Р°РґС‹РІР°РµС‚ СЂР°РјРєСѓ СЂР°Р·РјРµСЂРѕРј 20 РїРёРєСЃРµР»РµР№ РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРµ"""
     try:
         image = cv2.imread(image_path)
         if image is None:
-            print(f"Ошибка при загрузке: {image_path}")
+            print(f"РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ: {image_path}")
             return False
 
         height, width = image.shape[:2]
 
-        print(f"Обработка: {os.path.basename(image_path)}")
-        print(f"   Размер: {width} x {height} пикселей")
+        print(f"РћР±СЂР°Р±РѕС‚РєР°: {os.path.basename(image_path)}")
+        print(f"   Р Р°Р·РјРµСЂ: {width} x {height} РїРёРєСЃРµР»РµР№")
 
         framed_image = image.copy()
         frame_width = 20
@@ -34,20 +34,20 @@ def frame_adder(image_path: str, output_dir: str, file_counter: int) -> bool:
         success = cv2.imwrite(output_path, framed_image)
 
         if success:
-            print(f"Сохранено: {new_filename}")
+            print(f"РЎРѕС…СЂР°РЅРµРЅРѕ: {new_filename}")
             show_difference(image, framed_image, filename)
             return True
         else:
-            print(f"Ошибка сохранения: {new_filename}")
+            print(f"РћС€РёР±РєР° СЃРѕС…СЂР°РЅРµРЅРёСЏ: {new_filename}")
             return False
 
     except Exception as e:
-        print(f"Ошибка при обработке {image_path}: {e}")
+        print(f"РћС€РёР±РєР° РїСЂРё РѕР±СЂР°Р±РѕС‚РєРµ {image_path}: {e}")
         return False
 
 
 def show_difference(original: cv2.Mat, framed: cv2.Mat, filename: str) -> None:
-    """Показывает сравнение исходного и обработанного изображения"""
+    """РџРѕРєР°Р·С‹РІР°РµС‚ СЃСЂР°РІРЅРµРЅРёРµ РёСЃС…РѕРґРЅРѕРіРѕ Рё РѕР±СЂР°Р±РѕС‚Р°РЅРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ"""
     try:
         original_rgb = cv2.cvtColor(original, cv2.COLOR_BGR2RGB)
         framed_rgb = cv2.cvtColor(framed, cv2.COLOR_BGR2RGB)
@@ -56,16 +56,16 @@ def show_difference(original: cv2.Mat, framed: cv2.Mat, filename: str) -> None:
 
         plt.subplot(1, 2, 1)
         plt.imshow(original_rgb)
-        plt.title(f"Оригинал: {filename}", fontsize=12, pad=10)
+        plt.title(f"РћСЂРёРіРёРЅР°Р»: {filename}", fontsize=12, pad=10)
         plt.axis('off')
 
         plt.subplot(1, 2, 2)
         plt.imshow(framed_rgb)
-        plt.title("С черной рамкой 20px", fontsize=12, pad=10)
+        plt.title("РЎ С‡РµСЂРЅРѕР№ СЂР°РјРєРѕР№ 20px", fontsize=12, pad=10)
         plt.axis('off')
 
         plt.tight_layout()
         plt.show()
 
     except Exception as e:
-        print(f"Ошибка при отображении: {e}")
+        print(f"РћС€РёР±РєР° РїСЂРё РѕС‚РѕР±СЂР°Р¶РµРЅРёРё: {e}")
