@@ -23,12 +23,29 @@ def main():
             '--output_plot', type=str, required=True,
             help='Файл для сохранения графика распределения'
         )
+        parser.add_argument(
+            '--ranges', type=str, default='0-85,86-170,171-255',
+            help='Диапазоны яркости в формате "0-50,51-150,151-255"'
+        )
         args = parser.parse_args()
+
+        # Парсинг диапазонов
+        brightness_ranges = []
+        try:
+            range_parts = args.ranges.split(',')
+            for range_part in range_parts:
+                low, high = map(int, range_part.split('-'))
+                brightness_ranges.append((low, high, f"{low}-{high}"))
+        except Exception as e:
+            print(f"Ошибка парсинга диапазонов: {e}")
+            print("Используются диапазоны по умолчанию: 0-85,86-170,171-255")
+            brightness_ranges = [(0, 85, "0-85"), (86, 170, "86-170"), (171, 255, "171-255")]
 
         print("=== Анализ яркости изображений ===")
         print(f"Файл аннотации: {args.annotation}")
         print(f"Выходной DataFrame: {args.output_df}")
         print(f"Выходной график: {args.output_plot}")
+        print(f"Диапазоны яркости: {[r[2] for r in brightness_ranges]}")
         print("=" * 50)
 
         print("\n1. Создаем DataFrame из аннотации...")
@@ -51,8 +68,8 @@ def main():
             return
 
         print("\n3. Анализируем яркость изображений...")
-        analyzer = ImageAnalyzer()
-        visualizer = Visualizer()
+        analyzer = ImageAnalyzer(brightness_ranges)
+        visualizer = Visualizer(brightness_ranges)
 
         brightness_data = []
 
@@ -71,10 +88,10 @@ def main():
 
         print("\n5. Демонстрация функций сортировки и фильтрации...")
 
-        df_sorted = df_manager.sort_by_brightness()
+        df_sorted = df_manager.sort_by_brightness(brightness_ranges)
 
         # Фильтрация по диапазонам
-        for brightness_range in ["0-85", "86-170", "171-255"]:
+        for brightness_range in [r[2] for r in brightness_ranges]:
             filtered_df = df_manager.filter_by_brightness(brightness_range)
             if len(filtered_df) > 0:
                 first_file = filtered_df.iloc[0]
@@ -100,6 +117,7 @@ def main():
         print(f"DataFrame сохранен в: {args.output_df}")
         print(f"График распределения сохранен в: {args.output_plot}")
         print(f"Гистограммы каналов сохранены в: channel_histograms.png")
+        print(f"Использованные диапазоны: {[r[2] for r in brightness_ranges]}")
 
         print("\nРабота программы завершена успешно!")
 

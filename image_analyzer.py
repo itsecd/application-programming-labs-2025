@@ -7,17 +7,18 @@ import numpy as np
 class ImageAnalyzer:
     """Класс для анализа изображений."""
 
-    def __init__(self):
-        self.brightness_ranges = ["0-85", "86-170", "171-255"]
+    def __init__(self, brightness_ranges: List[Tuple[int, int, str]]):
+        self.brightness_ranges = brightness_ranges
+        self.range_names = [r[2] for r in brightness_ranges]
 
     def calculate_brightness_histogram(self, image_path: str) -> Tuple[List[int], List[int], List[int]]:
         """Вычисляет гистограммы яркости по каналам R, G, B."""
         try:
             image = cv2.imread(image_path)
             if image is None:
-                return [0, 0, 0], [0, 0, 0], [0, 0, 0]
+                return [0] * len(self.brightness_ranges), [0] * len(self.brightness_ranges), [0] * len(self.brightness_ranges)
 
-            # Разделяем на каналы BGR (OpenCV использует BGR по умолчанию)
+            # Разделяем на каналы BGR 
             b, g, r = cv2.split(image)
 
             # Вычисляем среднюю яркость для каждого канала
@@ -27,43 +28,49 @@ class ImageAnalyzer:
 
             return r_brightness, g_brightness, b_brightness
 
-        except Exception as e:
-            print(f"  Предупреждение: ошибка анализа {os.path.basename(image_path)}")
-            return [0, 0, 0], [0, 0, 0], [0, 0, 0]
+        except Exception:
+            return [0] * len(self.brightness_ranges), [0] * len(self.brightness_ranges), [0] * len(self.brightness_ranges)
 
     def _calculate_channel_brightness(self, channel: np.ndarray) -> List[int]:
         """Вычисляет распределение яркости канала по диапазонам."""
         try:
             # Вычисляем среднюю яркость для канала
             avg_brightness = np.mean(channel)
-
-            # Определяем диапазон и возвращаем бинарный вектор
-            if avg_brightness <= 85:
-                return [1, 0, 0]  
-            elif avg_brightness <= 170:
-                return [0, 1, 0]  
+            
+            # Создаем бинарный вектор для всех диапазонов
+            result = [0] * len(self.brightness_ranges)
+            
+            for i, (low, high, _) in enumerate(self.brightness_ranges):
+                if low <= avg_brightness <= high:
+                    result[i] = 1
+                    break
             else:
-                return [0, 0, 1]  
+                # Если не попали ни в один диапазон, выбираем ближайший
+                if avg_brightness < self.brightness_ranges[0][0]:
+                    result[0] = 1
+                else:
+                    result[-1] = 1
 
-        except Exception as e:
-            return [0, 0, 0]
+            return result
+
+        except Exception:
+            return [0] * len(self.brightness_ranges)
 
     def get_brightness_range(self, r_hist: List[int], g_hist: List[int], b_hist: List[int]) -> str:
         """Определяет общий диапазон яркости для изображения."""
         try:
             # Суммируем значения по всем каналам для каждого диапазона
-            total_low = r_hist[0] + g_hist[0] + b_hist[0]  
-            total_medium = r_hist[1] + g_hist[1] + b_hist[1] 
-            total_high = r_hist[2] + g_hist[2] + b_hist[2]  
+            totals = []
+            for i in range(len(self.brightness_ranges)):
+                total = r_hist[i] + g_hist[i] + b_hist[i]
+                totals.append(total)
 
             # Находим максимальный диапазон
-            totals = [total_low, total_medium, total_high]
             max_index = totals.index(max(totals))
+            return self.range_names[max_index]
 
-            return self.brightness_ranges[max_index]
-
-        except Exception as e:
-            return "0-85"  
+        except Exception:
+            return self.range_names[0] if self.range_names else "0-85"
 
     def get_brightness_stats(self, image_path: str) -> Dict:
         """Возвращает статистику яркости для одного изображения."""
@@ -83,9 +90,7 @@ class ImageAnalyzer:
 
     def _hist_to_range(self, hist: List[int]) -> str:
         """Конвертирует гистограмму в текстовый диапазон."""
-        if hist[0] == 1:
-            return "0-85"
-        elif hist[1] == 1:
-            return "86-170"
-        else:
-            return "171-255"
+        for i, value in enumerate(hist):
+            if value == 1:
+                return self.range_names[i]
+        return self.range_names[0] if self.range_names else "0-85"

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,13 +7,16 @@ import pandas as pd
 class Visualizer:
     """Класс для визуализации данных."""
 
+    def __init__(self, brightness_ranges: List[Tuple[int, int, str]]):
+        self.brightness_ranges = brightness_ranges
+        self.range_names = [r[2] for r in brightness_ranges]
+
     def plot_channel_histograms(self, df: pd.DataFrame, output_file: str):
         """Строит гистограммы распределения яркости по каналам RGB."""
         try:
             # Фильтруем только строки с данными о яркости
             valid_df = df[df['brightness_range'] != '']
             if len(valid_df) == 0:
-                print("  Нет данных для построения гистограмм каналов")
                 return
 
             # Суммируем гистограммы для всех изображений
@@ -21,8 +24,7 @@ class Visualizer:
             total_g_hist = np.sum([hist for hist in valid_df['g_histogram']], axis=0)
             total_b_hist = np.sum([hist for hist in valid_df['b_histogram']], axis=0)
 
-            ranges = ["0-85", "86-170", "171-255"]
-            x = np.arange(len(ranges))
+            x = np.arange(len(self.range_names))
             width = 0.25
 
             fig, ax = plt.subplots(figsize=(12, 8))
@@ -43,15 +45,13 @@ class Visualizer:
             ax.set_ylabel('Количество файлов', fontsize=12)
             ax.set_title('Распределение яркости по каналам RGB', fontsize=14, fontweight='bold')
             ax.set_xticks(x)
-            ax.set_xticklabels(ranges, fontsize=11)
+            ax.set_xticklabels(self.range_names, fontsize=11)
             ax.legend(fontsize=11)
             ax.grid(True, alpha=0.3, axis='y')
 
             plt.tight_layout()
             plt.savefig(output_file, dpi=150, bbox_inches='tight')
             plt.close()
-
-            print(f"Гистограммы каналов сохранены в {output_file}")
 
         except Exception as e:
             raise Exception(f"Ошибка построения гистограмм каналов: {e}")
@@ -62,18 +62,14 @@ class Visualizer:
             # Фильтруем только строки с данными о яркости
             valid_df = df[df['brightness_range'] != '']
             if len(valid_df) == 0:
-                print("  Нет данных для построения распределения яркости")
                 return
 
-            brightness_order = ["0-85", "86-170", "171-255"]
-
             brightness_counts = valid_df['brightness_range'].value_counts()
-
-            brightness_counts = brightness_counts.reindex(brightness_order, fill_value=0)
+            brightness_counts = brightness_counts.reindex(self.range_names, fill_value=0)
 
             plt.figure(figsize=(10, 6))
             bars = plt.bar(brightness_counts.index, brightness_counts.values,
-                          color=['#ff6b6b', '#51cf66', '#339af0'],
+                          color=['#ff6b6b', '#51cf66', '#339af0'][:len(self.range_names)],
                           alpha=0.7, edgecolor='black')
 
             # Добавляем значения на столбцы
@@ -91,8 +87,6 @@ class Visualizer:
 
             plt.savefig(output_file, dpi=150, bbox_inches='tight')
             plt.close()
-
-            print(f"График распределения сохранен в {output_file}")
 
         except Exception as e:
             raise Exception(f"Ошибка построения распределения яркости: {e}")

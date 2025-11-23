@@ -15,7 +15,6 @@ class DataFrameManager:
             self.df = pd.read_csv(annotation_file)
             # Переименовываем колонки 
             self.df.columns = ['absolute_path', 'relative_path']
-            print(f"Успешно загружено {len(self.df)} записей из аннотации")
             return self.df
         except Exception as e:
             raise Exception(f"Ошибка создания DataFrame: {e}")
@@ -33,10 +32,7 @@ class DataFrameManager:
                 valid_paths.append(rel_path)
             elif os.path.exists(abs_path):
                 valid_paths.append(abs_path)
-            else:
-                print(f"  Файл не найден: {rel_path}")
 
-        print(f"  Найдено {len(valid_paths)} существующих файлов из {len(self.df)}")
         return valid_paths
 
     def add_brightness_columns(self, image_paths: List[str], brightness_data: List[dict]):
@@ -71,21 +67,17 @@ class DataFrameManager:
                         processed_count += 1
                         break
 
-            print(f"Данные о яркости добавлены для {processed_count} изображений")
-
         except Exception as e:
             raise Exception(f"Ошибка добавления колонок яркости: {e}")
 
-    def sort_by_brightness(self) -> pd.DataFrame:
+    def sort_by_brightness(self, brightness_ranges: List[Tuple[int, int, str]]) -> pd.DataFrame:
         """Сортирует DataFrame по диапазону яркости."""
         try:
             # Создаем порядок сортировки для диапазонов
-            range_order = {"0-85": 0, "86-170": 1, "171-255": 2}
+            range_order = {r[2]: i for i, r in enumerate(brightness_ranges)}
             df_sorted = self.df.copy()
             df_sorted['sort_order'] = df_sorted['brightness_range'].map(range_order)
             df_sorted = df_sorted.sort_values('sort_order').drop('sort_order', axis=1)
-
-            print("DataFrame отсортирован по яркости")
             return df_sorted
 
         except Exception as e:
@@ -95,7 +87,6 @@ class DataFrameManager:
         """Фильтрует DataFrame по диапазону яркости."""
         try:
             filtered_df = self.df[self.df['brightness_range'] == brightness_range]
-            print(f"Отфильтровано {len(filtered_df)} с диапазоном '{brightness_range}'")
             return filtered_df
         except Exception as e:
             raise Exception(f"Ошибка фильтрации: {e}")
@@ -109,7 +100,6 @@ class DataFrameManager:
                 'r_channel_range', 'g_channel_range', 'b_channel_range'
             ]
             self.df[columns_to_save].to_csv(output_file, index=False)
-            print(f"DataFrame сохранен в {output_file}")
         except Exception as e:
             raise Exception(f"Ошибка сохранения DataFrame: {e}")
 
