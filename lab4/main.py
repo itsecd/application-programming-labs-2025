@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt 
 from download_images import parse_args, download_images, create_annotation, FileIterator
 
-def calc_brightness_range(img: numpy.ndarray) -> int:
+def calc_range(img: numpy.ndarray) -> int:
     """Вычисление распределения диапазона яркости изображения по всем каналам""" 
     return (img.max() - img.min())
 
@@ -21,8 +21,11 @@ def sort_by_col(df: pd.core.frame.DataFrame, col_name: str,is_ascending: bool) -
     order = "возрастания" if is_ascending else "убывания"
     print(f"DataFrame отсортирован по столбцу {col_name} в порядке {order}.")
 
-# def filter_by_col(df: pd.core.frame.DataFrame, col_name: str, min_brightness: int, max_brightness: int) -> None:
-#     """Фильтрует"""
+def filter_by_range(df: pd.core.frame.DataFrame, col_name: str, min_value: int, max_value: int) -> pd.core.frame.DataFrame:
+    """Фильтрует DataFrame по указанному столбцу и диапазону"""
+    return (df[(df[col_name] > min_value) & (df[col_name] < max_value)])
+
+
 
 def main() -> None:
     args = parse_args()
@@ -33,9 +36,11 @@ def main() -> None:
         img_iter = FileIterator(args.annotation)
         df = pd.read_csv(args.annotation)
         new_col_name = "brightness_range"
-        add_col2df(df, new_col_name, img_iter, calc_brightness_range)
+        add_col2df(df, new_col_name, img_iter, calc_range)
         sort_by_col(df, new_col_name, True)
-        print(df)
+        
+        filtered_df = filter_by_range(df, new_col_name, 10, 100)
+        print(filtered_df)
            
     except Exception as e:
         print(f"Произошла ошибка: {e}")
