@@ -36,11 +36,17 @@ def read_image(path: str) -> np.ndarray:
 
     return img
 
+def print_image_info(img: np.ndarray) -> None:
+    shape = img.shape
+    print(f"Размер исходного файла: {shape[1]}×{shape[0]}")
+
 
 def main():
     args = parse_args()
 
     img = read_image(args.input)
+
+    print_image_info(img)
 
 if __name__ == "__main__":
     main()
