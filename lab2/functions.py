@@ -9,7 +9,7 @@ class ImageIterator:
         
         try:
             if annotation_file:
-                # Читаем пути из CSV файла
+                # Читаем пути из CSV файл
                 with open(annotation_file, 'r', encoding='utf-8') as f:
                     reader = csv.reader(f)
                     next(reader)  # Пропускаем заголовок
@@ -62,4 +62,5 @@ def create_annotation(annotation_file, output_dir):
                     writer.writerow([abs_path, rel_path])
     except Exception as e:
         print(f"Ошибка при создании аннотации: {e}")
+
         raise
