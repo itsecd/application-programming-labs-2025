@@ -3,7 +3,11 @@ import sys
 from PyQt5.QtWidgets import QApplication
 
 def main(file_path: str) -> None:
-    """ . . . """
+    """ 
+    Основная функция программы, создаёт QT-приложение и отображает его
+    Args:
+        file_path (str): открываемый при запуске файл
+    """
     app = QApplication(sys.argv)
     window = MainWindow(file_path)
     window.show()

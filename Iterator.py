@@ -10,6 +10,7 @@ class CSVIterator:
     
     @classmethod
     def fromfilename(cls, source_file: str):
+        """ Метод класса для создания объектов из файлов"""
         with open(source_file, mode="r", encoding="utf-8") as f:
             csv_data = list(csv.DictReader(f))
         return cls(csv_data)
