@@ -17,6 +17,5 @@ def main():
     
     process_all_images(args.input_folder, args.output_folder)
 
-
 if __name__ == "__main__":
     main()
