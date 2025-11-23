@@ -1,0 +1,119 @@
+from PyQt5.QtWidgets import QWidget, QMainWindow, QHBoxLayout, QVBoxLayout, QTableWidget, QPushButton, QLabel, QTableWidgetItem, QAbstractItemView, QFileDialog, QDial, QLCDNumber
+from PyQt5.QtMultimedia import QMediaPlayer
+from PyQt5.QtCore import Qt
+from matplotlib import table
+
+from Iterator import CSVIterator
+import os
+
+class MainWindow(QMainWindow):
+    def __init__(self, path: str):
+        super().__init__()
+        self.iterator = None
+        self.selected_index = None
+
+        self.create_ui()
+        self.load_file(path)
+    
+    def create_ui(self):
+        self.setGeometry(300, 300, 1000, 600)
+        self.setWindowTitle('Лабораторная № 5')
+
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        self.central_layout = QHBoxLayout(self.central_widget)
+
+        self.widget = QWidget()
+        self.layout = QVBoxLayout(self.widget)
+        self.central_layout.addWidget(self.widget)
+
+        self.qbtn = QPushButton('Выбрать файл')
+        self.qbtn.clicked.connect(self.get_file)
+        self.file_label = QLabel("Файл: ")
+        self.file_label.setAlignment(Qt.AlignCenter)
+        self.layout.addWidget(self.file_label)
+        self.layout.addWidget(self.qbtn)
+
+        self.table = QTableWidget()
+        self.table.setAlternatingRowColors(True)
+        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.setFocusPolicy(Qt.NoFocus)
+        self.layout.addWidget(self.table)
+
+        self.btns = QWidget()
+        self.btns_layout = QHBoxLayout(self.btns)
+        self.btn1 = QPushButton('Пуск')
+        self.btn2 = QPushButton('Далее')
+        self.btn1.clicked.connect(lambda: print(self.iterator.csv_data[self.selected_index]))
+        self.btn2.clicked.connect(self.next_item)
+        self.btns_layout.addWidget(self.btn1)
+        self.btns_layout.addWidget(self.btn2)
+        self.layout.addWidget(self.btns)
+        self.btns.hide()
+
+        self.audio_player = QWidget()
+        self.audio_player_layout = QVBoxLayout(self.audio_player)
+
+        self.audio_player_volume = QLCDNumber()
+        self.audio_player_volume.setDigitCount(3)
+
+        self.audio_player_dial = QDial()
+        self.audio_player_dial.setMinimum(0)
+        self.audio_player_dial.setMaximum(100)
+        self.audio_player_dial.setValue(10)
+        self.audio_player_dial.setMinimumSize(500, 500)
+        self.audio_player_dial.valueChanged.connect(lambda: self.audio_player_volume.display(self.audio_player_dial.value()))
+
+        self.audio_player_layout.addWidget(self.audio_player_dial)
+        self.audio_player_layout.addWidget(self.audio_player_volume)
+        # self.img_label.setMinimumSize(500, 400)
+        # self.img_label.setStyleSheet("border: 1px solid gray; background-color: #f0f0f0;")
+        # self.img_label.setText("Изображение появится здесь")
+        self.audio_player_pause = QPushButton("Pause")
+        self.central_layout.addWidget(self.audio_player)
+
+
+    def get_file(self):
+        file = QFileDialog.getOpenFileName(
+            self, 'Выбор Файла', '', filter="*.csv")
+        if file:
+            self.load_file(file[0])
+    
+    def load_file(self, path: str):
+        if not (path and os.path.exists(path)):
+            return
+        
+        self.iterator = CSVIterator.fromfilename(path)
+        
+        self.file_label.setText(f"Файл: {os.path.basename(path)}")
+        self.table.clear()
+        self.table.setRowCount(len(self.iterator.csv_data))
+        self.table.setColumnCount(len(self.iterator.csv_data[0].keys()))
+        self.table.setHorizontalHeaderLabels(self.iterator.csv_data[0].keys())
+
+        for row_index, row_data in enumerate(self.iterator):
+                for col_index, data in enumerate(row_data.values()):
+                    item = QTableWidgetItem(str(data))
+                    self.table.setItem(row_index, col_index, item)
+        self.table.resizeColumnsToContents()
+        self.iterator.reset()
+
+        self.selected_index = 0
+        self.table.selectRow(self.selected_index)
+        next(self.iterator)
+        self.btns.show()
+    
+    def next_item(self):
+        try:
+            line = next(self.iterator)
+            self.selected_index += 1
+            self.table.selectRow(self.selected_index)
+        except StopIteration:
+            self.selected_index = 0
+            self.table.selectRow(self.selected_index)
+            self.iterator.reset()
+            next(self.iterator)
+
+    def play_file(self):
+        ...
