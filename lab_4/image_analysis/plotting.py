@@ -16,12 +16,9 @@ def create_width_distribution_plot(
     if df.empty:
         raise ValueError("DataFrame пустой")
     
-    if 'Ширина изображения' not in df.columns:
-        raise ValueError("DataFrame не содержит колонку 'Ширина изображения'")
+    if 'image_width' not in df.columns:
+        raise ValueError("DataFrame не содержит колонку 'image_width'")
     
-    print(f"\nСоздание графика...")
-    
-    # Создаем директорию для выходного файла
     output_dir = Path(output_path).parent
     if output_dir != Path('.'):
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -33,7 +30,6 @@ def create_width_distribution_plot(
     
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    print(f"График сохранен в: {output_path}")
     plt.show()
 
 
@@ -41,7 +37,7 @@ def _plot_width_sequence(ax: plt.Axes, df: pd.DataFrame) -> None:
     """
     Создает линейный график ширины изображений по порядку.
     """
-    widths = df['Ширина изображения'].values
+    widths = df['image_width'].values
     indices = np.arange(len(df))
     
     ax.plot(indices, widths, linewidth=1.5, color='steelblue', 
