@@ -43,10 +43,10 @@ def main() -> None:
         print(f"Error: Cannot to read {csv}")
         return
 
-    df['Dominant Color'] = df["Absolute Path"].apply(funcs.get_dominant_color)
-    df['Brightness Range'] = df['Dominant Color'].apply(funcs.get_brightness_range)
+    df['dominant_color'] = df["Relative Path"].apply(funcs.get_dominant_color)
+    df['brightness_range'] = df['dominant_color'].apply(funcs.get_brightness_range)
 
-    df_sort = funcs.sort_by_column(df, "Brightness Range")
+    df_sort = funcs.sort_by_column(df, "brightness_range")
 
     funcs.show_and_save(df_sort)
 

@@ -30,12 +30,12 @@ def sort_by_column(df: pd.DataFrame, column: str) -> pd.DataFrame:
 
 def filter_by_range(df: pd.DataFrame, range_str: str) -> pd.DataFrame:
     """Filter DataFrame by brightness range"""
-    return df[df['Brightness Range'] == range_str]
+    return df[df['brightness_range'] == range_str]
 
 
 def show_and_save(df_sort: pd.DataFrame) -> None:
     """Show and save hystogramm of distribution brightness dominant color"""
-    range_counts = df_sort['Brightness Range'].value_counts().sort_index()
+    range_counts = df_sort['brightness_range'].value_counts().sort_index()
     plt.figure(figsize=(10, 6))
     plt.bar(range_counts.index, range_counts.values, color='skyblue')
     plt.xlabel('Диапазоны яркости доминирующего цвета')
