@@ -12,7 +12,13 @@ def get_arguments() -> argparse.Namespace:
     """
     
     argument_parser = argparse.ArgumentParser(
-        description='Обрезка изображения до заданных размеров от левого верхнего угла'
+        description='Обрезка изображения до заданных размеров от левого верхнего угла',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Примеры использования:
+  %(prog)s --source photo.jpg --result trimmed.jpg --width 500 --height 400
+  %(prog)s --source ./images/cat.png --result ./output/cat_trim.png --width 300 --height 300
+        """
     )
 
     argument_parser.add_argument(

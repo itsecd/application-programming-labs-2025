@@ -22,7 +22,7 @@ def get_dimensions(image: Image.Image) -> Tuple[int, int]:
     """
     Получает размер изображения.
     """
-    
+
     return image.size
 
 
@@ -42,6 +42,9 @@ def trim_image_top_left(
 
     actual_width = min(target_width, original_width)
     actual_height = min(target_height, original_height)
+
+    if actual_width != target_width or actual_height != target_height:
+        pass
 
     trimmed_image = image.crop((0, 0, actual_width, actual_height))
     return trimmed_image
@@ -73,7 +76,12 @@ def execute_image_trimming(
     """
 
     image = open_image(input_file)
+
+    original_width, original_height = get_dimensions(image)
+
     trimmed_image = trim_image_top_left(image, trim_width, trim_height)
+    final_width, final_height = get_dimensions(trimmed_image)
+
     store_image(trimmed_image, output_file)
 
     return image, trimmed_image
