@@ -1,238 +1,165 @@
 """
 Модуль для обработки аудиофайлов - склейка двух файлов.
 """
-import numpy as np
-import matplotlib.pyplot as plt
+
 import os
-import sys
-from typing import List, Tuple
 from datetime import datetime
+from typing import List, Tuple
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 try:
     import soundfile as sf
     SOUNDFILE_AVAILABLE = True
 except ImportError:
     SOUNDFILE_AVAILABLE = False
-    print("Ошибка: soundfile не установлен. Установите: pip install soundfile")
+
 
 class AudioProcessor:
     """Класс для обработки аудиофайлов с использованием NumPy."""
     
     def __init__(self, output_dir: str = "audio_results"):
         if not SOUNDFILE_AVAILABLE:
-            print("Ошибка: необходима установка soundfile для работы с MP3")
-            print("Установите: pip install soundfile")
-            sys.exit(1)
+            raise ImportError("Необходима установка soundfile: pip install soundfile")
         
         self.output_dir = output_dir
         self._create_output_directory()
     
     def _create_output_directory(self):
         """Создаем папку для результатов, если она не существует."""
-        try:
-            abs_path = os.path.abspath(self.output_dir)
-            os.makedirs(abs_path, exist_ok=True)
-            
-            if os.path.exists(abs_path) and os.path.isdir(abs_path):
-                # Простая проверка возможности записи
-                test_file = os.path.join(abs_path, "test_write.tmp")
-                with open(test_file, 'w') as f:
-                    f.write("test")
-                os.remove(test_file)
-                print(f" Папка создана: {abs_path}")
-            else:
-                print(" Не удалось создать папку для результатов")
-                sys.exit(1)
-                
-        except Exception as e:
-            print(f" Ошибка создания папки: {e}")
-            sys.exit(1)
+        abs_path = os.path.abspath(self.output_dir)
+        os.makedirs(abs_path, exist_ok=True)
     
     def _get_output_path(self, filename: str) -> str:
-        """Генерирует полный путь для выходного файла."""
         return os.path.join(self.output_dir, filename)
     
     def read_audio_file(self, file_path: str) -> Tuple[int, np.ndarray]:
-        try:
-            # Читаем аудиофайл
-            audio_data, sample_rate = sf.read(file_path)
-            
-            # Конвертируем в NumPy массив
-            audio_data = np.asarray(audio_data)
-            
-            # Если многоканальное - преобразуем в моно
-            if audio_data.ndim > 1:
-                audio_data = np.mean(audio_data, axis=1)
-            
-            # Нормализуем для 16-bit PCM
-            if audio_data.dtype in [np.float32, np.float64]:
-                audio_data = np.clip(audio_data, -1.0, 1.0)
-                audio_data = (audio_data * 32767).astype(np.int16)
-            
-            return sample_rate, audio_data
-            
-        except Exception as e:
-            print(f" Ошибка чтения {file_path}: {e}")
-            raise
+        audio_data, sample_rate = sf.read(file_path)
+        audio_data = np.asarray(audio_data)
+        
+        if audio_data.ndim > 1:
+            audio_data = np.mean(audio_data, axis=1)
+        
+        if audio_data.dtype in [np.float32, np.float64]:
+            audio_data = np.clip(audio_data, -1.0, 1.0)
+            audio_data = (audio_data * 32767).astype(np.int16)
+        
+        return sample_rate, audio_data
     
     def get_audio_info(self, file_path: str) -> dict:
-        """Получает информацию об аудиофайле."""
-        try:
-            # Получаем базовую информацию
-            sample_rate, audio_data = self.read_audio_file(file_path)
-            file_size = os.path.getsize(file_path)
-            
-            # Вычисляем статистику с помощью NumPy
-            duration = len(audio_data) / sample_rate
-            
-            audio_stats = {
-                'min': np.min(audio_data),
-                'max': np.max(audio_data),
-                'mean': np.mean(audio_data),
-                'rms': np.sqrt(np.mean(audio_data.astype(np.float64)**2))
-            }
-            
-            return {
-                'duration': duration,
-                'sample_rate': sample_rate,
-                'channels': 1,  # Всегда моно после обработки
-                'samples': len(audio_data),
-                'file_size_kb': file_size / 1024,
-                'format': file_path.split('.')[-1].upper(),
-                'stats': audio_stats
-            }
-                
-        except Exception:
-            return {}
+        sample_rate, audio_data = self.read_audio_file(file_path)
+        file_size = os.path.getsize(file_path)
+        
+        duration = len(audio_data) / sample_rate
+        
+        audio_stats = {
+            'min': np.min(audio_data),
+            'max': np.max(audio_data),
+            'mean': np.mean(audio_data),
+            'rms': np.sqrt(np.mean(audio_data.astype(np.float64)**2))
+        }
+        
+        return {
+            'duration': duration,
+            'sample_rate': sample_rate,
+            'channels': 1,
+            'samples': len(audio_data),
+            'file_size_kb': file_size / 1024,
+            'format': file_path.split('.')[-1].upper(),
+            'stats': audio_stats
+        }
     
     def resample_audio(self, audio_data: np.ndarray, original_sr: int, target_sr: int) -> np.ndarray:
         if original_sr == target_sr:
             return audio_data
         
-        # Вычисляем новую длину
         duration = len(audio_data) / original_sr
         target_length = int(duration * target_sr)
         
-        # Создаем временные оси и интерполируем
         original_time = np.linspace(0, duration, len(audio_data))
         target_time = np.linspace(0, duration, target_length)
         
         return np.interp(target_time, original_time, audio_data).astype(audio_data.dtype)
     
     def concatenate_audio(self, file1: str, file2: str, output_filename: str = None) -> str:
-        try:
-            # Генерируем имя файла если не указано
-            if output_filename is None:
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                output_filename = f"combined_audio_{timestamp}.wav"
-            
-            output_path = self._get_output_path(output_filename)
-            
-            print(" Загрузка аудиофайлов...")
-            
-            # Читаем файлы
-            sample_rate1, audio1 = self.read_audio_file(file1)
-            sample_rate2, audio2 = self.read_audio_file(file2)
-            
-            print(f" Файл 1: {sample_rate1} Hz, {len(audio1)} samples")
-            print(f" Файл 2: {sample_rate2} Hz, {len(audio2)} samples")
-            
-            # Ресемплируем если нужно
-            if sample_rate1 != sample_rate2:
-                print(f" Ресемплинг: {sample_rate2} Hz -> {sample_rate1} Hz")
-                audio2 = self.resample_audio(audio2, sample_rate2, sample_rate1)
-            
-            # Склеиваем аудио
-            print(" Склейка аудио...")
-            combined_audio = np.concatenate((audio1, audio2))
-            
-            print(" Сохранение результата...")
-            sf.write(output_path, combined_audio, sample_rate1, subtype='PCM_16')
-            
-            print(f" Результат сохранен: {output_path}")
-            return output_path
-            
-        except Exception as e:
-            print(f" Ошибка склейки: {e}")
-            return ""
+        if output_filename is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_filename = f"combined_audio_{timestamp}.wav"
+        
+        output_path = self._get_output_path(output_filename)
+        
+        sample_rate1, audio1 = self.read_audio_file(file1)
+        sample_rate2, audio2 = self.read_audio_file(file2)
+        
+        if sample_rate1 != sample_rate2:
+            audio2 = self.resample_audio(audio2, sample_rate2, sample_rate1)
+        
+        combined_audio = np.concatenate((audio1, audio2))
+        sf.write(output_path, combined_audio, sample_rate1, subtype='PCM_16')
+        
+        return output_path
     
     def normalize_audio(self, audio_data: np.ndarray) -> np.ndarray:
-        # Конвертируем в float
         if audio_data.dtype == np.int16:
             audio_float = audio_data.astype(np.float32) / 32767.0
         else:
             audio_float = audio_data.astype(np.float32)
         
-        # Нормализуем к диапазону [-1, 1]
         max_val = np.max(np.abs(audio_float))
         return audio_float / max_val if max_val > 0 else audio_float
     
     def plot_audio_waveforms(self, file1: str, file2: str, output_file: str, plot_filename: str = None) -> str:
-        try:
-            # Генерируем имя файла если не указано
-            if plot_filename is None:
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                plot_filename = f"audio_comparison_{timestamp}.png"
-            
-            plot_path = self._get_output_path(plot_filename)
-            
-            print(" Построение графиков...")
-            
-            # Загружаем и нормализуем аудио
-            sample_rate1, audio1 = self.read_audio_file(file1)
-            sample_rate2, audio2 = self.read_audio_file(file2)
-            sample_rate_result, audio_result = self.read_audio_file(output_file)
-            
-            audio1_norm = self.normalize_audio(audio1)
-            audio2_norm = self.normalize_audio(audio2)
-            audio_result_norm = self.normalize_audio(audio_result)
-            
-            # Создаем временные оси
-            time1 = np.arange(len(audio1_norm)) / sample_rate1
-            time2 = np.arange(len(audio2_norm)) / sample_rate2
-            time_result = np.arange(len(audio_result_norm)) / sample_rate_result
-            
-            # Создаем график
-            fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(14, 10))
-            
-            # Настраиваем графики
-            colors = ['#1f77b4', '#2ca02c', '#d62728']  # Синий, зеленый, красный
-            
-            ax1.plot(time1, audio1_norm, color=colors[0], alpha=0.8, linewidth=0.8)
-            ax1.set_title(f'Файл 1: {os.path.basename(file1)}', fontweight='bold')
-            ax1.set_ylabel('Амплитуда')
-            ax1.grid(True, alpha=0.3)
-            
-            ax2.plot(time2, audio2_norm, color=colors[1], alpha=0.8, linewidth=0.8)
-            ax2.set_title(f'Файл 2: {os.path.basename(file2)}', fontweight='bold')
-            ax2.set_ylabel('Амплитуда')
-            ax2.grid(True, alpha=0.3)
-            
-            ax3.plot(time_result, audio_result_norm, color=colors[2], alpha=0.8, linewidth=0.8)
-            ax3.set_title(f'Результат: {os.path.basename(output_file)}', fontweight='bold')
-            ax3.set_xlabel('Время (секунды)')
-            ax3.set_ylabel('Амплитуда')
-            ax3.grid(True, alpha=0.3)
-            
-            # Отмечаем точку склейки
-            splice_time = len(audio1_norm) / sample_rate1
-            ax3.axvline(x=splice_time, color='orange', linestyle='--', alpha=0.7, 
-                       label=f'Склейка ({splice_time:.2f}с)')
-            ax3.legend()
-            
-            plt.tight_layout()
-            plt.savefig(plot_path, dpi=150, bbox_inches='tight')
-            plt.show()
-            
-            print(f" График сохранен: {plot_path}")
-            return plot_path
-            
-        except Exception as e:
-            print(f" Ошибка построения графиков: {e}")
-            return ""
+        if plot_filename is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            plot_filename = f"audio_comparison_{timestamp}.png"
+        
+        plot_path = self._get_output_path(plot_filename)
+        
+        sample_rate1, audio1 = self.read_audio_file(file1)
+        sample_rate2, audio2 = self.read_audio_file(file2)
+        sample_rate_result, audio_result = self.read_audio_file(output_file)
+        
+        audio1_norm = self.normalize_audio(audio1)
+        audio2_norm = self.normalize_audio(audio2)
+        audio_result_norm = self.normalize_audio(audio_result)
+        
+        time1 = np.arange(len(audio1_norm)) / sample_rate1
+        time2 = np.arange(len(audio2_norm)) / sample_rate2
+        time_result = np.arange(len(audio_result_norm)) / sample_rate_result
+        
+        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(14, 10))
+        
+        colors = ['#1f77b4', '#2ca02c', '#d62728']
+        
+        ax1.plot(time1, audio1_norm, color=colors[0], alpha=0.8, linewidth=0.8)
+        ax1.set_title(f'Файл 1: {os.path.basename(file1)}', fontweight='bold')
+        ax1.set_ylabel('Амплитуда')
+        ax1.grid(True, alpha=0.3)
+        
+        ax2.plot(time2, audio2_norm, color=colors[1], alpha=0.8, linewidth=0.8)
+        ax2.set_title(f'Файл 2: {os.path.basename(file2)}', fontweight='bold')
+        ax2.set_ylabel('Амплитуда')
+        ax2.grid(True, alpha=0.3)
+        
+        ax3.plot(time_result, audio_result_norm, color=colors[2], alpha=0.8, linewidth=0.8)
+        ax3.set_title(f'Результат: {os.path.basename(output_file)}', fontweight='bold')
+        ax3.set_xlabel('Время (секунды)')
+        ax3.set_ylabel('Амплитуда')
+        ax3.grid(True, alpha=0.3)
+        
+        splice_time = len(audio1_norm) / sample_rate1
+        ax3.axvline(x=splice_time, color='orange', linestyle='--', alpha=0.7, 
+                   label=f'Склейка ({splice_time:.2f}с)')
+        ax3.legend()
+        
+        plt.tight_layout()
+        plt.savefig(plot_path, dpi=150, bbox_inches='tight')
+        plt.show()
+        
+        return plot_path
     
     def display_audio_info(self, file_path: str, title: str = "Аудиофайл"):
-        """Выводим информацию об аудиофайле."""
         info = self.get_audio_info(file_path)
         
         if info:
@@ -243,22 +170,19 @@ class AudioProcessor:
             print(f"  Размер: {info['file_size_kb']:.1f} KB")
             print(f"  Формат: {info['format']}")
             
-            # Статистика амплитуды
             stats = info['stats']
             print(f"  Амплитуда: {stats['min']:.0f} / {stats['max']:.0f} (мин/макс)")
         else:
-            print(f" Ошибка чтения: {file_path}")
+            print(f"❌ Ошибка чтения: {file_path}")
     
     def find_audio_file(self, audio_files: List[str], filename: str) -> str:
-        """Находим файл по имени."""
         for file_path in audio_files:
             if os.path.basename(file_path) == filename:
                 return file_path
         return ""
     
     def list_available_files(self, audio_files: List[str]):
-        """Выводим список файлов."""
-        print("\n ДОСТУПНЫЕ ФАЙЛЫ:")
+        print("\nДОСТУПНЫЕ ФАЙЛЫ:")
         print("-" * 60)
         for i, file_path in enumerate(audio_files, 1):
             info = self.get_audio_info(file_path)

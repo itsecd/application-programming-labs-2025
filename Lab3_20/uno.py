@@ -3,58 +3,42 @@
 """
 
 import argparse
+import csv
 import os
 import sys
-import csv
-from typing import List
+from typing import List, Tuple
+
 from due import AudioProcessor
 
 
 def load_audio_files_from_csv(csv_file: str) -> List[str]:
-    """Загружаем аудиофайлы из CSV."""
     audio_files = []
     
-    try:
-        with open(csv_file, 'r', encoding='utf-8') as file:
-            reader = csv.DictReader(file)
-            
-            if 'absolute_path' not in reader.fieldnames:
-                print("Ошибка: в CSV нет колонки 'absolute_path'")
-                return []
-            
-            for row in reader:
-                file_path = row['absolute_path']
-                if os.path.exists(file_path):
-                    audio_files.append(file_path)
+    with open(csv_file, 'r', encoding='utf-8') as file:
+        reader = csv.DictReader(file)
         
-        print(f"Загружено файлов: {len(audio_files)}")
-        return audio_files
+        if 'absolute_path' not in reader.fieldnames:
+            return []
         
-    except Exception as e:
-        print(f"Ошибка CSV: {e}")
-        return []
-
+        for row in reader:
+            file_path = row['absolute_path']
+            if os.path.exists(file_path):
+                audio_files.append(file_path)
+    
+    return audio_files
 
 def find_audio_files_in_directory(directory: str) -> List[str]:
-    """Ищем аудиофайлы в директории."""
     audio_files = []
     
-    try:
-        for root, dirs, files in os.walk(directory):
-            for file in files:
-                if file.lower().endswith(('.mp3', '.wav')):
-                    audio_files.append(os.path.join(root, file))
-        
-        print(f"Найдено файлов: {len(audio_files)}")
-        return audio_files
-        
-    except Exception as e:
-        print(f"Ошибка поиска: {e}")
-        return []
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file.lower().endswith(('.mp3', '.wav')):
+                audio_files.append(os.path.join(root, file))
+    
+    return audio_files
 
 
-def get_user_file_selection(audio_files, processor):
-    """Получаем выбор файлов от пользователя."""
+def get_user_file_selection(audio_files: List[str], processor: AudioProcessor) -> Tuple[str, str]:
     processor.list_available_files(audio_files)
     
     while True:
@@ -86,13 +70,10 @@ def get_user_file_selection(audio_files, processor):
                 
         except ValueError:
             print("Введите числа")
-        except KeyboardInterrupt:
-            print("\nВыход")
-            sys.exit(0)
 
 
 def main():
-    """Главная функция."""
+    """Главная функция программы."""
     parser = argparse.ArgumentParser(description='Склейка двух аудиофайлов')
     
     parser.add_argument('--csv_annotation', help='CSV файл с путями')
@@ -107,25 +88,28 @@ def main():
         print("Укажите --csv_annotation или --audio_dir")
         sys.exit(1)
     
-    print("=== 🎵 СКЛЕЙКА АУДИО ===")
+    print("=== СКЛЕЙКА АУДИО ===")
     
-    # Загружаем файлы
     audio_files = []
     
     if args.csv_annotation and os.path.exists(args.csv_annotation):
         audio_files = load_audio_files_from_csv(args.csv_annotation)
+        print(f"Загружено файлов из CSV: {len(audio_files)}")
     elif args.audio_dir and os.path.exists(args.audio_dir):
         audio_files = find_audio_files_in_directory(args.audio_dir)
+        print(f"Найдено файлов в папке: {len(audio_files)}")
     
     if len(audio_files) < 2:
         print("Нужно минимум 2 файла")
         sys.exit(1)
     
-    # Создаем процессор
-    processor = AudioProcessor(output_dir=args.output)
+    try:
+        processor = AudioProcessor(output_dir=args.output)
+    except ImportError as e:
+        print(f" {e}")
+        sys.exit(1)
     
     try:
-        # Выбор файлов
         file1, file2 = None, None
         
         if args.file1 and args.file2:
@@ -139,26 +123,23 @@ def main():
         print(f"  1. {os.path.basename(file1)}")
         print(f"  2. {os.path.basename(file2)}")
         
-        # Информация о файлах
         processor.display_audio_info(file1, "Файл 1")
         processor.display_audio_info(file2, "Файл 2")
         
-        # Склейка
         print(f"\nСклейка...")
         result_path = processor.concatenate_audio(file1, file2)
         
         if result_path:
             print(f"Успешно: {result_path}")
             
-            # Графики
             print(f"\nГрафики...")
             plot_path = processor.plot_audio_waveforms(file1, file2, result_path)
             
             if plot_path:
                 print(f"\nГотово!")
                 print(f"Папка: {os.path.abspath(args.output)}")
-                print(f"   Аудио: {os.path.basename(result_path)}")
-                print(f"   График: {os.path.basename(plot_path)}")
+                print(f"  Аудио: {os.path.basename(result_path)}")
+                print(f"  График: {os.path.basename(plot_path)}")
             
         else:
             print("Ошибка склейки")
