@@ -5,6 +5,7 @@ from load_images import FileIterator
 
 class MainWindow(QtWidgets.QMainWindow):
     """Главное окно приложения для просмотра датасета"""
+
     def __init__(self) -> None:
         super().__init__()
         self.setup_ui()
@@ -115,7 +116,9 @@ class MainWindow(QtWidgets.QMainWindow):
         sizePolicy.setHeightForWidth(self.image.sizePolicy().hasHeightForWidth())
         self.image.setSizePolicy(sizePolicy)
         self.image.setMinimumSize(QtCore.QSize(64, 64))
-        self.image.setStyleSheet("color: rgb(242, 243, 245);\n" "background-color: None;")
+        self.image.setStyleSheet(
+            "color: rgb(242, 243, 245);\n" "background-color: None;"
+        )
         self.image.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.image.setObjectName("image")
         self.horizontalLayout_3.addWidget(self.image)
@@ -199,56 +202,76 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setTabOrder(self.annotation_button, self.prev_button)
 
     def retranslate_ui(self):
+        """Создает текст на двух языках"""
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "Просмотр изображений"))
         self.folder_button.setText(_translate("Select folder", "Выбрать папку"))
-        self.annotation_button.setText(_translate("Select annotation", "Выбрать аннотацию"))
-        self.image.setText(_translate("Select source", "Здесь могла бы быть ваша реклама"))
+        self.annotation_button.setText(
+            _translate("Select annotation", "Выбрать аннотацию")
+        )
+        self.image.setText(
+            _translate("Select source", "Здесь могла бы быть ваша реклама")
+        )
         self.prev_button.setText(_translate("<", "<"))
         self.next_button.setText(_translate(">", ">"))
         self.index.setText(_translate("File index", "Индекс файла"))
         self.filepath.setText(_translate("File path", "Путь к файлу"))
 
-
-
-
     def select_folder(self) -> None:
-        """Метод для выбора папки с датасетом"""
-        folder = QtWidgets.QFileDialog.getExistingDirectory(self, "Выберите папку с изображениями")
-        self.create_iterator(folder)
+        """Выбор папки с датасетом"""
+        folder = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Выберите папку с изображениями"
+        )
+        if folder != "":
+            self.create_iterator(folder)
 
     def select_annotation(self) -> None:
-        """Метод для выбора *.csv файла с путями до изображений"""
-        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Выберите файл аннотации", "", "CSV Files(*.csv)")
-        self.create_iterator(file_path)
-
+        """Выбор *.csv файла с путями до изображений"""
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Выберите файл аннотации", "", "CSV Files(*.csv)"
+        )
+        if file_path != "":
+            self.create_iterator(file_path)
 
     def create_iterator(self, source: str) -> None:
+        """Создает итератор по выбранному датасету"""
         self.image_iterator = FileIterator(source)
         self.next_button.setEnabled(True)
         self.prev_button.setEnabled(True)
         self.is_iterator_exist = True
         self.update_interface()
-    
-    def update_interface(self) -> None:  
-        if(self.is_iterator_exist == True):  
+
+    def update_interface(self) -> None:
+        """Обновляет значения для вывода в интерфейс"""
+        if self.is_iterator_exist == True:
             path = self.image_iterator.files[self.image_iterator.index]
-            self.image.setPixmap(QPixmap(path).scaled(self.image.size(), QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation))
-            self.index.setText(f"{self.image_iterator.index} / {len(self.image_iterator.files)}")
-            self.filepath.setText(f"{self.image_iterator.files[self.image_iterator.index]}")
+            self.image.setPixmap(
+                QPixmap(path).scaled(
+                    self.image.size(),
+                    QtCore.Qt.AspectRatioMode.KeepAspectRatio,
+                    QtCore.Qt.TransformationMode.SmoothTransformation,
+                )
+            )
+            self.index.setText(
+                f"{self.image_iterator.index} / {len(self.image_iterator.files)}"
+            )
+            self.filepath.setText(
+                f"{self.image_iterator.files[self.image_iterator.index]}"
+            )
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        """Вызывается при изменении размера окна и обновляет интерфейс."""
         super().resizeEvent(event)
         self.update_interface()
 
     def on_prev(self) -> None:
+        """Переключает итератор на предыдущее изображение"""
         if self.image_iterator.index > 0:
             self.image_iterator.index -= 1
             self.update_interface()
 
     def on_next(self) -> None:
+        """Переключает итератор на следующее изображение"""
         if self.image_iterator.index < len(self.image_iterator.files) - 1:
             self.image_iterator.index += 1
             self.update_interface()
-
-            

@@ -5,8 +5,8 @@ from icrawler.builtin import BingImageCrawler
 
 
 class FileIterator:
-
-    def __init__(self, source) -> None:
+    """Создает итератор по файлам в выбранной папке"""
+    def __init__(self, source: str) -> None:
         self.files = []
 
         if os.path.isdir(source):
@@ -15,7 +15,7 @@ class FileIterator:
                     self.files.append(os.path.join(root, file))
 
         elif os.path.isfile(source):
-            with open(source, 'r', encoding='utf-8') as file:
+            with open(source, "r", encoding="utf-8") as file:
                 reader = csv.reader(file)
                 next(reader)
                 for row in reader:
@@ -24,7 +24,8 @@ class FileIterator:
 
         else:
             raise ValueError(
-                "Необходимо указать файл аннотации или папку с изображениями")
+                "Необходимо указать файл аннотации или папку с файлами"
+            )
 
         self.index = 0
 
@@ -40,43 +41,48 @@ class FileIterator:
 
 
 def parse_args() -> argparse.Namespace:
-    """
-    Парсинг параметров с консоли
-    """
+    """Парсинг параметров с консоли"""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output",
-                        "-o",
-                        type=str,
-                        required=False,
-                        help="Путь к папке для сохранения изображений")
-    parser.add_argument("--keywords",
-                        "-k",
-                        nargs='+',
-                        type=str,
-                        required=False,
-                        help="Ключевое слово для скачивания изображений")
-    parser.add_argument("--annotation",
-                        "-a",
-                        type=str,
-                        default="annotation.csv",
-                        help="Файл для записи путей к загруженным файлам")
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        required=False,
+        help="Путь к папке для сохранения изображений",
+    )
+    parser.add_argument(
+        "--keywords",
+        "-k",
+        nargs="+",
+        type=str,
+        required=False,
+        help="Ключевое слово для скачивания изображений",
+    )
+    parser.add_argument(
+        "--annotation",
+        "-a",
+        type=str,
+        default="annotation.csv",
+        help="Файл для записи путей к загруженным файлам",
+    )
     return parser.parse_args()
 
 
-def download_images(output_dir=str, keywords=set) -> None:
-    """Скачивание изображений по ключевым словам в заданную директорию """
+def download_images(output_dir: str, keywords: set) -> None:
+    """Скачивание изображений по ключевым словам в заданную директорию"""
     for kword in keywords:
         category_dir = os.path.join(output_dir, kword)
         os.makedirs(category_dir, exist_ok=True)
 
-        crawler = BingImageCrawler(storage={'root_dir': category_dir},
-                                   downloader_threads=4)
+        crawler = BingImageCrawler(
+            storage={"root_dir": category_dir}, downloader_threads=4
+        )
         crawler.crawl(keyword=kword)
 
 
-def create_annotation(output_dir, annotation_file) -> None:
+def create_annotation(output_dir: str, annotation_file: str) -> None:
     """Создание .csv файла, в котором располагаются пути к скачанным файлам"""
-    with open(annotation_file, 'w', newline='', encoding="utf-8") as file:
+    with open(annotation_file, "w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow(["Abs path", "Rel path"])
         for root, dirs, files in os.walk(output_dir):
@@ -84,20 +90,3 @@ def create_annotation(output_dir, annotation_file) -> None:
                 abs_path = os.path.abspath(os.path.join(root, file))
                 rel_path = os.path.relpath(abs_path)
                 writer.writerow([abs_path, rel_path])
-
-
-# def main() -> None:
-#     # args = parse_args()
-
-#     try:
-#         # download_images(args.output, args.keywords)
-#         # create_annotation(args.output, args.annotation)
-
-#         files_iterator = FileIterator(args.output)
-#     except Exception as e:
-#         print(f"Произошла ошибка: {e}")
-
-
-
-# if __name__ == "__main__":
-#     main()
