@@ -3,7 +3,8 @@ from image_processor import (
     validate_arguments,
     load_image,
     convert_and_binarize,
-    save_image
+    save_image,
+    display_comparison
 )
 
 
@@ -25,6 +26,8 @@ def main() -> None:
         print(f"Бинарное изображение успешно сохранено: {args.output}")
         
         print(f"Обработка завершена! Порог: {args.threshold}")
+        
+        display_comparison(original_img, binary_img, args.input, args.threshold)
         
     except FileNotFoundError as e:
         print(f"Ошибка файла: {e}")

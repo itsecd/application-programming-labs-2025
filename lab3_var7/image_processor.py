@@ -2,6 +2,7 @@ import argparse
 import os
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def parse_arguments():
@@ -60,3 +61,25 @@ def save_image(image: np.ndarray, output_path: str) -> None:
     success = cv2.imwrite(output_path, image)
     if not success:
         raise ValueError(f"Не удалось сохранить изображение: {output_path}")
+
+
+def display_comparison(original_img: np.ndarray, binary_img: np.ndarray, 
+                      original_path: str, threshold: int) -> None:
+    """
+    Отображение сравнения исходного и бинарного изображения.
+    """
+
+    original_rgb = cv2.cvtColor(original_img, cv2.COLOR_BGR2RGB)
+    
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+    
+    axes[0].imshow(original_rgb)
+    axes[0].set_title(f'Исходное изображение\n{os.path.basename(original_path)}')
+    axes[0].axis('off')
+    
+    axes[1].imshow(binary_img, cmap='gray')
+    axes[1].set_title(f'Бинарное изображение\nПорог: {threshold}')
+    axes[1].axis('off')
+    
+    plt.tight_layout()
+    plt.show()
