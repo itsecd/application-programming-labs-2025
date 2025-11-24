@@ -4,43 +4,31 @@ from pathlib import Path
 from typing import Tuple
 
 from PIL import Image
+from icrawler.builtin import GoogleImageCrawler
 
 
-def filter_by_resolution(folder: str,
+def download_images_basic(keyword: str,
+                         target_count: int,
                          min_res: Tuple[int, int],
-                         max_res: Tuple[int, int]) -> int:
-    """
-    Фильтрует изображения по разрешению.
-    Возвращает количество оставшихся изображений.
-    """
+                         max_res: Tuple[int, int],
+                         save_dir: str) -> None:
+    """Базовая загрузка изображений только из Google."""
+    
+    os.makedirs(save_dir, exist_ok=True)
 
-    allowed_ext = {".jpg", ".jpeg", ".png", ".gif", ".bmp"}
-    time.sleep(0.8)  # Задержка для избежания проблем с файловой системой
+    crawler = GoogleImageCrawler(
+        storage={"root_dir": save_dir},
+        downloader_threads=2
+    )
 
-    files = [
-        f for f in os.listdir(folder)
-        if Path(f).suffix.lower() in allowed_ext
-    ]
+    try:
+        crawler.crawl(keyword=keyword, max_num=target_count * 2)
+    except Exception as e:
+        print(f"Ошибка при загрузке: {e}")
 
-    kept, removed = 0, 0
-    for name in files:
-        path = os.path.join(folder, name)
-
-        try:
-            with Image.open(path) as img:
-                w, h = img.size
-
-            if not (min_res[0] <= w <= max_res[0] and min_res[1] <= h <= max_res[1]):
-                os.remove(path)
-                removed += 1
-            else:
-                kept += 1
-
-        except Exception:
-            try:
-                os.remove(path)
-                removed += 1
-            except Exception:
-                pass
-
-    return kept
+    time.sleep(1)
+    
+    kept_count = filter_by_resolution(save_dir, min_res, max_res)
+    print(f"Сохранилось изображений после фильтрации: {kept_count}")
+    
+    return kept_count
