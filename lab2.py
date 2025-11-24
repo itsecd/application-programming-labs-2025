@@ -34,6 +34,15 @@ class ImageIterator:
         else:
             raise StopIteration
 
+def cleanup_directory(directory):
+    for file_path in Path(directory).rglob('*.*'):
+        if file_path.is_file():
+            if file_path.suffix.lower() in ['.txt', '.tmp', '']:
+                try:
+                    file_path.unlink()
+                except:
+                    pass
+
 def download_images(output_dir, size_ranges, total_min=80, total_max=200):
     os.makedirs(output_dir, exist_ok=True)
     
@@ -64,34 +73,83 @@ def download_images(output_dir, size_ranges, total_min=80, total_max=200):
         print(f"\n=== Диапазон {i+1}: {min_size}x{max_size} ===")
         print(f"Цель: {count} изображений")
         
+        cleanup_directory(range_dir)
+        
         try:
             crawler = BingImageCrawler(
                 storage={'root_dir': range_dir},
-                feeder_threads=1,
-                parser_threads=1,
-                downloader_threads=2
+                feeder_threads=3,
+                parser_threads=3,
+                downloader_threads=6
             )
             
+            keywords = ['fish', 'fishes', 'aquarium fish', 'colorful fish', 'tropical fish']
+            keyword = random.choice(keywords)
+            
+            print(f"Поиск по ключевому слову: '{keyword}'")
+            
             crawler.crawl(
-                keyword='fish',
-                max_num=count
+                keyword=keyword,
+                max_num=count * 2,
+                file_idx_offset='auto'
             )
+            
+            time.sleep(2)
             
         except Exception as e:
             print(f"Ошибка при скачивании: {e}")
             continue
         
+        cleanup_directory(range_dir)
+        
         downloaded_count = 0
-        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff']
         
         for file_path in Path(range_dir).rglob('*.*'):
             if file_path.is_file() and file_path.suffix.lower() in image_extensions:
-                absolute_path = str(file_path.absolute())
-                relative_path = str(file_path.relative_to(output_dir))
-                all_files.append((absolute_path, relative_path))
-                downloaded_count += 1
+                if file_path.stat().st_size > 10240:
+                    absolute_path = str(file_path.absolute())
+                    relative_path = str(file_path.relative_to(output_dir))
+                    all_files.append((absolute_path, relative_path))
+                    downloaded_count += 1
         
         print(f"Успешно скачано: {downloaded_count} изображений")
+        
+        if downloaded_count < count // 2:
+            print(f"Скачано мало изображений, пробуем еще раз...")
+            try:
+                crawler2 = BingImageCrawler(
+                    storage={'root_dir': range_dir},
+                    feeder_threads=2,
+                    parser_threads=2,
+                    downloader_threads=4
+                )
+                
+                new_keyword = random.choice([k for k in keywords if k != keyword])
+                print(f"Дополнительный поиск: '{new_keyword}'")
+                
+                crawler2.crawl(
+                    keyword=new_keyword,
+                    max_num=count - downloaded_count,
+                    file_idx_offset='auto'
+                )
+                
+                time.sleep(2)
+                cleanup_directory(range_dir)
+                
+                for file_path in Path(range_dir).rglob('*.*'):
+                    if file_path.is_file() and file_path.suffix.lower() in image_extensions:
+                        if file_path.stat().st_size > 10240:
+                            absolute_path = str(file_path.absolute())
+                            relative_path = str(file_path.relative_to(output_dir))
+                            if (absolute_path, relative_path) not in all_files:
+                                all_files.append((absolute_path, relative_path))
+                                downloaded_count += 1
+                
+                print(f"После дополнительного поиска: {downloaded_count} изображений")
+                
+            except Exception as e:
+                print(f"Ошибка при дополнительном скачивании: {e}")
     
     return all_files
 
