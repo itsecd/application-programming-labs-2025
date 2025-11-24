@@ -23,8 +23,7 @@ def create_safe_filename(original_name: str) -> str:
         safe_name = safe_name.strip("_")
         return safe_name[:100]
     except Exception as e:
-        print(f"Ошибка при создании имени файла: {e}")
-        return "unknown_sound"
+        raise e
 
 
 def download_human_sounds(
@@ -70,13 +69,11 @@ def download_human_sounds(
                 })
 
             except Exception as e:
-                print(f"Ошибка при скачивании {sound['name']}: {e}")
-                continue
+                raise e
 
         return downloaded_files
     except Exception as e:
-        print(f"Ошибка при скачивании звуков: {e}")
-        return []
+        raise e
 
 
 def create_sounds_annotation(
@@ -111,4 +108,4 @@ def create_sounds_annotation(
                     "relative_path": relative_path
                 })
     except Exception as e:
-        print(f"Ошибка при создании аннотации: {e}")
+        raise e

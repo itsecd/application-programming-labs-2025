@@ -31,8 +31,7 @@ class AudioFileIterator:
                     "Источник должен быть путем к CSV файлу или папке"
                 )
         except Exception as e:
-            print(f"Ошибка при инициализации итератора: {e}")
-            self.paths = []
+            raise e
 
     def _load_from_directory(self, directory_path: str) -> None:
         """Загружает пути к файлам из директории."""
@@ -42,7 +41,7 @@ class AudioFileIterator:
                     if file.lower().endswith(('.mp3', '.wav', '.ogg', '.m4a')):
                         self.paths.append(os.path.join(root, file))
         except Exception as e:
-            print(f"Ошибка при загрузке из директории: {e}")
+            raise e
 
     def _load_from_csv(self, csv_path: str) -> None:
         """Загружает пути к файлам из CSV аннотации."""
@@ -53,7 +52,7 @@ class AudioFileIterator:
                     if "absolute_path" in row:
                         self.paths.append(row["absolute_path"])
         except Exception as e:
-            print(f"Ошибка при загрузке из CSV: {e}")
+            raise e
 
     def __iter__(self) -> Iterator[str]:
         """Возвращает итератор."""
