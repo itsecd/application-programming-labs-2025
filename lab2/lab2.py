@@ -18,7 +18,7 @@ class path_iterator:
         else:
             for filename in os.listdir(source):
                 self.paths.append(os.path.join(source,filename))
-         
+
     def __iter__(self):
         return self
     
@@ -28,6 +28,7 @@ class path_iterator:
             self.counter +=1
             return path
         else:
+            self.counter = 0
             raise StopIteration
 
 def arguments () -> argparse.Namespace:
@@ -47,7 +48,7 @@ def downloader(minimum_size: tuple[int, int], maximum_size: tuple[int, int], out
         os.mkdir(output)
      maxi_num = random.randint(50,1000)
      bing_crawler = BingImageCrawler(storage={'root_dir': output})
-     bing_crawler.crawl(keyword='cat', max_num=maxi_num)
+     bing_crawler.crawl(keyword='cat', max_num=10)
      img_filter(output, minimum_size, maximum_size)
 
 def img_filter(output: str, minimum_size: tuple[int, int], maximum_size: tuple[int, int]) -> None:
@@ -69,13 +70,22 @@ def img_filter(output: str, minimum_size: tuple[int, int], maximum_size: tuple[i
 
 def create_csv(output: str, csv_path: str) -> None:
     """Создание Csv анотации"""
+    csv_dirr = os.path.abspath(os.path.dirname(csv_path))
     with open(csv_path, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(['absolute path', 'relative path'])
         for filename in os.listdir(output):
           abs_path = os.path.abspath(os.path.join(output, filename))
-          rel_path = os.path.join(output, filename)
+          rel_path = os.path.relpath(abs_path, csv_dirr)
           writer.writerow([abs_path, rel_path])
+
+def iter_test(csv_path: str)-> None:
+    """Тест итератора"""
+    it = path_iterator(csv_path)
+    for path in it:
+        print(path)
+
+
 
 def main() -> None:
     """Основная функция"""
@@ -84,6 +94,7 @@ def main() -> None:
     max_size = (args.max_width, args.max_height)
     downloader(min_size, max_size, args.output_folder)
     create_csv(args.output_folder, args.csv_path)
+    iter_test(args.csv_path)
 
 if __name__ == '__main__':
      main()
