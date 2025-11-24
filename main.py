@@ -1,43 +1,57 @@
 import re
+import argparse
+from typing import List, Tuple
 
 
-def main() -> None:
-    with open("data.txt", "r", encoding="utf-8") as f:
-        content = f.read()
+def read_data(filename: str) -> str:
+    with open(filename, "r", encoding="utf-8") as f:
+        return f.read()
 
-   
-    pattern = r"(\d+)\)\s*\n(.*?)(?=\n\d+\)|\Z)"
+
+def extract_moscow_residents(content: str) -> List[Tuple[int, str]]:
+    pattern = r"(\d+)\)\s*\n(.*?)\nГород:\s*(.*?)(?=\n\d+\)|\Z)"
     matches = re.findall(pattern, content, flags=re.DOTALL)
 
-    moscow_people = []
-
-    for num_str, body in matches:
-        num = int(num_str)
-        lines = [line.strip() for line in body.split("\n") if line.strip()]
-        data = {}
-        for line in lines:
-            if ":" in line:
-                key, value = line.split(":", 1)
-                data[key.strip()] = value.strip()
-
-        city = data.get("Город", "")
-        
+    moscow_residents = []
+    for num_str, body, city in matches:
         norm_city = city.strip()
         if norm_city.startswith("г."):
             norm_city = norm_city[2:].strip()
-
         if norm_city == "Москва":
-            moscow_people.append((num, body))
+            moscow_residents.append((int(num_str), body))
+    return moscow_residents
 
-    count = len(moscow_people)
-    print(f"Количество жителей Москвы: {count}")
 
-    with open("moscow_residents.txt", "w", encoding="utf-8") as f:
-        for num, body in moscow_people:
+def save_to_file(residents: List[Tuple[int, str]], filename: str) -> None:
+    with open(filename, "w", encoding="utf-8") as f:
+        for num, body in residents:
             f.write(f"{num})\n{body}\n\n")
 
-    print("😎👍 Анкеты сохранены в 'moscow_residents.txt'")
+
+def main(input_file: str, output_file: str) -> None:
+    content = read_data(input_file)
+    moscow_residents = extract_moscow_residents(content)
+    count = len(moscow_residents)
+    print(f"Количество жителей Москвы: {count}")
+    save_to_file(moscow_residents, output_file)
+    print(f"😎🤙 Анкеты сохранены в '{output_file}'")
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Поиск жителей Москвы в анкетах")
+    parser.add_argument(
+        "--input",
+        default="data.txt",
+        help="Имя входного файла (data.txt)"
+    )
+    parser.add_argument(
+        "--output",
+        default="moscow_residents.txt",
+        help="Имя выходного файла (moscow_residents.txt)"
+    )
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
-    main()
+    args = parse_args()
+    main(args.input, args.output)
