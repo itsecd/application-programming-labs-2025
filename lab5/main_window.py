@@ -1,4 +1,5 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtGui import QPixmap
 from load_images import FileIterator
 
 
@@ -8,11 +9,12 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.setup_ui()
 
+        self.next_button.setEnabled(False)
+        self.prev_button.setEnabled(False)
         self.folder_button.clicked.connect(self.select_folder)
         self.annotation_button.clicked.connect(self.select_annotation)
         self.prev_button.clicked.connect(self.on_prev)
         self.next_button.clicked.connect(self.on_next)
-
 
 
     def setup_ui(self) -> None:
@@ -91,8 +93,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.prev_button.setMaximumSize(QtCore.QSize(48, 48))
         font = QtGui.QFont()
         font.setFamily("System")
-        font.setPointSize(30)
-        font.setBold(True)
+
         self.prev_button.setFont(font)
         self.prev_button.setStyleSheet(
             "color: rgb(242, 243, 245);\n"
@@ -103,20 +104,20 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.prev_button.setObjectName("prev_button")
         self.horizontalLayout_3.addWidget(self.prev_button)
-        self.img = QtWidgets.QLabel(parent=self.image_widget)
+        self.image = QtWidgets.QLabel(parent=self.image_widget)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Expanding,
             QtWidgets.QSizePolicy.Policy.Expanding,
         )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.img.sizePolicy().hasHeightForWidth())
-        self.img.setSizePolicy(sizePolicy)
-        self.img.setMinimumSize(QtCore.QSize(64, 64))
-        self.img.setStyleSheet("color: rgb(242, 243, 245);\n" "background-color: None;")
-        self.img.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.img.setObjectName("img")
-        self.horizontalLayout_3.addWidget(self.img)
+        sizePolicy.setHeightForWidth(self.image.sizePolicy().hasHeightForWidth())
+        self.image.setSizePolicy(sizePolicy)
+        self.image.setMinimumSize(QtCore.QSize(64, 64))
+        self.image.setStyleSheet("color: rgb(242, 243, 245);\n" "background-color: None;")
+        self.image.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.image.setObjectName("image")
+        self.horizontalLayout_3.addWidget(self.image)
         self.next_button = QtWidgets.QPushButton(parent=self.image_widget)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed
@@ -127,14 +128,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.next_button.setSizePolicy(sizePolicy)
         self.next_button.setMinimumSize(QtCore.QSize(32, 32))
         self.next_button.setMaximumSize(QtCore.QSize(48, 48))
-        font = QtGui.QFont()
-        font.setFamily("System")
-        font.setPointSize(30)
-        font.setBold(True)
-        font.setItalic(False)
-        font.setUnderline(False)
-        font.setStrikeOut(False)
-        font.setStyleStrategy(QtGui.QFont.StyleStrategy.PreferAntialias)
         self.next_button.setFont(font)
         self.next_button.setStyleSheet(
             "color: rgb(242, 243, 245);\n"
@@ -209,8 +202,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(_translate("MainWindow", "Главное окно"))
         self.folder_button.setText(_translate("Select folder", "Выбрать папку"))
         self.annotation_button.setText(_translate("Select annotation", "Выбрать аннотацию"))
+        self.image.setText(_translate("Select source", "Здесь могла бы быть ваша реклама"))
         self.prev_button.setText(_translate("<", "<"))
-        self.img.setText(_translate("Image", "Картинка"))
         self.next_button.setText(_translate(">", ">"))
         self.index.setText(_translate("File index", "Индекс файла"))
         self.filepath.setText(_translate("File path", "Путь к файлу"))
@@ -226,13 +219,32 @@ class MainWindow(QtWidgets.QMainWindow):
     def select_annotation(self) -> None:
         """Метод для выбора *.csv файла с путями до изображений"""
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Выберите файл аннотации", "", "CSV Files(*.csv)")
-        self.create_iterator(folder)
+        self.create_iterator(file_path)
 
-    def create_iterator(self, source) -> None:
-        self.img_iter = FileIterator(source)
 
-    def on_prev(self):
-        print("Prev clicked")
+    def create_iterator(self, source: str) -> None:
+        self.image_iterator = FileIterator(source)
+        self.next_button.setEnabled(True)
+        self.prev_button.setEnabled(True)
+        self.show_image()
 
-    def on_next(self):
-        print("Next clicked")
+
+
+
+    def show_image(self) -> None:
+        path = self.image_iterator.files[self.image_iterator.index]
+        self.image.setPixmap(QPixmap(path).scaled(self.image.size(), QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation))
+
+
+
+    def on_prev(self) -> None:
+        if self.image_iterator.index > 0:
+            self.image_iterator.index -= 1
+            self.show_image()
+
+    def on_next(self) -> None:
+        if self.image_iterator.index < len(self.image_iterator.files) - 1:
+            self.image_iterator.index += 1
+            self.show_image()
+
+            
