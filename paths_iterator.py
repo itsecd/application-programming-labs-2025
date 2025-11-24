@@ -11,28 +11,22 @@ class ImageList:
         self.items: List[str] = []
 
         if os.path.isfile(source) and source.endswith(".csv"):
-            self._load_from_csv(source)
+            with open(source, "r", encoding="utf-8") as f:
+                rdr = csv.DictReader(f)
+                self.items = [row["absolute_path"] for row in rdr]
+
         elif os.path.isdir(source):
-            self._load_from_directory(source)
+            exts = {".jpg", ".jpeg", ".png", ".gif", ".bmp"}
+            self.items = [
+                str(Path(source) / name)
+                for name in os.listdir(source)
+                if Path(name).suffix.lower() in exts
+            ]
+
         else:
             raise ValueError("Источник должен быть CSV-файлом или папкой")
 
         self.pos = 0
-
-    def _load_from_csv(self, csv_path: str) -> None:
-        """Загружает пути к изображениям из CSV файла."""
-        with open(csv_path, "r", encoding="utf-8") as f:
-            rdr = csv.DictReader(f)
-            self.items = [row["absolute_path"] for row in rdr]
-
-    def _load_from_directory(self, directory: str) -> None:
-        """Загружает пути к изображениям из директории."""
-        exts = {".jpg", ".jpeg", ".png", ".gif", ".bmp"}
-        self.items = [
-            str(Path(directory) / name)
-            for name in os.listdir(directory)
-            if Path(name).suffix.lower() in exts
-        ]
 
     def __iter__(self) -> Iterator[str]:
         self.pos = 0
