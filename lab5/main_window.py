@@ -16,6 +16,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.prev_button.clicked.connect(self.on_prev)
         self.next_button.clicked.connect(self.on_next)
 
+        self.is_iterator_exist = False
 
     def setup_ui(self) -> None:
         """Загрузка пользовательского интерфейса"""
@@ -199,7 +200,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def retranslate_ui(self):
         _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("MainWindow", "Главное окно"))
+        self.setWindowTitle(_translate("MainWindow", "Просмотр изображений"))
         self.folder_button.setText(_translate("Select folder", "Выбрать папку"))
         self.annotation_button.setText(_translate("Select annotation", "Выбрать аннотацию"))
         self.image.setText(_translate("Select source", "Здесь могла бы быть ваша реклама"))
@@ -226,22 +227,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.image_iterator = FileIterator(source)
         self.next_button.setEnabled(True)
         self.prev_button.setEnabled(True)
+        self.is_iterator_exist = True
         self.update_interface()
-
-    def update_image(self) -> None:
-        path = self.image_iterator.files[self.image_iterator.index]
-        self.image.setPixmap(QPixmap(path).scaled(self.image.size(), QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation))
-
-    def update_index(self) -> None:
-        self.index.setText(f"{self.image_iterator.index} / {len(self.image_iterator.files)}")
-
-    def update_path(self) -> None:
-        self.filepath.setText(f"{self.image_iterator.files[self.image_iterator.index]}")
     
-    def update_interface(self) -> None:    
-        self.update_image()
-        self.update_index()
-        self.update_path()
+    def update_interface(self) -> None:  
+        if(self.is_iterator_exist == True):  
+            path = self.image_iterator.files[self.image_iterator.index]
+            self.image.setPixmap(QPixmap(path).scaled(self.image.size(), QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation))
+            self.index.setText(f"{self.image_iterator.index} / {len(self.image_iterator.files)}")
+            self.filepath.setText(f"{self.image_iterator.files[self.image_iterator.index]}")
+
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(event)
+        self.update_interface()
 
     def on_prev(self) -> None:
         if self.image_iterator.index > 0:
