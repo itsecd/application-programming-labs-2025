@@ -1,6 +1,6 @@
 import argparse
 import matplotlib.pyplot as plt
-from functions import create_pixel_art, read_image, convert_bgr_to_rgb, convert_rgb_to_bgr, save_image
+from functions import create_pixel_art, read_image, convert_bgr_to_rgb, convert_rgb_to_bgr, save_image, display_images
 
 def main():
     
@@ -27,20 +27,7 @@ def main():
         pixel_art = create_pixel_art(img_rgb, args.pixel_size)
         
         # Отображение исходного изображения и результата
-        plt.figure(figsize=(12, 6))
-        
-        plt.subplot(1, 2, 1)
-        plt.imshow(img_rgb)
-        plt.title('Исходное изображение')
-        plt.axis('off')
-        
-        plt.subplot(1, 2, 2)
-        plt.imshow(pixel_art)
-        plt.title(f'Пиксель-арт (размер пикселя: {args.pixel_size})')
-        plt.axis('off')
-        
-        plt.tight_layout()
-        plt.show()
+        display_images(img_rgb, pixel_art, args.pixel_size)
         
         # Сохранение результата
         pixel_art_bgr = convert_rgb_to_bgr(pixel_art)
