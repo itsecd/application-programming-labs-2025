@@ -10,14 +10,9 @@ def parse_arguments():
     парсинг аргументов командной строки
     """
     parser = argparse.ArgumentParser(description='преобразование изображения в бинарное')
-    parser.add_argument('-i', '--input', type=str, required=True,
-                        help='путь к исходному изображению')
-    parser.add_argument('-o', '--output', type=str,
-                        help='путь для сохранения изображения (опционально)')
-    parser.add_argument('-th', '--threshold', type=int, default=127,
-                        help='порог для бинаризации')
-
-
+    parser.add_argument('-i', '--input', type=str, required=True, help='путь к исходному изображению')
+    parser.add_argument('-o', '--output', type=str, help='путь для сохранения изображения (опционально)')
+    parser.add_argument('-th', '--threshold', type=int, default=127, help='порог для бинаризации')
     return parser.parse_args()
 
 
@@ -62,9 +57,6 @@ def save_image(image: np.ndarray, output_path: str) -> None:
         raise ValueError(f"ошибка при сохранении изображения: {output_path}")
 
 
-
-
-
 def display_comparison(original_img: np.ndarray, binary_img: np.ndarray, original_path: str, threshold: int) -> None:
     """
     отображение исходного и бинарного изображений
@@ -84,6 +76,17 @@ def display_comparison(original_img: np.ndarray, binary_img: np.ndarray, origina
     plt.tight_layout()
     plt.show()
 
+
+def print_success(input_path: str, output_path: str, threshold: int) -> None:
+    """
+    успех
+    """
+    print(f"обработано: {os.path.basename(input_path)}")
+    print(f"сохранено:  {output_path}")
+    print(f"порог:      {threshold}")
+
+
+
 def main():
     args = parse_arguments()
 
@@ -101,15 +104,15 @@ def main():
             save_image(binary_img, args.output)
             print(f"изображение сохранено: {args.output}")
         else:
-            print("без сохраниения")
+            print("без сохранения")
 
+        print_success(args.input, args.output, args.threshold)
         display_comparison(original_img, binary_img, args.input, args.threshold)
 
     except (FileNotFoundError, FileExistsError, ValueError) as e:
         print(f"ошибка: {e}")
     except Exception as e:
         print(f"нежданчик: {e}")
-
 
 if __name__ == "__main__":
     main()
