@@ -108,7 +108,26 @@ class SoundPathIterator:
             if self._file:
                 self._file.close()
             raise
+            
+def save_sounds_and_create_annotation(all_sounds: list, download_dir: str, annotation_path: str) -> None:
+    """
+    Скачивает звуки из списка и создаёт CSV-аннотацию с относительными и абсолютными путями.
 
+    :param all_sounds: Список звуков в формате [(title, audio_url, duration), ...]
+    :param download_dir: Папка для сохранения аудиофайлов
+    :param annotation_path: Путь к выходному CSV-файлу
+    """
+    with open(annotation_path, mode='w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['relative_path', 'absolute_path'])
+
+        for i, (title, audio_url, duration) in enumerate(all_sounds):
+            filename = f"sound_{i+1:04d}.mp3"
+            abs_path = download_sound(audio_url, download_dir, filename)
+            if abs_path:
+                rel_path = os.path.relpath(abs_path, start=os.getcwd())
+                writer.writerow([rel_path, abs_path])
+            time.sleep(0.3)
 
 def main():
     args = parse_arguments()
@@ -159,18 +178,7 @@ def main():
     else:
         all_sounds = all_sounds[:MAX_FILES]
     print(f"Найдено {len(all_sounds)} подходящих звуков. Начинаем скачивание...")
-    with open(annotation_path, mode='w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['relative_path', 'absolute_path'])
-
-        for i, (title, audio_url, duration) in enumerate(all_sounds):
-            filename = f"sound_{i+1:04d}.mp3"
-            abs_path = download_sound(audio_url, download_dir, filename)
-            if abs_path:
-                rel_path = os.path.relpath(abs_path, start=os.getcwd())
-                writer.writerow([rel_path, abs_path])
-            time.sleep(0.3)
-
+    save_sounds_and_create_annotation(all_sounds, download_dir, annotation_path)
     print(f"Готово! Скачано {len(all_sounds)} звуков. Аннотация: {annotation_path}")
     print("\nПример итерации по файлам:")
     count = 0
