@@ -23,12 +23,23 @@ def validate_annotation_path(path: str):
 
 
 
+def clear_directory(directory: str):
+    """
+    очистка директории
+    """
+    if not os.path.exists(directory):
+        return
+    for file in os.listdir(directory):
+        full = os.path.join(directory, file)
+        if os.path.isfile(full):
+            os.remove(full)
+
 
 def download_snakes_with_colors(colors: list, directory: str, min_total: int = 50):
     """
-    скачивание 
+    скачивание + добор
     """
-
+    downloaded = 0
 
     for color in colors:
         count = random.randint(1, 10)
@@ -43,6 +54,17 @@ def download_snakes_with_colors(colors: list, directory: str, min_total: int = 5
 
     downloaded = len(os.listdir(directory))
 
+    while downloaded < min_total:
+        need_one_color = random.choice(colors)
+        print(f"догрузка: {need_one_color}")
+
+        crawler = BingImageCrawler(storage={"root_dir": directory})
+        crawler.crawl(
+            keyword=f"snake {need_one_color}",
+            max_num=1
+        )
+
+        downloaded = len(os.listdir(directory))
 
 
 def create_annotation(csv_path: str, directory: str):
