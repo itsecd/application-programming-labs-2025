@@ -22,7 +22,7 @@ def get_dimensions(image: Image.Image) -> Tuple[int, int]:
     """
     Получает размер изображения.
     """
-
+    
     return image.size
 
 
@@ -60,3 +60,20 @@ def store_image(image: Image.Image, save_path: str) -> None:
         image.save(save_path)
     except Exception as e:
         raise IOError(f"Ошибка при сохранении изображения: {e}")
+
+
+def execute_image_trimming(
+    input_file: str, 
+    output_file: str, 
+    trim_width: int, 
+    trim_height: int
+) -> Tuple[Image.Image, Image.Image]:
+    """
+    Полный процесс обрезки изображения.
+    """
+
+    image = open_image(input_file)
+    trimmed_image = trim_image_top_left(image, trim_width, trim_height)
+    store_image(trimmed_image, output_file)
+
+    return image, trimmed_image
