@@ -2,6 +2,22 @@ import argparse
 import os
 from PIL import Image
 import numpy as np
+import matplotlib.pyplot as plt
+
+def create_test_images():
+    if not os.path.exists('photo1.png'):
+        img1 = np.zeros((300, 400, 3), dtype=np.uint8)
+        for i in range(400):
+            img1[:, i] = [100, 100, 255 - i//2]
+        Image.fromarray(img1).save('photo1.png')
+        print("Создано тестовое изображение: photo1.png")
+    
+    if not os.path.exists('photo2.png'):
+        img2 = np.zeros((300, 400, 3), dtype=np.uint8)
+        for i in range(400):
+            img2[:, i] = [255 - i//2, 100, 100]
+        Image.fromarray(img2).save('photo2.png')
+        print("Создано тестовое изображение: photo2.png")
 
 def load_image(image_path):
     if not os.path.exists(image_path):
@@ -34,6 +50,24 @@ def stitch_images(image1, image2, direction='horizontal'):
     
     return result
 
+def display_images(original1, original2, result):
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    
+    axes[0].imshow(original1)
+    axes[0].set_title(f'Изображение 1\n{original1.shape[1]}x{original1.shape[0]}')
+    axes[0].axis('off')
+    
+    axes[1].imshow(original2)
+    axes[1].set_title(f'Изображение 2\n{original2.shape[1]}x{original2.shape[0]}')
+    axes[1].axis('off')
+    
+    axes[2].imshow(result)
+    axes[2].set_title(f'Результат\n{result.shape[1]}x{result.shape[0]}')
+    axes[2].axis('off')
+    
+    plt.tight_layout()
+    plt.show()
+
 def save_image(image, output_path):
     Image.fromarray(image).save(output_path)
     print(f"Результат сохранен в: {output_path}")
@@ -48,6 +82,8 @@ def main():
     args = parser.parse_args()
     
     try:
+        create_test_images()
+        
         print("Загрузка изображений...")
         image1 = load_image(args.image1)
         image2 = load_image(args.image2)
@@ -59,6 +95,9 @@ def main():
         result = stitch_images(image1, image2, args.direction)
         
         print(f"Результат: {result.shape[1]}x{result.shape[0]}")
+        
+        print("Отображение результатов...")
+        display_images(image1, image2, result)
         
         print("Сохранение результата...")
         save_image(result, args.output)
