@@ -60,3 +60,56 @@ def save_image(image: np.ndarray, output_path: str) -> None:
 
     if not cv2.imwrite(output_path, image):
         raise ValueError(f"ошибка при сохранении изображения: {output_path}")
+
+
+
+
+
+def display_comparison(original_img: np.ndarray, binary_img: np.ndarray, original_path: str, threshold: int) -> None:
+    """
+    отображение исходного и бинарного изображений
+    """
+    original_rgb = cv2.cvtColor(original_img, cv2.COLOR_BGR2RGB)
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+
+    axes[0].imshow(original_rgb)
+    axes[0].set_title(f'исходное изображение\n{os.path.basename(original_path)}')
+    axes[0].axis('off')
+
+    axes[1].imshow(binary_img, cmap='gray')
+    axes[1].set_title(f'бинарное изображение\nпорог: {threshold}')
+    axes[1].axis('off')
+
+    plt.tight_layout()
+    plt.show()
+
+def main():
+    args = parse_arguments()
+
+    try:
+        validate_arguments(args.input, args.threshold)
+
+        original_img = load_image(args.input)
+
+        h, w, c = original_img.shape
+        print(f"размер: {w}x{h}, каналы: {c}")
+
+        binary_img = binarize_image(original_img, args.threshold)
+
+        if args.output:
+            save_image(binary_img, args.output)
+            print(f"изображение сохранено: {args.output}")
+        else:
+            print("без сохраниения")
+
+        display_comparison(original_img, binary_img, args.input, args.threshold)
+
+    except (FileNotFoundError, FileExistsError, ValueError) as e:
+        print(f"ошибка: {e}")
+    except Exception as e:
+        print(f"нежданчик: {e}")
+
+
+if __name__ == "__main__":
+    main()
