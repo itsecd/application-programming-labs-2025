@@ -58,6 +58,9 @@ def save_image(image: np.ndarray, output_path: str) -> None:
     Сохранение изображения в файл.
     """
 
+    if os.path.exists(output_path):
+        raise FileExistsError(f"Файл уже существует: {output_path}")
+    
     success = cv2.imwrite(output_path, image)
     if not success:
         raise ValueError(f"Не удалось сохранить изображение: {output_path}")
@@ -83,3 +86,13 @@ def display_comparison(original_img: np.ndarray, binary_img: np.ndarray,
     
     plt.tight_layout()
     plt.show()
+
+
+def print_success_message(input_path: str, output_path: str, threshold: int) -> None:
+    """
+    Вывод сообщения об успешном завершении.
+    """
+
+    print(f"Обработано: {os.path.basename(input_path)}")
+    print(f"Сохранено: {output_path}")
+    print(f"Использованный порог: {threshold}")
