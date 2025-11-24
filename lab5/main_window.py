@@ -226,25 +226,31 @@ class MainWindow(QtWidgets.QMainWindow):
         self.image_iterator = FileIterator(source)
         self.next_button.setEnabled(True)
         self.prev_button.setEnabled(True)
-        self.show_image()
+        self.update_interface()
 
-
-
-
-    def show_image(self) -> None:
+    def update_image(self) -> None:
         path = self.image_iterator.files[self.image_iterator.index]
         self.image.setPixmap(QPixmap(path).scaled(self.image.size(), QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation))
 
+    def update_index(self) -> None:
+        self.index.setText(f"{self.image_iterator.index} / {len(self.image_iterator.files)}")
 
+    def update_path(self) -> None:
+        self.filepath.setText(f"{self.image_iterator.files[self.image_iterator.index]}")
+    
+    def update_interface(self) -> None:    
+        self.update_image()
+        self.update_index()
+        self.update_path()
 
     def on_prev(self) -> None:
         if self.image_iterator.index > 0:
             self.image_iterator.index -= 1
-            self.show_image()
+            self.update_interface()
 
     def on_next(self) -> None:
         if self.image_iterator.index < len(self.image_iterator.files) - 1:
             self.image_iterator.index += 1
-            self.show_image()
+            self.update_interface()
 
             
