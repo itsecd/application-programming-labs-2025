@@ -47,13 +47,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output",
                         "-o",
                         type=str,
-                        required=True,
+                        required=False,
                         help="Путь к папке для сохранения изображений")
     parser.add_argument("--keywords",
                         "-k",
                         nargs='+',
                         type=str,
-                        required=True,
+                        required=False,
                         help="Ключевое слово для скачивания изображений")
     parser.add_argument("--annotation",
                         "-a",
@@ -86,24 +86,18 @@ def create_annotation(output_dir, annotation_file) -> None:
                 writer.writerow([abs_path, rel_path])
 
 
-def main() -> None:
-    args = parse_args()
+# def main() -> None:
+#     # args = parse_args()
 
-    try:
-        download_images(args.output, args.keywords)
-        create_annotation(args.output, args.annotation)
+#     try:
+#         # download_images(args.output, args.keywords)
+#         # create_annotation(args.output, args.annotation)
 
-        files_iterator = FileIterator(args.output)
-        for file in files_iterator:
-            print(file)
-
-        files_iterator = FileIterator(args.annotation)
-        for file in files_iterator:
-            print(file)
-    except Exception as e:
-        print(f"Произошла ошибка: {e}")
+#         files_iterator = FileIterator(args.output)
+#     except Exception as e:
+#         print(f"Произошла ошибка: {e}")
 
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
