@@ -43,10 +43,7 @@ class ImageIterator:
                 for row in reader:
                     if 'absolute_path' in row:
                         self.paths.append(row['absolute_path'])
-                    else:
-                        print(f"Предупреждение: строка без absolute_path: {row}")
         except Exception as e:
-            print(f"Ошибка при чтении CSV файла {csv_path}: {e}")
             raise
 
     def _read_from_directory(self, directory: Path) -> None:
@@ -62,7 +59,6 @@ class ImageIterator:
                 if file_path.is_file() and file_path.suffix.lower() in image_extensions:
                     self.paths.append(str(file_path.absolute()))
         except Exception as e:
-            print(f"Ошибка при чтении директории {directory}: {e}")
             raise
 
     def __iter__(self) -> Iterator[str]:
