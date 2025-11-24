@@ -37,34 +37,49 @@ def clear_directory(directory: str):
 
 def download_snakes_with_colors(colors: list, directory: str, min_total: int = 50):
     """
-    скачивание + добор
+    скачивание с распределением цветов по папкам
     """
-    downloaded = 0
 
+    color_dirs = {}
     for color in colors:
-        count = random.randint(1, 10)
+        color_dir = os.path.join(directory, color)
+        os.makedirs(color_dir, exist_ok=True)
+        color_dirs[color] = color_dir
+        clear_directory(color_dir)
 
-        print(f"скачиваю {count} картинки: snake {color}")
+    remaining = min_total + 1
+    color_counts = {}
 
-        crawler = BingImageCrawler(storage={"root_dir": directory})
+    for i, color in enumerate(colors[:-1]):
+        count = random.randint(1, max(1, remaining // 2))
+        color_counts[color] = count
+        remaining -= count
+
+    color_counts[colors[-1]] = remaining
+
+    print("распределение по цветам:")
+    for color, count in color_counts.items():
+        print(f"  {color}: {count} изображений")
+
+    total_downloaded = 0
+    for color, count in color_counts.items():
+        if count <= 0:
+            continue
+
+        print(f"скачиваю {count} изображений: snake {color}")
+
+        crawler = BingImageCrawler(storage={"root_dir": color_dirs[color]})
         crawler.crawl(
             keyword=f"snake {color}",
             max_num=count
         )
 
-    downloaded = len(os.listdir(directory))
+        downloaded = len(os.listdir(color_dirs[color]))
+        total_downloaded += downloaded
+        print(f" скачано: {downloaded}")
 
-    while downloaded < min_total:
-        need_one_color = random.choice(colors)
-        print(f"догрузка: {need_one_color}")
-
-        crawler = BingImageCrawler(storage={"root_dir": directory})
-        crawler.crawl(
-            keyword=f"snake {need_one_color}",
-            max_num=1
-        )
-
-        downloaded = len(os.listdir(directory))
+    print(f"всего скачано: {total_downloaded} изображений")
+    return total_downloaded
 
 
 def create_annotation(csv_path: str, directory: str):
@@ -72,14 +87,17 @@ def create_annotation(csv_path: str, directory: str):
     создание CSV аннотации
     """
     rows = []
-    for filename in os.listdir(directory):
-        abs_path = os.path.abspath(os.path.join(directory, filename))
-        rel_path = os.path.join(directory, filename)
-        rows.append([abs_path, rel_path])
+    for color_dir in os.listdir(directory):
+        color_path = os.path.join(directory, color_dir)
+        if os.path.isdir(color_path):
+            for filename in os.listdir(color_path):
+                abs_path = os.path.abspath(os.path.join(color_path, filename))
+                rel_path = os.path.join(directory, color_dir, filename)
+                rows.append([abs_path, rel_path, color_dir])
 
     with open(csv_path, "w", newline='', encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["absolute_path", "relative_path"])
+        writer.writerow(["absolute_path", "relative_path", "color"])
         writer.writerows(rows)
 
 
