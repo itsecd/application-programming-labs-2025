@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from typing import Tuple
+import matplotlib.pyplot as plt
 
 def create_pixel_art(image: np.ndarray, pixel_size: int = 10) -> np.ndarray:
     
@@ -23,7 +24,7 @@ def create_pixel_art(image: np.ndarray, pixel_size: int = 10) -> np.ndarray:
         raise Exception(f"Ошибка в create_pixel_art: {e}")
 
 def read_image(image_path: str) -> np.ndarray:
-    
+   
     try:
         img = cv2.imread(image_path)
         if img is None:
@@ -51,5 +52,21 @@ def save_image(image: np.ndarray, output_path: str) -> None:
     try:
         cv2.imwrite(output_path, image)
     except Exception as e:
-
         raise Exception(f"Ошибка в save_image: {e}")
+
+def display_images(original: np.ndarray, pixel_art: np.ndarray, pixel_size: int) -> None:
+    
+    plt.figure(figsize=(12, 6))
+    
+    plt.subplot(1, 2, 1)
+    plt.imshow(original)
+    plt.title('Исходное изображение')
+    plt.axis('off')
+    
+    plt.subplot(1, 2, 2)
+    plt.imshow(pixel_art)
+    plt.title(f'Пиксель-арт (размер пикселя: {pixel_size})')
+    plt.axis('off')
+    
+    plt.tight_layout()
+    plt.show()
