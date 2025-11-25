@@ -15,6 +15,22 @@ def read_arguments():
     return parser.parse_args()
 
 
+def generate_csv(csv_path, base_folder):
+    root_origin = os.path.dirname(os.path.abspath(csv_path))
+
+    rows = []
+    for root, _, files in os.walk(base_folder):
+        for name in files:
+            abs_p = os.path.abspath(os.path.join(root, name))
+            rel_p = os.path.relpath(abs_p, start=root_origin)
+            rows.append((abs_p, rel_p))
+
+    with open(csv_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["absolute_path", "relative_path"])
+        writer.writerows(rows)
+
+
 def run():
     args = read_arguments()
 
@@ -26,6 +42,8 @@ def run():
             keyword=keyword,
             max_num=args.count
         )
+
+    generate_csv(args.csv, args.folder)
 
 
 if __name__ == "__main__":
