@@ -15,12 +15,12 @@ def parse_ankets(file_path: str) -> list:
         i = 0
         while i + 6 < len(lines):
             ankets.append({
-                "Фамилия":   lines[i + 1],
-                "Имя":  lines[i + 2],
+                "Фамилия": lines[i + 1],
+                "Имя": lines[i + 2],
                 "Пол": lines[i + 3],
-                "Дата рождения":  lines[i + 4],
-                "email":       lines[i + 5],
-                "Город":        lines[i + 6]
+                "Дата рождения": lines[i + 4],
+                "email": lines[i + 5],
+                "Город": lines[i + 6]
             })
             i += 7
 
