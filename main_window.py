@@ -5,18 +5,8 @@ import soundfile as sf
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QFont
 from PyQt6.QtMultimedia import QAudioOutput, QMediaPlayer
-from PyQt6.QtWidgets import (
-    QApplication,
-    QFileDialog,
-    QHBoxLayout,
-    QLabel,
-    QMainWindow,
-    QMessageBox,
-    QPushButton,
-    QSlider,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt6.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel, QMainWindow, QMessageBox, QPushButton,
+    QSlider, QVBoxLayout, QWidget)
 
 from lab2 import AudioIterator
 from lab3 import add_white_noise, read_audio_file
@@ -324,3 +314,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
