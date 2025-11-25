@@ -2,8 +2,9 @@
 import argparse
 import sys
 
+from annotate import give_abs_rel_path, create_annotation
 from download import download_images
-
+from file_iterator import FileIterator
 
 # Список доступных цветов
 list_of_colors = ["red", "green", "blue", "purple"]
@@ -16,34 +17,26 @@ def main():
                         "--directory_img",
                         default = "turtle_images",
                         help = "Путь к папке для сохранения изображений")
+    parser.add_argument("-c",
+                        "--colors",
+                        nargs='+',
+                        required=True,
+                        choices=list_of_colors,
+                        help="Цвета черепахи")
 
     parser.add_argument("-a",
                         "--annotation_file",
-                        default = "annotation.csv",
-                        help = "Путь к файлу аннотации CSV")
+                        default="annotation.csv",
+                        help="Путь к файлу аннотации CSV")
 
     args = parser.parse_args()
 
-    # Ввод цветов для черепахи
-    print(f"\nДоступные цвета для черепахи: {list_of_colors}")
-    colors = input("Перечислите нужные цвета чрез пробел (без других разделителей): ")
-    colors = colors.lower()
-    colors = colors.split(" ")
-    result_list_colors = []
-    for color in colors:
-        if color in list_of_colors:
-            result_list_colors.append(color)
-
-    if len(result_list_colors) == 0:
-        print("Ошибка: Ни один из ведённых вами цветов не доступен для черепахи")
-        sys.exit(1)
-
-    #Количество изображений для скачивания
+    # Количество изображений для скачивания
     count = 50
 
-    #Скачивание изображений
+    # Скачивание изображений
     print("\nСкачивание")
-    download_images(args.directory_img, result_list_colors, count)
+    download_images(args.directory_img, args.colors, count)
 
     # Создание аннотации
     print("\nСоздание Аннотации")

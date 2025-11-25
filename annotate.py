@@ -26,7 +26,6 @@ def give_abs_rel_path(dir_img: str) -> list[dict[str, str]]:
             data_path.append({'absolute_path': absolute_path, 'relative_path': relative_path})
 
     if not data_path:
-        print(f"В папке {data_dir} не найдено изображений.")
         return []
 
     return data_path
