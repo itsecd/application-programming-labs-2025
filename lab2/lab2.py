@@ -31,6 +31,25 @@ def generate_csv(csv_path, base_folder):
         writer.writerows(rows)
 
 
+class PathCSVIterator:
+    def __init__(self, csv_path):
+        with open(csv_path, encoding="utf-8") as f:
+            r = csv.reader(f)
+            next(r, None)
+            self.items = [row[0] for row in r]
+        self.i = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.i >= len(self.items):
+            raise StopIteration
+        val = self.items[self.i]
+        self.i += 1
+        return val
+
+
 def run():
     args = read_arguments()
 
@@ -44,6 +63,10 @@ def run():
         )
 
     generate_csv(args.csv, args.folder)
+
+    print("\n=== CSV Iterator Example ===")
+    for path in PathCSVIterator(args.csv):
+        print(path)
 
 
 if __name__ == "__main__":
