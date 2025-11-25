@@ -1,59 +1,43 @@
-# ui_main_window.py
-# -*- coding: utf-8 -*-
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(800, 600)
-        
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        
         self.layout_widget = QtWidgets.QWidget(self.centralwidget)
         self.layout_widget.setGeometry(QtCore.QRect(20, 20, 760, 520))
         self.layout_widget.setObjectName("layout_widget")
-        
         self.main_layout = QtWidgets.QHBoxLayout(self.layout_widget)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setObjectName("main_layout")
-        
         self.btn_prev = QtWidgets.QPushButton(self.layout_widget)
         self.btn_prev.setObjectName("btn_prev")
         self.main_layout.addWidget(self.btn_prev)
-        
         self.image_label = QtWidgets.QLabel(self.layout_widget)
         self.image_label.setMinimumSize(QtCore.QSize(400, 400))
         self.image_label.setAlignment(QtCore.Qt.AlignCenter)
         self.image_label.setText("")
         self.image_label.setObjectName("image_label")
         self.main_layout.addWidget(self.image_label)
-        
         self.btn_next = QtWidgets.QPushButton(self.layout_widget)
         self.btn_next.setObjectName("btn_next")
         self.main_layout.addWidget(self.btn_next)
-        
         MainWindow.setCentralWidget(self.centralwidget)
-        
         self.menu_bar = QtWidgets.QMenuBar(MainWindow)
         self.menu_bar.setGeometry(QtCore.QRect(0, 0, 800, 21))
         self.menu_bar.setObjectName("menu_bar")
-        
         self.menu_file = QtWidgets.QMenu(self.menu_bar)
         self.menu_file.setObjectName("menu_file")
         MainWindow.setMenuBar(self.menu_bar)
-        
         self.status_bar = QtWidgets.QStatusBar(MainWindow)
         self.status_bar.setObjectName("status_bar")
         MainWindow.setStatusBar(self.status_bar)
-        
         self.menu_open = QtWidgets.QAction(MainWindow)
         self.menu_open.setObjectName("menu_open")
         self.menu_file.addAction(self.menu_open)
-        
         self.menu_bar.addAction(self.menu_file.menuAction())
-
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
