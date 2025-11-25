@@ -1,4 +1,5 @@
-﻿import argparse
+﻿from icrawler.builtin import BingImageCrawler
+import argparse
 import os
 import csv
 
@@ -16,10 +17,15 @@ def read_arguments():
 
 def run():
     args = read_arguments()
-    print(f"Folder: {args.folder}")
-    print(f"CSV: {args.csv}")
-    print(f"Words: {args.words}")
-    print(f"Count: {args.count}")
+
+    crawler = BingImageCrawler(storage={"root_dir": args.folder})
+
+    for keyword in args.words:
+        print(f"Downloading images for: {keyword}")
+        crawler.crawl(
+            keyword=keyword,
+            max_num=args.count
+        )
 
 
 if __name__ == "__main__":
