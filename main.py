@@ -6,10 +6,14 @@ from annotation import create_annotation
 def main():
     """Основная функция программы."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", help="(google, bing, flickr, baidu)")
-    parser.add_argument("--storage-dir", help="save folder")
-    parser.add_argument("--count", type=int, help="count of images")
-    parser.add_argument("--annotation-file", help="path for CSV annotation")
+    parser.add_argument("--source",
+                        help="(google, bing, flickr, baidu)")
+    parser.add_argument("--storage-dir",
+                        help="save folder")
+    parser.add_argument("--count", type=int,
+                        help="count of images")
+    parser.add_argument("--annotation-file",
+                        help="path for CSV annotation")
 
     args = parser.parse_args()
 

@@ -1,4 +1,5 @@
-from icrawler.builtin import GoogleImageCrawler, BingImageCrawler, FlickrImageCrawler, BaiduImageCrawler
+from icrawler.builtin import (GoogleImageCrawler, BingImageCrawler,
+                              FlickrImageCrawler, BaiduImageCrawler)
 
 
 def download_images(source, storage_dir, count):
@@ -12,5 +13,6 @@ def download_images(source, storage_dir, count):
     elif source == 'baidu':
         crawler = BaiduImageCrawler(storage={'root_dir': storage_dir})
 
-    crawler.crawl(keyword='hedgehog', max_num=count, min_size=(200, 200), max_size=(2000,2000))
+    crawler.crawl(keyword='hedgehog', max_num=count, min_size=(200, 200),
+                  max_size=(2000,2000))
     print(f"Images saved to: {storage_dir}")

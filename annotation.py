@@ -13,7 +13,8 @@ def create_annotation(storage_dir: str, annotation_file: str) -> None:
             print("No images found for annotation")
             return
 
-        with open(annotation_file, mode='w', newline='', encoding='utf-8') as file:
+        with open(annotation_file, mode='w', newline='',
+                  encoding='utf-8') as file:
             writer = csv.writer(file)
 
             for img_path in image_files:
