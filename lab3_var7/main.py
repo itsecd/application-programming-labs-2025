@@ -10,12 +10,11 @@ from image_processor import (
 
 
 def main() -> None:
-
     args = parse_arguments()
     
     try:
         validate_arguments(args.input, args.threshold)
-
+        
         original_img = load_image(args.input)
         
         height, width, channels = original_img.shape
