@@ -5,6 +5,12 @@ import csv
 
 
 def read_arguments():
+    """
+    Чтение и парсинг аргументов командной строки.
+    
+    Returns:
+        argparse.Namespace: Объект с аргументами командной строки
+    """
     parser = argparse.ArgumentParser(
         description="Download multiple horse images by keywords and annotate paths."
     )
@@ -16,6 +22,13 @@ def read_arguments():
 
 
 def generate_csv(csv_path, base_folder):
+    """
+    Генерация CSV файла с абсолютными и относительными путями к изображениям.
+    
+    Args:
+        csv_path (str): Путь для сохранения CSV файла
+        base_folder (str): Базовая папка для поиска изображений
+    """
     root_origin = os.path.dirname(os.path.abspath(csv_path))
 
     rows = []
@@ -32,7 +45,21 @@ def generate_csv(csv_path, base_folder):
 
 
 class PathCSVIterator:
+    """
+    Итератор для чтения путей из CSV файла.
+    
+    Attributes:
+        items (list): Список абсолютных путей из CSV
+        i (int): Текущий индекс итерации
+    """
+    
     def __init__(self, csv_path):
+        """
+        Инициализация итератора с загрузкой данных из CSV.
+        
+        Args:
+            csv_path (str): Путь к CSV файлу
+        """
         with open(csv_path, encoding="utf-8") as f:
             r = csv.reader(f)
             next(r, None)
@@ -40,9 +67,24 @@ class PathCSVIterator:
         self.i = 0
 
     def __iter__(self):
+        """
+        Возвращает сам объект как итератор.
+        
+        Returns:
+            PathCSVIterator: Сам объект итератора
+        """
         return self
 
     def __next__(self):
+        """
+        Возвращает следующий элемент итератора.
+        
+        Returns:
+            str: Следующий абсолютный путь из CSV
+            
+        Raises:
+            StopIteration: Когда элементы закончились
+        """
         if self.i >= len(self.items):
             raise StopIteration
         val = self.items[self.i]
@@ -51,6 +93,11 @@ class PathCSVIterator:
 
 
 def run():
+    """
+    Основная функция выполнения программы.
+    
+    Выполняет загрузку изображений, генерацию CSV и демонстрацию работы итератора.
+    """
     args = read_arguments()
 
     crawler = BingImageCrawler(storage={"root_dir": args.folder})
