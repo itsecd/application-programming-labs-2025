@@ -33,11 +33,9 @@ def read_people_from_file(filename: str) -> List[List[str]]:
         with open(filename, "r", encoding="utf-8") as f:
             lines = [line.strip() for line in f if line.strip()]
     except FileNotFoundError:
-        print(f"Файл {filename} не найден.")
-        return people
-    except Exception as e:
-        print(f"Ошибка при чтении файла: {e}")
-        return people
+        raise
+    except Exception:
+        raise
 
     current_person: List[str] = []
     for line in lines:
@@ -59,8 +57,8 @@ def save_people_to_file(people: List[List[str]], filename: str) -> None:
         with open(filename, "w", encoding="utf-8") as out:
             for person in people:
                 out.write("\n".join(person) + "\n")
-    except Exception as e:
-        print(f"Ошибка при записи файла: {e}")
+    except Exception:
+        raise
 
 
 if __name__ == "__main__":
