@@ -1,7 +1,7 @@
 import argparse
 import sys
 from pathlib import Path
-from downloader import download_images
+from downloader import download_images, _create_annotation
 from image_iterator import ImageIterator
 
 
@@ -41,11 +41,13 @@ def main() -> None:
         
         _validate_arguments(args)
         
-        download_images(
+        '''download_images(
             output_dir=args.output_dir,
             annotation_file=args.annotation_file,
             num_threads=args.num_threads
-        )
+        )'''
+
+        _create_annotation(Path(args.output_dir), Path(args.annotation_file))
 
         print("\nДемонстрация работы итератора:")
         image_iterator = ImageIterator(args.annotation_file)
@@ -68,13 +70,7 @@ def main() -> None:
     except KeyboardInterrupt:
         print("\nПрограмма прервана пользователем")
         sys.exit(1)
-    except Exception as e:
-        print(f"Неожиданная ошибка: {e}")
-        print("Пожалуйста, убедитесь что:")
-        print("1. У вас есть подключение к интернету")
-        print("2. У вас есть права на запись в указанные директории")
-        print("3. Библиотека icrawler установлена (pip install icrawler)")
-        sys.exit(1)
+    
 
 
 def _validate_arguments(args: argparse.Namespace) -> None:

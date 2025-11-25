@@ -41,6 +41,7 @@ def apply_gradient_effect(image, direction='right', intensity=0.5):
     
     return result.astype(np.uint8)
 
+
 def main():
     parser = argparse.ArgumentParser(description='Применение эффекта градиента к изображению')
     parser.add_argument('--input', type=str, required=True, help='Путь к исходному изображению')

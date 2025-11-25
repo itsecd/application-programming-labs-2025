@@ -25,10 +25,9 @@ def download_images(
         Exception: Если произошла ошибка при скачивании изображений
     """
     output_dir = Path(output_dir)
-    annotation_file = Path(annotation_file)
     
     output_dir.mkdir(parents=True, exist_ok=True)
-    annotation_file.parent.mkdir(parents=True, exist_ok=True)
+    
 
     try:
         crawler = BingImageCrawler(
@@ -37,9 +36,7 @@ def download_images(
         )
         crawler.crawl(keyword=keyword, max_num=max_num)
         
-        _create_annotation(output_dir, annotation_file)
         print(f"Успешно скачано изображений в {output_dir}")
-        print(f"Аннотация создана в {annotation_file}")
         
     except Exception as e:
         print(f"Ошибка при скачивании изображений: {e}")
@@ -53,6 +50,9 @@ def _create_annotation(output_dir: Path, annotation_file: Path) -> None:
         output_dir: Директория с изображениями
         annotation_file: Путь к файлу аннотации
     """
+    annotation_file = Path(annotation_file)
+    annotation_file.parent.mkdir(parents=True, exist_ok=True)
+
     with open(annotation_file, 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = ['absolute_path', 'relative_path', 'filename']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
