@@ -1,7 +1,8 @@
-﻿from icrawler.builtin import BingImageCrawler
-import argparse
-import os
+﻿import argparse
 import csv
+import os
+from icrawler.builtin import BingImageCrawler
+
 
 
 def read_arguments():
