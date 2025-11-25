@@ -1,5 +1,8 @@
 import argparse
+import csv
+import os
 from icrawler.builtin import GoogleImageCrawler, BingImageCrawler, FlickrImageCrawler
+from pathlib import Path
 
 
 def main():
@@ -25,8 +28,30 @@ def main():
     elif args.source == 'flickr':
         crawler = FlickrImageCrawler(storage={'root_dir': args.storage_dir})
 
-    crawler.crawl(keyword='hedgehog', max_num=args.count)
+    crawler.crawl(keyword='hedgehog', max_num=args.count, min_size=(200, 200), max_size=(2000,2000))
     print(f"Images saved to: {args.storage_dir}")
+
+    create_annotation(args.storage_dir)
+
+
+def create_annotation(storage_dir):
+    annotation_file = "annotation.csv"
+    storage_path = Path(storage_dir)
+    image_files = []
+    for ext in ['*.jpg', '*.jpeg', '*.png']:
+        image_files.extend(storage_path.rglob(ext))
+    if not image_files:
+        print("No images found for annotation")
+        return
+
+
+    with open(annotation_file, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+
+        for img_path in image_files:
+            abs_path = str(img_path.absolute())
+            rel_path = str(img_path.relative_to(storage_path))
+            writer.writerow([abs_path, rel_path])
 
 if __name__ == '__main__':
     main()
