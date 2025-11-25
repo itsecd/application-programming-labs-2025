@@ -1,8 +1,8 @@
 ﻿import argparse
 import csv
 import os
-from icrawler.builtin import BingImageCrawler
 
+from icrawler.builtin import BingImageCrawler
 
 
 def read_arguments():
@@ -12,13 +12,15 @@ def read_arguments():
     Returns:
         argparse.Namespace: Объект с аргументами командной строки
     """
-    parser = argparse.ArgumentParser(
-        description="Download multiple horse images by keywords and annotate paths."
-    )
-    parser.add_argument("--folder", required=True, help="Directory for downloaded images")
-    parser.add_argument("--csv", required=True, help="Target CSV file")
-    parser.add_argument("--words", nargs="+", required=True, help="List of keywords")
-    parser.add_argument("--count", type=int, required=True, help="Images per keyword")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--folder", required=True, 
+                        help="Directory for downloaded images")
+    parser.add_argument("--csv", required=True,
+                        help="Target CSV file")
+    parser.add_argument("--words", nargs="+", required=True,
+                        help="List of keywords")
+    parser.add_argument("--count", type=int, required=True,
+                        help="Images per keyword")
     return parser.parse_args()
 
 
