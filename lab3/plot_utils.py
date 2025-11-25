@@ -1,7 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_comparison(original: np.ndarray, processed: np.ndarray, sample_rate: int) -> None:
+
+def plot_comparison(
+    original: np.ndarray, processed: np.ndarray, sample_rate: int
+) -> None:
     """Строит графики сравнения исходного и обработанного аудио."""
     samples_to_show = min(len(original), 2 * sample_rate)
     time = np.linspace(0, 2, samples_to_show)
