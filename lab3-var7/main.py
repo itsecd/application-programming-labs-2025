@@ -5,20 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def parse_arguments():
+def check_args(input_path: str, threshold: int) -> None:
     """
-    парсинг аргументов командной строки
-    """
-    parser = argparse.ArgumentParser(description='преобразование изображения в бинарное')
-    parser.add_argument('-i', '--input', type=str, required=True, help='путь к исходному изображению')
-    parser.add_argument('-o', '--output', type=str, help='путь для сохранения изображения (опционально)')
-    parser.add_argument('-th', '--threshold', type=int, default=127, help='порог для бинаризации')
-    return parser.parse_args()
-
-
-def validate_arguments(input_path: str, threshold: int) -> None:
-    """
-    проверка корректности аргументов
+    проверка аргументов
     """
     if not os.path.exists(input_path):
         raise FileNotFoundError(f"файл не найден: {input_path}")
@@ -27,7 +16,7 @@ def validate_arguments(input_path: str, threshold: int) -> None:
         raise ValueError("порог должен быть в диапазоне от 0 до 255")
 
 
-def load_image(image_path: str) -> np.ndarray:
+def read_image(image_path: str) -> np.ndarray:
     """
     загрузка изображения
     """
@@ -48,7 +37,7 @@ def binarize_image(img: np.ndarray, threshold: int) -> np.ndarray:
 
 def save_image(image: np.ndarray, output_path: str) -> None:
     """
-    сохранение результатов
+    сохранение нового изображения
     """
     if os.path.exists(output_path):
         raise FileExistsError(f"файл уже существует: {output_path}")
@@ -57,7 +46,7 @@ def save_image(image: np.ndarray, output_path: str) -> None:
         raise ValueError(f"ошибка при сохранении изображения: {output_path}")
 
 
-def display_comparison(original_img: np.ndarray, binary_img: np.ndarray, original_path: str, threshold: int) -> None:
+def display_images(original_img: np.ndarray, binary_img: np.ndarray, original_path: str, threshold: int) -> None:
     """
     отображение исходного и бинарного изображений
     """
@@ -77,23 +66,18 @@ def display_comparison(original_img: np.ndarray, binary_img: np.ndarray, origina
     plt.show()
 
 
-def print_success(input_path: str, output_path: str, threshold: int) -> None:
-    """
-    успех
-    """
-    print(f"обработано: {os.path.basename(input_path)}")
-    print(f"сохранено:  {output_path}")
-    print(f"порог:      {threshold}")
-
-
-
 def main():
-    args = parse_arguments()
+
+    parser = argparse.ArgumentParser(description='преобразование изображения в бинарное')
+    parser.add_argument('-i', '--input', type=str, required=True, help='путь к исходному изображению')
+    parser.add_argument('-o', '--output', type=str, help='путь для сохранения изображения (опционально)')
+    parser.add_argument('-th', '--threshold', type=int, default=127, help='порог для бинаризации')
+    args = parser.parse_args()
 
     try:
-        validate_arguments(args.input, args.threshold)
+        check_args(args.input, args.threshold)
 
-        original_img = load_image(args.input)
+        original_img = read_image(args.input)
 
         h, w, c = original_img.shape
         print(f"размер: {w}x{h}, каналы: {c}")
@@ -106,13 +90,15 @@ def main():
         else:
             print("без сохранения")
 
-        print_success(args.input, args.output, args.threshold)
-        display_comparison(original_img, binary_img, args.input, args.threshold)
 
-    except (FileNotFoundError, FileExistsError, ValueError) as e:
-        print(f"ошибка: {e}")
+        print(f"обработано изображение {os.path.basename(args.input)}")
+        print(f"порог:      {args.threshold}")
+
+        display_images(original_img, binary_img, args.input, args.threshold)
+
+
     except Exception as e:
-        print(f"нежданчик: {e}")
+        print(f"ошибочка: {e}")
 
 if __name__ == "__main__":
     main()
