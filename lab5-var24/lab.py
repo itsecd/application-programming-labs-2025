@@ -41,36 +41,32 @@ class AudioPlayer(QMainWindow):
         self.setWindowTitle("Аудиоплеер - Датасет")
         self.setGeometry(100, 100, 800, 600)
         
-        # Центральный виджет
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         
-        # Основной layout
         main_layout = QVBoxLayout()
         main_layout.addStretch()
         
-        # Label для названия трека
         self.track_name_label = QLabel("Название трека: --")
         self.track_name_label.setAlignment(Qt.AlignCenter)
         main_layout.addWidget(self.track_name_label)
         
-        # Layout для кнопок
+        self.track_duration_label = QLabel("Длительность: --")
+        self.track_duration_label.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(self.track_duration_label)
+        
         buttons_layout = QHBoxLayout()
         
-        # Создаём кнопки
         self.btn_prev = QPushButton("Назад")
         self.btn_play = QPushButton("Воспроизведение")
         self.btn_next = QPushButton("Вперед")
         
-        # Добавляем кнопки в layout
         buttons_layout.addWidget(self.btn_prev)
         buttons_layout.addWidget(self.btn_play)
         buttons_layout.addWidget(self.btn_next)
         
-        # Добавляем layout кнопок в основной layout
         main_layout.addLayout(buttons_layout)
         
-        # Label для количества треков
         self.track_count_label = QLabel(f"Треки: 0/{len(self.songs)}")
         self.track_count_label.setAlignment(Qt.AlignCenter)
         main_layout.addWidget(self.track_count_label)
@@ -79,12 +75,12 @@ class AudioPlayer(QMainWindow):
         
         central_widget.setLayout(main_layout)
         
-        # Подключаем обработчики
         self.btn_play.clicked.connect(self.play_track)
         self.btn_next.clicked.connect(self.next_track)
         self.btn_prev.clicked.connect(self.prev_track)
+        self.player.mediaStatusChanged.connect(self.on_media_status_changed)
+        self.player.durationChanged.connect(self.on_duration_changed)
         
-        # Загружаем первый трек
         if self.songs:
             self.update_track_info()
     
@@ -107,19 +103,31 @@ class AudioPlayer(QMainWindow):
     
     def next_track(self):
         """Следующий трек"""
-        if self.current_index < len(self.songs) - 1:
-            self.current_index += 1
-            self.update_track_info()
-            self.player.play()
-            self.btn_play.setText("Пауза")
+        self.current_index = (self.current_index + 1) % len(self.songs)
+        self.update_track_info()
+        self.player.play()
+        self.btn_play.setText("Пауза")
     
     def prev_track(self):
         """Предыдущий трек"""
-        if self.current_index > 0:
-            self.current_index -= 1
-            self.update_track_info()
-            self.player.play()
-            self.btn_play.setText("Пауза")
+        self.current_index = (self.current_index - 1) % len(self.songs)
+        self.update_track_info()
+        self.player.play()
+        self.btn_play.setText("Пауза")
+    
+    def on_media_status_changed(self):
+        """Обработчик конца трека"""
+        if self.player.mediaStatus() == QMediaPlayer.EndOfMedia:
+            self.next_track()
+    
+    def on_duration_changed(self):
+        """Обновляет длительность при её загрузке"""
+        duration_ms = self.player.duration()
+        if duration_ms > 0:
+            seconds = duration_ms // 1000
+            minutes = seconds // 60
+            seconds = seconds % 60
+            self.track_duration_label.setText(f"Длительность: {minutes}:{seconds:02d}")
 
 
 def main():
