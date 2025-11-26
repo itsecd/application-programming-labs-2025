@@ -1,56 +1,35 @@
+from PyQt5.QtWidgets import QApplication, QMainWindow
 import sys
-import argparse
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
+from lab2_var24 import FileIterator
 
-
-def parse_args():
-    """Парсит аргументы командной строки"""
-    parser = argparse.ArgumentParser(description="Audio Dataset Viewer")
-    parser.add_argument('dataset_dir', help='Путь к папке с MP3 файлами')
-    return parser.parse_args()
-
-
-def create_window():
+def get_songs_from_directory(dir_path: str) -> list:
     """
-    Создаёт главное окно 
+    Получает список всех MP3-файлов из папки с помощью FileIterator.
+    
+    
+    """
+    iterator = FileIterator(dir_path)
+    songs = list(iterator)
+    
+    return songs
+
+def create_main_window():
+    """
+    Создаёт основное окно приложения.
     """
     window = QMainWindow()
-    window.setWindowTitle("Audio Dataset Viewer - Вариант 24")
-    window.setGeometry(100, 100, 600, 300)
-    
-    # Создаём разметку
-    layout = QVBoxLayout()
-    layout.setSpacing(15)
-    layout.setContentsMargins(20, 20, 20, 20)
-    
-    # Заголовок
-    title = QLabel("Audio Player")
-    title.setFont(QFont("Arial", 16, QFont.Bold))
-    title.setAlignment(Qt.AlignCenter)
-    layout.addWidget(title)
-    
-    # Тестовая кнопка
-    test_button = QPushButton("Тестовая кнопка")
-    layout.addWidget(test_button)
-    
-    layout.addStretch()
-    
-    # Устанавливаем разметку
-    central_widget = QWidget()
-    central_widget.setLayout(layout)
-    window.setCentralWidget(central_widget)
-    
+    window.setWindowTitle("Аудиоплеер - Датасет")
+    window.setGeometry(100, 100, 800, 600)
     return window
 
-
 def main():
+    """
+    Запуск приложения.
+    """
     app = QApplication(sys.argv)
-    window = create_window()
+    window = create_main_window()
     window.show()
     sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
