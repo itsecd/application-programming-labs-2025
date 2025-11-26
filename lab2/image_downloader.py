@@ -2,12 +2,16 @@ import csv
 import os
 import random
 from typing import List
+
+
 from icrawler.builtin import BingImageCrawler
 
 
 class ImageDownloader:
     """Класс для скачивания изображений по ключевым словам"""
-    
+
+    image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']
+
     def __init__(self, keywords: List[str]) -> None:
         self.keywords = keywords
 
@@ -34,7 +38,6 @@ class ImageDownloader:
 
             try:
                 crawler.crawl(keyword=keyword, max_num=images_num)
-                image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']
                 downloaded_count = 0
 
                 for filename in os.listdir(keyword_dir):
@@ -43,7 +46,7 @@ class ImageDownloader:
                         _, file_extension = os.path.splitext(filename)
                         file_ext = file_extension.lower()
 
-                        if file_ext in image_extensions:
+                        if file_ext in self.image_extensions:
                             global_downloaded_images += 1
                             downloaded_count += 1
 
@@ -67,15 +70,13 @@ class ImageDownloader:
                 if not os.path.exists(keyword_dir):
                     continue
 
-                image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']
-
                 for filename in os.listdir(keyword_dir):
                     file_path = os.path.join(keyword_dir, filename)
                     if os.path.isfile(file_path):
                         _, file_extension = os.path.splitext(filename)
                         file_ext = file_extension.lower()
 
-                        if file_ext in image_extensions:
+                        if file_ext in self.image_extensions:
                             abs_path = os.path.abspath(file_path)
                             rel_path = os.path.relpath(file_path, start=save_dir)
                             writer.writerow([abs_path, rel_path, keyword])
