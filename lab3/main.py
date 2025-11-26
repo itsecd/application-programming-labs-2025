@@ -5,7 +5,7 @@ from download_images import parse_args, download_images, create_annotation, File
 import matplotlib.pyplot as plt 
 
 
-def paint_frame(img: numpy.ndarray, height: int , width: int, thickness: int, color: tuple = (123,0,50)) -> None:
+def paint_frame(img: numpy.ndarray, height: int , width: int, thickness: int, color: tuple = (0, 0, 0)) -> None:
     """Рисование рамки на изображении"""
     x1 = thickness//2
     y1 = thickness//2
@@ -30,11 +30,11 @@ def save_new_images(arr_imgs: dict, result_dir: str) -> None:
 
 def show_images(image: numpy.ndarray, image_shapes: str) -> None:
     """Выводит изображение вместе с его размерами"""
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # OpenCV использует BGR
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     plt.figure(image_shapes)
     plt.imshow(image_rgb)
 
-    plt.axis('off')  # убрать оси
+    plt.axis('off')
     plt.show()
 
 
@@ -48,14 +48,18 @@ def main() -> None:
 
         files_iterator = FileIterator(args.annotation)
         for path in files_iterator:
-            image = cv2.imread(path)      
+            orig_image = cv2.imread(path)   
+            framed_image = orig_image.copy() 
 
-            height, width, channels = image.shape
+            height, width, channels = orig_image.shape
             image_shapes = f"{height} height x {width} width ({channels} channels)"
 
-            paint_frame(image, height, width, int(width*0.02))
-            arr_framed_imgs[path] = image
-            show_images(image, image_shapes)
+            paint_frame(framed_image, height, width, int(width*0.02), (123,0,50))
+            arr_framed_imgs[path] = framed_image
+
+            show_images(orig_image, image_shapes)
+            show_images(framed_image, image_shapes)
+
 
         save_new_images(arr_framed_imgs, args.result)
            
