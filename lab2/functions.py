@@ -1,6 +1,5 @@
 import csv
 import os
-from math import ceil
 
 from icrawler.builtin import BingImageCrawler
 from PIL import Image
@@ -73,59 +72,21 @@ def make_grayscale(path_d: str) -> None:
             img.save(path)
 
 
-def download_images(ranges: list, path_d: str) -> None:
+def download_images(path_d: str, total_images: int = 50) -> None:
     """
-    установка изображений
+    скачивание изображений 
     """
+    crawler = BingImageCrawler(
+        feeder_threads=1,
+        parser_threads=1,
+        downloader_threads=2,
+        storage={'root_dir': path_d}
+    )
 
-    min_all_images = 50
-    need_for_range = ceil(min_all_images / len(ranges))
-    attempts = 5
-    images_now = 0
+    crawler.downloader.delay = 1.0
 
-    for i in range(len(ranges)):
-        crawler = BingImageCrawler(
-            feeder_threads=8,
-            parser_threads=8,
-            downloader_threads=12,
-            storage={'root_dir': path_d}
-        )
-
-        for _ in range(attempts):
-            if images_now >= need_for_range * (i + 1):
-                break
-
-            crawler.crawl(
-                offset=images_now,
-                keyword='dog',
-                max_num=need_for_range * (i + 1),
-                min_size=ranges[i][0],
-                max_size=ranges[i][1]
-            )
-
-            images_now = len(os.listdir(path_d))
-
-
-def parse_size_range(ranges: str) -> tuple:
-    """
-    получение диапазонов
-    """
-
-    sizes = ranges.split('-')
-
-    min_size = sizes[0].split('x')
-    max_size = sizes[1].split('x')
-
-    min_h = int(min_size[1])
-    min_w = int(min_size[0])
-
-    max_h = int(max_size[1])
-    max_w = int(max_size[0])
-
-    if min_h > max_h:
-        raise ValueError('минимальная высота больше максимальной')
-
-    if min_w > max_w:
-        raise ValueError('минимальная ширина больше максимальной')
-
-    return (min_h, min_w), (max_h, max_w)
+    crawler.crawl(
+        keyword='dog',
+        max_num=total_images,
+        offset=0
+    )
