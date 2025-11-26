@@ -14,26 +14,25 @@ def args_parse() -> argparse.Namespace:
 
     args = parser.parse_args()
 
-    
     if (args.input_file and args.result_file) is not None:
         return args
     else:
         raise Exception("Incorrectly passed arguments")
 
 
-def get_img_size(img: cv2.typing.MatLike) -> tuple[int, int, int]:
+def get_img_size(img: np.ndarray) -> tuple:
     """Данная функция возвращает размеры изображения"""
     return img.shape
 
 
-def make_halftone_img(img: cv2.typing.MatLike) -> cv2.typing.MatLike:
-    """Данная функция делает изображение формата BGR полутоновым.
+def make_halftone_img(img: np.ndarray) -> np.ndarray:
+    """Данная функция делает изображение формата RGB полутоновым.
        Возвращает полутоновое изображение в формате RGB"""
-    new_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    new_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     return cv2.cvtColor(new_img, cv2.COLOR_GRAY2RGB)
 
 
-def save_img(path: str, img: cv2.typing.MatLike) -> None:
+def save_img(path: str, img: np.ndarray) -> None:
     """Функция сохранения обработанного изображения"""
     result_path = os.path.dirname(path)
     
@@ -43,8 +42,8 @@ def save_img(path: str, img: cv2.typing.MatLike) -> None:
     cv2.imwrite(path, img)
 
 
-def show_images(img1: cv2.typing.MatLike, img2: cv2.typing.MatLike) -> None:
-    """Данная функция демонстрирует два изображения"""
+def show_images(img1: np.ndarray, img2: np.ndarray) -> None:
+    """Данная функция выводит два изображения"""
     plt.figure(1)
     plt.title("Исходное изображение")
     plt.axis("off")
@@ -58,27 +57,28 @@ def show_images(img1: cv2.typing.MatLike, img2: cv2.typing.MatLike) -> None:
     plt.show()
 
 
+def image_handler(path: str) -> np.ndarray:
+    """Обработка изображения"""
+    img_brg = cv2.imread(path)
+
+    if img_brg is None:
+        raise FileNotFoundError("Can't find image")
+
+    return cv2.cvtColor(img_brg, cv2.COLOR_BGR2RGB)
+
+
 def main() -> None:
     arguments = args_parse()
     input_file = arguments.input_file
     result_file = arguments.result_file
 
-    img_brg = cv2.imread(input_file)
+    img = image_handler(input_file)
+    height, width = get_img_size(img)[0:2]
+    print(f"Размеры изображения: {width}x{height}")
     
-    if img_brg is None:
-        raise FileNotFoundError("Can't find image")
+    img_gray = make_halftone_img(img)
     
-    img_rgb = cv2.cvtColor(img_brg, cv2.COLOR_BGR2RGB)
-
-    height, width, channels = get_img_size(img_rgb)
-    print("Размеры изображения:", 
-          f" Высота: {height}",
-          f" Ширина: {width}",
-          f" Каналы изображения: {channels}", sep="\n")
-    
-    img_gray = make_halftone_img(img_brg)
-    
-    show_images(img_rgb, img_gray)
+    show_images(img, img_gray)
     save_img(result_file, img_gray)
 
 
