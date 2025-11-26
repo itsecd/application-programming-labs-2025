@@ -1,14 +1,11 @@
-# cd /d D:\Projects\application-programming-labs-2025
 import argparse
 import os
 import csv
 import requests
 from bs4 import BeautifulSoup
 
-
-
 class FilePathIterator:
-    def __init__(self, annotation=None, output_dir=None):
+    def __init__(self, annotation : Optional[str] = None, output_dir : Optional[str] = None) -> None:
         """
         Итератор по путям к файлам
         :param annotation_file: путь к .csv файлу с аннотацией
@@ -47,9 +44,9 @@ class FilePathIterator:
             raise StopIteration
 
 
-def download_audio_file(url, filename, output_dir):
+def download_audio_file(url: str, filename: str, output_dir: str) -> Optional[str]:
     """
-    Скачивает аудиофайл и сохраняет его
+    Скачивание аудиофайла.
     """
 
     try:
@@ -63,14 +60,15 @@ def download_audio_file(url, filename, output_dir):
             f.write(page.content)
         
         return filepath
+
     except Exception as e:
         print(f"Ошибка при скачивании {filename}: {e}")
         return None
 
 
-def parsing_site(base_url, genre, count_per_genre):
+def parsing_site(base_url: str, genre: str, count_per_genre: int) -> List[str]:
     """
-    Парсит сайт и возвращает ссылки на аудиофайлы
+    Нахождение ссылок с файлами нужного жанраю
     """
 
     headers = {
@@ -102,9 +100,9 @@ def parsing_site(base_url, genre, count_per_genre):
     return audio_links[:count_per_genre]
 
 
-def create_annotation(audio_files, output_dir, annotation, genre):
+def create_annotation(audio_files: List[Tuple[str, str]], output_dir: str, annotation: str, genre: str) -> None:
     """
-    Создает CSV файл с аннотацией
+    Создание .csv файла.
     """
 
     file_exists = os.path.exists(annotation)
@@ -138,10 +136,10 @@ def main():
     for genre in genres:
         audio_urls = parsing_site(base_url, genre, files_per_genre)
         
-        for i, audio_url in enumerate(audio_urls): #здесь мы получили лист со ссылками на музыку, и пробегаемся по каждой из ссылок
+        for i, audio_url in enumerate(audio_urls):
             try:
                 filename = f"{genre}_{i+1}.mp3"
-                filepath = download_audio_file(audio_url, filename, args.output_dir) #("https://assets.mixkit.co/music/465/465.mp3", rock_1, "music") -> music/rock_1
+                filepath = download_audio_file(audio_url, filename, args.output_dir)
                 
                 if filepath:
                     relative_path = os.path.relpath(filepath, args.output_dir)
