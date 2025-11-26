@@ -5,6 +5,11 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 
 
+def parse_args():
+    """Парсит аргументы командной строки"""
+    parser = argparse.ArgumentParser(description="Audio Dataset Viewer")
+    parser.add_argument('dataset_dir', help='Путь к папке с MP3 файлами')
+    return parser.parse_args()
 
 
 def create_window():
