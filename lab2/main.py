@@ -11,8 +11,6 @@ def main():
 
         parser.add_argument("directory", type=str, help="путь к папке")
         parser.add_argument("annotation", type=str, help="путь к csv-файлу")
-        parser.add_argument("ranges", nargs='+', type=functions.parse_size_range,
-                            help="пример: 100x100-300x300 400x400-800x800")
 
         args = parser.parse_args()
 
@@ -25,24 +23,23 @@ def main():
 
         functions.clear_dir(directory)
 
-        functions.download_images(args.ranges, directory)
+        functions.download_images(directory, total_images=50)
 
         functions.make_grayscale(directory)
 
         functions.write_csv(annotation, directory)
-
 
         images = functions.AnnotationIterator(annotation)
 
         for img in images:
             print(img)
 
-    except IndexError:
-        print('ошибка в диапазоне размеров')
     except ValueError as e:
         print(e)
     except NotADirectoryError:
         print('ошибка пути к папке')
+    except Exception as e:
+        print('Ошибка:', e)
 
 
 if __name__ == "__main__":
