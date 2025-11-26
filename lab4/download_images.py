@@ -1,4 +1,4 @@
-# file_utils.py
+# download_images.py
 import csv
 import os
 import argparse
@@ -108,7 +108,7 @@ def create_annotation(output_dir: str, annotation_file: str) -> None:
     """Создание .csv файла, в котором располагаются пути к скачанным файлам"""
     with open(annotation_file, "w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
-        writer.writerow(["abs_path", "rel_path"])
+        writer.writerow(["absolute_path", "relative_path"])
         for root, dirs, files in os.walk(output_dir):
             for file in files:
                 abs_path = os.path.abspath(os.path.join(root, file))

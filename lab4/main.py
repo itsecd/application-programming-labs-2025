@@ -41,14 +41,10 @@ def create_range_gist(df: pd.DataFrame, save_path: str = None) -> None:
     plt.ylabel("Количество файлов, подходящих под этот диапазон")
 
     plt.xticks(numpy.arange(0, 255, 16))
+
     if save_path != None:
         plt.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.show()
-
-
-def save_df(df: pd.DataFrame, save_path: str) -> None:
-    """Сохраняет DataFrame в CSV файл"""
-
 
 def main() -> None:
     args = parse_args()
@@ -61,13 +57,13 @@ def main() -> None:
         new_col_name = "brightness_range"
         add_col2df(df, new_col_name, FileIterator(args.annotation), calc_range)
 
-        sort_by_col(df, new_col_name, False)
+        sort_by_col(df, new_col_name, True)
         # filtered_df = filter_by_range(df, new_col_name, 10, 100)
         print(df)
         create_range_gist(df, args.histogram)
         df.to_csv(
-            args.dataframe, index=False, encoding="utf-8-sig"
-        )  # Сохранение DataFrame
+            args.dataframe, index=False, encoding="utf-8"
+        )
     except Exception as e:
         print(f"Произошла ошибка: {e}")
 
