@@ -1,10 +1,10 @@
 import argparse
-import os
 import csv
-import random
-from pathlib import Path
-from icrawler.builtin import BingImageCrawler
+import os
 import sys
+from pathlib import Path
+
+from icrawler.builtin import BingImageCrawler
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -56,7 +56,7 @@ def parse_arguments() -> argparse.Namespace:
 
 def download_images_for_keyword(
     keyword: str, count: int, output_dir: str, timeout: int = 15
-) -> list:
+) -> list[str]:
     """
     Скачивает изображения для одного ключевого слова за одну попытку.
     """
@@ -65,43 +65,35 @@ def download_images_for_keyword(
 
     os.makedirs(keyword_dir, exist_ok=True)
 
-    print(f"Скачивание изображений для: '{keyword}'")
+    crawler = BingImageCrawler(
+        storage={"root_dir": keyword_dir},
+        feeder_threads=1,
+        parser_threads=1,
+        downloader_threads=2,
+    )
 
-    try:
-        crawler = BingImageCrawler(
-            storage={"root_dir": keyword_dir},
-            feeder_threads=1,
-            parser_threads=1,
-            downloader_threads=2,
-        )
+    # Настраиваем таймаут
+    crawler.downloader.timeout = timeout
 
-        # Настраиваем таймаут
-        crawler.downloader.timeout = timeout
+    # Скачиваем изображения
+    crawler.crawl(keyword=keyword, max_num=count, file_idx_offset="auto")
 
-        # Скачиваем изображения
-        crawler.crawl(keyword=keyword, max_num=count, file_idx_offset="auto")
+    # Получаем список скачанных файлов
+    downloaded_files = []
+    for file_path in Path(keyword_dir).rglob("*.*"):
+        if (
+            file_path.is_file()
+            and file_path.stat().st_size > 0
+            and file_path.suffix.lower()
+            in {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"}
+        ):
+            downloaded_files.append(str(file_path))
 
-        # Получаем список скачанных файлов
-        downloaded_files = []
-        for file_path in Path(keyword_dir).rglob("*.*"):
-            if (
-                file_path.is_file()
-                and file_path.stat().st_size > 0
-                and file_path.suffix.lower()
-                in {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"}
-            ):
-                downloaded_files.append(str(file_path))
-
-        print(f"Успешно скачано {len(downloaded_files)} изображений для '{keyword}'")
-        return downloaded_files
-
-    except Exception as e:
-        print(f"Ошибка при скачивании для '{keyword}': {e}")
-        return []
+    return downloaded_files
 
 
 def download_images(
-    keywords: list, total_count: int, output_dir: str, timeout: int = 15
+    keywords: list[str], total_count: int, output_dir: str, timeout: int = 15
 ) -> list:
     """
     Основная функция скачивания изображений (одна попытка).
@@ -117,10 +109,16 @@ def download_images(
 
     # Скачиваем изображения для каждого ключевого слова (одна попытка)
     for keyword in keywords:
-        files = download_images_for_keyword(
-            keyword, images_per_keyword, output_dir, timeout
-        )
+        try:
+            print(f"Скачивание изображений для: '{keyword}'")
+            files = download_images_for_keyword(
+                keyword, images_per_keyword, output_dir, timeout
+            )
+        except Exception as e:
+            print(f"Ошибка при скачивании для '{keyword}': {e}")
+            continue
         all_downloaded_files.extend(files)
+        print(f"Успешно скачано {len(files)} изображений для '{keyword}'")
 
     # Обрезаем до точного общего количества
     final_files = all_downloaded_files[:total_count]
@@ -129,7 +127,7 @@ def download_images(
 
 
 def create_annotation(
-    downloaded_files: list, output_dir: str, annotation_file: str
+    downloaded_files: list[str], output_dir: str, annotation_file: str
 ) -> None:
     """
     Создает CSV-аннотацию с путями к файлам.
@@ -157,6 +155,7 @@ class ImagePathIterator:
         self.source = source
         self.file_paths = []
         self.current_index = 0
+        self.keyword_stats = {}
 
         if os.path.isfile(source) and source.endswith(".csv"):
             self._load_from_annotation(source)
@@ -164,6 +163,16 @@ class ImagePathIterator:
             self._load_from_directory(source)
         else:
             raise ValueError("Источник должен быть CSV-файлом или папкой")
+
+        self.__calc_keyword_stats()
+
+    def __calc_keyword_stats(self):
+        """Приватный метод для вычисления статистики по ключевым словам."""
+        stats = {}
+        for path in self.file_paths:
+            keyword = os.path.basename(os.path.dirname(path))
+            stats[keyword] = stats.get(keyword, 0) + 1
+        self.keyword_stats = stats
 
     def _load_from_annotation(self, annotation_file: str):
         try:
@@ -201,11 +210,7 @@ class ImagePathIterator:
         return len(self.file_paths)
 
     def get_keyword_stats(self) -> dict:
-        stats = {}
-        for path in self.file_paths:
-            keyword = os.path.basename(os.path.dirname(path))
-            stats[keyword] = stats.get(keyword, 0) + 1
-        return stats
+        return self.keyword_stats
 
 
 def main() -> None:
@@ -254,7 +259,7 @@ def main() -> None:
             file_size = os.path.getsize(file_path) / 1024
             print(f"  {i + 1}. {file_path} ({file_size:.1f} KB)")
 
-        print(f"\nПрограмма завершена успешно!")
+        print("\nПрограмма завершена успешно!")
         print(f"Скачано реальных изображений: {len(downloaded_files)}")
 
     except Exception as e:
