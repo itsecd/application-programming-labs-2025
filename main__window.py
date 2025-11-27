@@ -12,12 +12,11 @@ from ui_form import Ui_DataCheck
 from lab_2 import Path_Iterator
 
 class ImageCheck:
+
     def __init__(self,ui):
         self.ui=ui
         self.iterator=None
         self.signals()
-        self.count=0
-        self.items=[]
         self.ui.search_line.setPlaceholderText("Введите название источника")
 
     def signals(self):
@@ -31,21 +30,16 @@ class ImageCheck:
 
         if name:
             self.iterator=Path_Iterator(name)
-            self.items=list(self.iterator)
-            self.count=0
-            self.display_image(self.items[0][0])
+            path=self.iterator.__next__()
+            self.display_image(path[0])
 
     def show_next_image(self):
-        if self.count<len(self.items)-1:
-            self.count+=1
-            path=self.items[self.count][0]
-            self.display_image(path)
+        path=self.iterator.__next__()
+        self.display_image(path[0])
 
     def show_prev_image(self):
-        if self.count>0:
-            self.count-=1
-            path=self.items[self.count][0]
-            self.display_image(path)
+        path=self.iterator.__prev__()
+        self.display_image(path[0])
 
     def display_image(self,path):
         image=QPixmap(path)
