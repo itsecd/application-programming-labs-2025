@@ -17,11 +17,6 @@ def create_dataframe_from_annotation(annotation_file):
     """
     try:
         df = pd.read_csv(annotation_file)
-        # Переименовываем колонки для ясности
-        df = df.rename(columns={
-            'absolute_path': 'absolute_path',
-            'relative_path': 'relative_path'
-        })
         return df
     except Exception as e:
         print(f"Ошибка чтения аннотации: {e}")
