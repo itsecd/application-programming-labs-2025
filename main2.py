@@ -57,14 +57,14 @@ def make_annotation_file(filename_annotation: str, filename_images: str) -> None
         for i in os.listdir(filename_images):
             path = os.path.join(filename_images, i)
             path_full = os.path.abspath(path)
-            writer.writerow([path_full, path])
+            path_rel = os.path.relpath(path)
+            writer.writerow([path_full, path_rel])
 
 
 class Path_Iterator:
     """
     Итератор по пути
     """
-
     def __init__(self, source: str):
         self.items = []
         self.counter = 0
@@ -77,8 +77,9 @@ class Path_Iterator:
         else:
             for file in os.listdir(source):
                 path = os.path.join(source, file)
+                path_rel = os.path.relpath(path)
                 path_full = os.path.abspath(path)
-                self.items.append([path_full, path])
+                self.items.append([path_full, path_rel])
 
     def __iter__(self):
         return self
@@ -107,6 +108,10 @@ def main():
     print(f"\nЗавершено скачивание:")
     print(f"Общее количество скачанных изображений: {final_count}")
     print(f"Затраченное время: {elapsed_time:.2f} секунд")
+
+    print("\nСписок скачанных изображений:")
+    for path in Path_Iterator(filename_annotation):
+        print(path)
 
 if __name__ == "__main__":
     main()
