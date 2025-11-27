@@ -1,14 +1,14 @@
 import pandas
 import matplotlib.pyplot as plt
-import numpy as np
 
 
 def add_range_column(df: pandas.DataFrame) -> pandas.DataFrame:
-    min_area = df["area_average"].min()
-    max_area = df["area_average"].max()
+    """функция распределения площадей"""
+    min_area = df["area"].min()
+    max_area = df["area"].max()
     range_size = (max_area - min_area) // 5
     area_ranges = []
-    for i in df["area_average"]:
+    for i in df["area"]:
         start = (int(i) // range_size) * range_size
         end = start + range_size - 1
         area_ranges.append(f"{start}-{end}")
@@ -18,6 +18,7 @@ def add_range_column(df: pandas.DataFrame) -> pandas.DataFrame:
 
 
 def make_histogram(df: pandas.DataFrame) -> None:
+    """функция создания гистограммы"""
     plt.figure(figsize=(12, 6))
     plt.subplot(1, 3, 1)
     range_counts = df["area_range"].value_counts()
