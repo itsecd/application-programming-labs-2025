@@ -12,13 +12,18 @@ from bs4 import BeautifulSoup
 
 class FileIterator:
     def __init__(self, dir_path: str) -> None:
-        self.dir_path = os.path.abspath(dir_path)
-        self.file_list = [os.path.join(self.dir_path, f) for f in os.listdir(self.dir_path)]
+       
+        if isinstance(dir_path, list):
+            self.file_list = dir_path
+        else:
+            self.dir_path = os.path.abspath(dir_path)
+            self.file_list = [os.path.join(self.dir_path, f) for f in os.listdir(self.dir_path)]
+        
         self.index = 0
-
+    
     def __iter__(self):
         return self
-
+    
     def __next__(self) -> str:
         while self.index < len(self.file_list):
             file_path = self.file_list[self.index]
@@ -26,7 +31,13 @@ class FileIterator:
             if file_path.lower().endswith('.mp3'):
                 return file_path
         raise StopIteration
-
+    
+    def prev(self) -> str:
+        """Переход на предыдущий MP3 файл"""
+        self.index -= 2
+        if self.index < 0:
+            self.index = len(self.file_list) - 1
+        return next(self)
 
 def parse_args() -> argparse.Namespace:
     """
