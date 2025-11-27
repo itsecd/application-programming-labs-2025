@@ -1,8 +1,8 @@
+import os
 import argparse
 import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
-import os
 # python3 lab3.py ./000001.jpg output.jpg
 def load_image(image_path):
     """Загружает изображение из файла"""
@@ -10,8 +10,7 @@ def load_image(image_path):
         image = Image.open(image_path)
         return image
     except Exception as e:
-        print(f"Ошибка загрузки изображения: {e}")
-        return None
+        raise Exception("f Ошибка загрузки изображения:{e}")
 
 def get_image_size(image):
     """Возвращает размер изображения"""
