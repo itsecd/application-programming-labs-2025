@@ -1,172 +1,185 @@
 import argparse
 import csv
 import os
-from typing import Iterator, List, Dict
-from icrawler.builtin import GoogleImageCrawler
+from pathlib import Path
+from icrawler.builtin import BingImageCrawler
 
 
-class ImagePathIterator:    
-    def __init__(self, annotation_file: str) -> None:
+def create_parser():
+    parser = argparse.ArgumentParser(
+        description='Скачивание изображений и создание аннотации'
+    )
+    parser.add_argument(
+        '--output_dir',
+        type=str,
+        required=True
+    )
+    parser.add_argument(
+        '--annotation_file',
+        type=str,
+        required=True
+    )
+    parser.add_argument(
+        '--max_num',
+        type=int,
+        default=100
+    )
+    parser.add_argument(
+        '--timeout',
+        type=int,
+        default=10
+    )
+    parser.add_argument(
+        '--size',
+        type=str,
+        choices=['large', 'medium', 'small', 'wallpaper']
+    )
+    
+    return parser
 
-        self.annotation_file = annotation_file
-        if not os.path.exists(annotation_file):
-            raise FileNotFoundError(f"Файл аннотации {annotation_file} не найден")
+
+class ImagePathIterator:
+    def __init__(self, source: str):
+        self.source = source
+        self.file_paths = []
+        self.current_index = 0
         
-        self._load_paths()
+        if os.path.isfile(source) and source.endswith('.csv'):
+            self._load_from_annotation(source)
+        elif os.path.isdir(source):
+            self._load_from_directory(source)
+        else:
+            raise ValueError("Источник должен быть CSV-файлом или папкой")
     
-    def _load_paths(self) -> None:
-        self.paths: List[Dict[str, str]] = []
+    def _load_from_annotation(self, annotation_file: str):
         try:
-            with open(self.annotation_file, 'r', encoding='utf-8') as file:
-                reader = csv.DictReader(file)
+            with open(annotation_file, 'r', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
                 for row in reader:
-                    self.paths.append(row)
+                    if os.path.exists(row['absolute_path']):
+                        self.file_paths.append(row['absolute_path'])
+            print(f"Загружено {len(self.file_paths)} путей из аннотации")
         except Exception as e:
-            raise IOError(f"Ошибка чтения файла аннотации: {e}")
-    
-    def __iter__(self) -> Iterator[Dict[str, str]]:
+            print(f"Ошибка при чтении аннотации: {e}")
+
+    def __iter__(self):
         self.current_index = 0
         return self
     
-    def __next__(self) -> Dict[str, str]:
-
-        if self.current_index < len(self.paths):
-            result = self.paths[self.current_index]
+    def __next__(self):
+        if self.current_index < len(self.file_paths):
+            path = self.file_paths[self.current_index]
             self.current_index += 1
-            return result
+            return path
         else:
             raise StopIteration
+    
+    def __len__(self):
+        return len(self.file_paths)
 
 
-def download_images(keyword: str, min_size: str, max_size: str, 
-                   output_dir: str, max_num: int = 100) -> None:
-
+def download_images(keyword: str, output_dir: str, max_num: int, timeout: int = 10, size: str = None) -> bool:
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    
+    print(f"Начинаем скачивание изображений по ключевому слову: '{keyword}'")
+    print(f"Максимальное количество: {max_num}")
+    
     try:
-        os.makedirs(output_dir, exist_ok=True)
-        
-        filters = dict(
-            size=(min_size, max_size)
-        )
-        
-        crawler = GoogleImageCrawler(
+        crawler = BingImageCrawler(
             storage={'root_dir': output_dir},
-            feeder_threads=2,
-            parser_threads=4,
-            downloader_threads=8
+            feeder_threads=1,
+            parser_threads=1,
+            downloader_threads=4,
         )
+        
+        crawler.downloader.timeout = timeout
         
         crawler.crawl(
             keyword=keyword,
-            filters=filters,
             max_num=max_num,
-            file_idx_offset=0
+            file_idx_offset=0,
+            filters=filters if filters else None
         )
         
-        print(f"Скачано изображений в папку: {output_dir}")
+        downloaded_files = []
+        for file_path in Path(output_dir).rglob('*.*'):
+            if (file_path.is_file() and 
+                file_path.stat().st_size > 0 and
+                file_path.suffix.lower() in {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'}):
+                downloaded_files.append(str(file_path))
+        
+        print(f"Изображений сохранено: {len(downloaded_files)}")
+        return True
         
     except Exception as e:
-        raise Exception(f"Ошибка при скачивании изображений: {e}")
+        print(f"Ошибка при скачивании: {e}")
+        return False
 
 
 def create_annotation(output_dir: str, annotation_file: str) -> None:
-
-    try:
-        image_files = []
-        for filename in os.listdir(output_dir):
-            if filename.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp')):
-                abs_path = os.path.abspath(os.path.join(output_dir, filename))
-                rel_path = os.path.relpath(abs_path)
+    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'}
+    image_files = []
+    
+    for root, dirs, files in os.walk(output_dir):
+        for file in files:
+            if any(file.lower().endswith(ext) for ext in image_extensions):
+                absolute_path = os.path.abspath(os.path.join(root, file))
+                relative_path = os.path.relpath(absolute_path, start=os.path.dirname(annotation_file))
                 image_files.append({
-                    'absolute_path': abs_path,
-                    'relative_path': rel_path,
-                    'filename': filename
+                    'filename': file,
+                    'absolute_path': absolute_path,
+                    'relative_path': relative_path
                 })
+    
+    if not image_files:
+        print("не найдено файлов изображений для аннотации")
+    
+    with open(annotation_file, 'w', encoding='utf-8', newline='') as file:
+        fieldnames = ['filename', 'absolute_path', 'relative_path']
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
         
-        with open(annotation_file, 'w', newline='', encoding='utf-8') as file:
-            fieldnames = ['absolute_path', 'relative_path', 'filename']
-            writer = csv.DictWriter(file, fieldnames=fieldnames)
-            
-            writer.writeheader()
-            for image in image_files:
-                writer.writerow(image)
-        
-        print(f"Создана аннотация: {annotation_file}")
-        print(f"Записано записей: {len(image_files)}")
-        
-    except IOError as e:
-        raise IOError(f"Ошибка при создании аннотации: {e}")
+        writer.writeheader()
+        for image in image_files:
+            writer.writerow(image)
+    
+    print(f"Аннотация создана: {annotation_file}")
+    print(f"Записано {len(image_files)} файлов")
 
 
-def main() -> None:
-
-    parser = argparse.ArgumentParser()
-    
-    parser.add_argument(
-        'output_dir', 
-        type=str
-    )
-    parser.add_argument(
-        'annotation_file', 
-        type=str
-    )
-    
-    parser.add_argument(
-        '--keyword', 
-        type=str, 
-        default='cat'
-    )
-    parser.add_argument(
-        '--min-size', 
-        type=str, 
-        default='200x200'
-    )
-    parser.add_argument(
-        '--max-size', 
-        type=str, 
-        default='1000x1000'
-  
-    )
-    parser.add_argument(
-        '--max-num', 
-        type=int, 
-        default=100
-    )
-    
-    args = parser.parse_args()
-    
+def main():
     try:
-     
-        print(f"Начинаем скачивание изображений по ключевому слову: '{args.keyword}'")
-        download_images(
-            keyword=args.keyword,
-            min_size=args.min_size,
-            max_size=args.max_size,
+        parser = create_parser()
+        args = parser.parse_args()
+        
+        success = download_images(
+            keyword='cat',
             output_dir=args.output_dir,
-            max_num=args.max_num
+            max_num=args.max_num,
+            timeout=args.timeout,
+            size=args.size
         )
         
         create_annotation(args.output_dir, args.annotation_file)
         
-      
         print("\nДемонстрация работы итератора:")
         iterator = ImagePathIterator(args.annotation_file)
         
+        print(f"Всего файлов для итерации: {len(iterator)}")
+        
         count = 0
-        max_display = 5 
-        
-        for path_info in iterator:
-            if count < max_display:
-                print(f"Абсолютный путь: {path_info['absolute_path']}")
-                print(f"Относительный путь: {path_info['relative_path']}")
-                print(f"Имя файла: {path_info['filename']}")
-                print("-" * 50)
+        for path in iterator:
+            print(f"Абсолютный путь: {path}")
             count += 1
+            if count >= 5: 
+                print("и другие файлы")
+                break
         
-        print(f"Всего записей в аннотации: {count}")
-        
+        if count == 0:
+            print("Нет файлов для отображения")
+            
     except Exception as e:
-        print(f"Ошибка: {e}")
+        print(f"Ошибка в основной программе: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
