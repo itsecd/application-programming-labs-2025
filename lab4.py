@@ -116,3 +116,105 @@ def add_aspect_ratio_bins_column(df, bins=5):
     )
     
     return df
+
+def sort_by_aspect_ratio(df, ascending=True):
+    """
+    Сортирует DataFrame по отношению сторон
+    
+    Args:
+        df (pd.DataFrame): DataFrame для сортировки
+        ascending (bool): Порядок сортировки
+    
+    Returns:
+        pd.DataFrame: Отсортированный DataFrame
+    """
+    return df.sort_values('aspect_ratio', ascending=ascending, na_position='last')
+
+def filter_by_aspect_ratio(df, min_ratio=None, max_ratio=None):
+    """
+    Фильтрует DataFrame по диапазону отношений сторон
+    
+    Args:
+        df (pd.DataFrame): DataFrame для фильтрации
+        min_ratio (float): Минимальное отношение сторон
+        max_ratio (float): Максимальное отношение сторон
+    
+    Returns:
+        pd.DataFrame: Отфильтрованный DataFrame
+    """
+    filtered_df = df.copy()
+    
+    if min_ratio is not None:
+        filtered_df = filtered_df[filtered_df['aspect_ratio'] >= min_ratio]
+    
+    if max_ratio is not None:
+        filtered_df = filtered_df[filtered_df['aspect_ratio'] <= max_ratio]
+    
+    return filtered_df
+
+def plot_aspect_ratio_histogram(df, output_plot):
+    """
+    Строит гистограмму распределения отношений сторон
+    
+    Args:
+        df (pd.DataFrame): DataFrame с данными
+        output_plot (str): Путь для сохранения графика
+    """
+    df_clean = df.dropna(subset=['aspect_ratio'])
+    
+    if len(df_clean) == 0:
+        print("Нет данных для построения графика")
+        return
+    
+    plt.figure(figsize=(12, 6))
+    plt.hist(df_clean['aspect_ratio'], bins=10, alpha=0.7, color='skyblue', edgecolor='black')
+    
+    plt.xlabel('Отношение сторон (ширина/высота)')
+    plt.ylabel('Количество изображений')
+    plt.title('Гистограмма распределения отношений сторон изображений')
+    plt.grid(True, alpha=0.3)
+    
+    # Добавляем среднее значение
+    mean_ratio = df_clean['aspect_ratio'].mean()
+    plt.axvline(mean_ratio, color='red', linestyle='--', linewidth=2, 
+                label=f'Среднее: {mean_ratio:.2f}')
+    
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(output_plot, dpi=150, bbox_inches='tight')
+    plt.close()
+    
+    print(f"Гистограмма сохранена: {output_plot}")
+
+def plot_aspect_ratio_sorted(df, output_plot):
+    """
+    Строит график отношений сторон для отсортированных данных
+    
+    Args:
+        df (pd.DataFrame): DataFrame с данными
+        output_plot (str): Путь для сохранения графика
+    """
+    # NaN + sort
+    df_clean = df.dropna(subset=['aspect_ratio'])
+    df_sorted = sort_by_aspect_ratio(df_clean)
+    
+    if len(df_sorted) == 0:
+        print("Нет данных для построения графика")
+        return
+    
+    plt.figure(figsize=(12, 6))
+    
+    # sort hist
+    plt.plot(range(len(df_sorted)), df_sorted['aspect_ratio'], 
+             marker='o', linestyle='-', linewidth=1, markersize=3)
+    
+    plt.xlabel('Номер изображения (отсортированный)')
+    plt.ylabel('Отношение сторон (ширина/высота)')
+    plt.title('Отношения сторон изображений (отсортированные)')
+    plt.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig(output_plot, dpi=150, bbox_inches='tight')
+    plt.close()
+    
+    print(f"График сохранен: {output_plot}")
