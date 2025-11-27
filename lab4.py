@@ -1,238 +1,53 @@
 import argparse
-import pandas as pd
-import matplotlib.pyplot as plt
-from PIL import Image
-import os
-import numpy as np
+from typing import Optional
+from dataframe_utils import (
+    create_dataframe_from_annotation,
+    create_dataframe_from_folder,
+    add_aspect_ratio_column,
+    add_aspect_ratio_bins_column,
+    sort_by_aspect_ratio,
+    filter_by_aspect_ratio,
+    plot_aspect_ratio_histogram,
+    plot_aspect_ratio_sorted,
+)
 
-def create_dataframe_from_annotation(annotation_file):
-    """
-    Создает DataFrame из файла аннотации
-    
-    Args:
-        annotation_file (str): Путь к CSV файлу аннотации
-    
-    Returns:
-        pd.DataFrame: DataFrame с путями к файлам
-    """
-    try:
-        df = pd.read_csv(annotation_file)
-        return df
-    except Exception as e:
-        print(f"Ошибка чтения аннотации: {e}")
-        return None
 
-def create_dataframe_from_folder(folder_path):
+def parse_arguments() -> argparse.Namespace:
     """
-    Создает DataFrame из папки с изображениями
-    
-    Args:
-        folder_path (str): Путь к папке с изображениями
-    
-    Returns:
-        pd.DataFrame: DataFrame с путями к файлам
-    """
-    try:
-        data = []
-        parent_dir = os.path.abspath(os.path.join(folder_path, os.pardir))
-        
-        for filename in os.listdir(folder_path):
-            file_path = os.path.join(folder_path, filename)
-            if os.path.isfile(file_path):
-                absolute_path = os.path.abspath(file_path)
-                relative_path = os.path.relpath(absolute_path, parent_dir)
-                
-                data.append({
-                    'absolute_path': absolute_path,
-                    'relative_path': relative_path
-                })
-        
-        df = pd.DataFrame(data)
-        return df
-    except Exception as e:
-        print(f"Ошибка создания DataFrame из папки: {e}")
-        return None
+    Парсит аргументы командной строки для анализа отношений сторон изображений
 
-def add_aspect_ratio_column(df):
-    """
-    Добавляет колонку с отношением сторон изображения
-    
-    Args:
-        df (pd.DataFrame): Исходный DataFrame
-    
     Returns:
-        pd.DataFrame: DataFrame с добавленной колонкой aspect_ratio
+        argparse.Namespace: Объект с распарсенными аргументами
     """
-    aspect_ratios = []
-    
-    for idx, row in df.iterrows():
-        try:
-            with Image.open(row['absolute_path']) as img:
-                width, height = img.size
-                # ширина к высоте
-                aspect_ratio = round(width / height, 2)
-                aspect_ratios.append(aspect_ratio)
-        except Exception as e:
-            print(f"Ошибка обработки {row['absolute_path']}: {e}")
-            aspect_ratios.append(None)
-    
-    df['aspect_ratio'] = aspect_ratios
-    return df
-
-def add_aspect_ratio_bins_column(df, bins=5):
-    """
-    Добавляет колонку с диапазонами отношений сторон для гистограммы
-    
-    Args:
-        df (pd.DataFrame): DataFrame с колонкой aspect_ratio
-        bins (int): Количество диапазонов
-    
-    Returns:
-        pd.DataFrame: DataFrame с добавленной колонкой aspect_ratio_range
-    """
-    # Удаляем NaN
-    df_clean = df.dropna(subset=['aspect_ratio'])
-    
-    if len(df_clean) == 0:
-        print("Нет данных для создания диапазонов")
-        return df
-    
-    # диапазоны
-    min_ratio = df_clean['aspect_ratio'].min()
-    max_ratio = df_clean['aspect_ratio'].max()
-    
-    # границы
-    boundaries = np.linspace(min_ratio, max_ratio, bins + 1)
-    
-    # определение диапазона
-    def get_ratio_range(ratio):
-        for i in range(len(boundaries) - 1):
-            if boundaries[i] <= ratio <= boundaries[i + 1]:
-                return f"{boundaries[i]:.2f}-{boundaries[i + 1]:.2f}"
-        return "Unknown"
-    
-    df['aspect_ratio_range'] = df['aspect_ratio'].apply(
-        lambda x: get_ratio_range(x) if pd.notnull(x) else "Unknown"
+    parser = argparse.ArgumentParser(description="Анализ отношений сторон изображений")
+    parser.add_argument("--annotation", type=str, help="Путь к файлу аннотации CSV")
+    parser.add_argument("--folder", type=str, help="Путь к папке с изображениями")
+    parser.add_argument(
+        "--output_df",
+        type=str,
+        default="image_analysis.csv",
+        help="Путь для сохранения DataFrame (по умолчанию: image_analysis.csv)",
     )
-    
-    return df
+    parser.add_argument(
+        "--output_plot",
+        type=str,
+        default="aspect_ratio_plot.png",
+        help="Путь для сохранения графика (по умолчанию: aspect_ratio_plot.png)",
+    )
+    parser.add_argument(
+        "--min_ratio", type=float, help="Минимальное отношение сторон для фильтрации"
+    )
+    parser.add_argument(
+        "--max_ratio", type=float, help="Максимальное отношение сторон для фильтрации"
+    )
 
-def sort_by_aspect_ratio(df, ascending=True):
-    """
-    Сортирует DataFrame по отношению сторон
-    
-    Args:
-        df (pd.DataFrame): DataFrame для сортировки
-        ascending (bool): Порядок сортировки
-    
-    Returns:
-        pd.DataFrame: Отсортированный DataFrame
-    """
-    return df.sort_values('aspect_ratio', ascending=ascending, na_position='last')
+    return parser.parse_args()
 
-def filter_by_aspect_ratio(df, min_ratio=None, max_ratio=None):
-    """
-    Фильтрует DataFrame по диапазону отношений сторон
-    
-    Args:
-        df (pd.DataFrame): DataFrame для фильтрации
-        min_ratio (float): Минимальное отношение сторон
-        max_ratio (float): Максимальное отношение сторон
-    
-    Returns:
-        pd.DataFrame: Отфильтрованный DataFrame
-    """
-    filtered_df = df.copy()
-    
-    if min_ratio is not None:
-        filtered_df = filtered_df[filtered_df['aspect_ratio'] >= min_ratio]
-    
-    if max_ratio is not None:
-        filtered_df = filtered_df[filtered_df['aspect_ratio'] <= max_ratio]
-    
-    return filtered_df
 
-def plot_aspect_ratio_histogram(df, output_plot):
-    """
-    Строит гистограмму распределения отношений сторон
-    
-    Args:
-        df (pd.DataFrame): DataFrame с данными
-        output_plot (str): Путь для сохранения графика
-    """
-    df_clean = df.dropna(subset=['aspect_ratio'])
-    
-    if len(df_clean) == 0:
-        print("Нет данных для построения графика")
-        return
-    
-    plt.figure(figsize=(12, 6))
-    plt.hist(df_clean['aspect_ratio'], bins=10, alpha=0.7, color='skyblue', edgecolor='black')
-    
-    plt.xlabel('Отношение сторон (ширина/высота)')
-    plt.ylabel('Количество изображений')
-    plt.title('Гистограмма распределения отношений сторон изображений')
-    plt.grid(True, alpha=0.3)
-    
-    # Добавляем среднее значение
-    mean_ratio = df_clean['aspect_ratio'].mean()
-    plt.axvline(mean_ratio, color='red', linestyle='--', linewidth=2, 
-                label=f'Среднее: {mean_ratio:.2f}')
-    
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(output_plot, dpi=150, bbox_inches='tight')
-    plt.close()
-    
-    print(f"Гистограмма сохранена: {output_plot}")
-
-def plot_aspect_ratio_sorted(df, output_plot):
-    """
-    Строит график отношений сторон для отсортированных данных
-    
-    Args:
-        df (pd.DataFrame): DataFrame с данными
-        output_plot (str): Путь для сохранения графика
-    """
-    # NaN + sort
-    df_clean = df.dropna(subset=['aspect_ratio'])
-    df_sorted = sort_by_aspect_ratio(df_clean)
-    
-    if len(df_sorted) == 0:
-        print("Нет данных для построения графика")
-        return
-    
-    plt.figure(figsize=(12, 6))
-    
-    # sort hist
-    plt.plot(range(len(df_sorted)), df_sorted['aspect_ratio'], 
-             marker='o', linestyle='-', linewidth=1, markersize=3)
-    
-    plt.xlabel('Номер изображения (отсортированный)')
-    plt.ylabel('Отношение сторон (ширина/высота)')
-    plt.title('Отношения сторон изображений (отсортированные)')
-    plt.grid(True, alpha=0.3)
-    
-    plt.tight_layout()
-    plt.savefig(output_plot, dpi=150, bbox_inches='tight')
-    plt.close()
-    
-    print(f"График сохранен: {output_plot}")
-
-def main():
+def main() -> None:
     """Основная функция"""
-    parser = argparse.ArgumentParser(description='Анализ отношений сторон изображений')
-    parser.add_argument('--annotation', help='Путь к файлу аннотации CSV')
-    parser.add_argument('--folder', help='Путь к папке с изображениями')
-    parser.add_argument('--output_df', default='image_analysis.csv', 
-                       help='Путь для сохранения DataFrame (по умолчанию: image_analysis.csv)')
-    parser.add_argument('--output_plot', default='aspect_ratio_plot.png',
-                       help='Путь для сохранения графика (по умолчанию: aspect_ratio_plot.png)')
-    parser.add_argument('--min_ratio', type=float, help='Минимальное отношение сторон для фильтрации')
-    parser.add_argument('--max_ratio', type=float, help='Максимальное отношение сторон для фильтрации')
-    
-    args = parser.parse_args()
-    
+    args: argparse.Namespace = parse_arguments()
+
     # Создаем DataFrame
     if args.annotation:
         df = create_dataframe_from_annotation(args.annotation)
@@ -241,43 +56,43 @@ def main():
     else:
         print("Ошибка: необходимо указать --annotation или --folder")
         return
-    
+
     if df is None or df.empty:
         print("Не удалось создать DataFrame")
         return
-    
+
     print(f"Создан DataFrame с {len(df)} изображениями")
-    
+
     # Добавляем колонку с отношениями сторон
     df = add_aspect_ratio_column(df)
     print("Добавлена колонка aspect_ratio")
-    
+
     # Добавляем колонку с диапазонами для гистограммы
     df = add_aspect_ratio_bins_column(df, bins=5)
     print("Добавлена колонка aspect_ratio_range")
-    
+
     # Применяем фильтрацию если указаны параметры
     if args.min_ratio is not None or args.max_ratio is not None:
         df_filtered = filter_by_aspect_ratio(df, args.min_ratio, args.max_ratio)
         print(f"После фильтрации: {len(df_filtered)} изображений")
     else:
         df_filtered = df
-    
+
     # Сортируем данные
     df_sorted = sort_by_aspect_ratio(df_filtered)
     print("Данные отсортированы по отношению сторон")
-    
+
     # Сохраняем DataFrame
-    df_sorted.to_csv(args.output_df, index=False, encoding='utf-8')
+    df_sorted.to_csv(args.output_df, index=False, encoding="utf-8")
     print(f"DataFrame сохранен: {args.output_df}")
-    
+
     # Строим и сохраняем график
     plot_aspect_ratio_histogram(df_sorted, args.output_plot)
-    
+
     # Дополнительный график с отсортированными данными
-    plot_output_sorted = args.output_plot.replace('.png', '_sorted.png')
+    plot_output_sorted: str = args.output_plot.replace(".png", "_sorted.png")
     plot_aspect_ratio_sorted(df_sorted, plot_output_sorted)
-    
+
     # Выводим статистику
     print("\nСТАТИСТИКА:")
     print(f"Всего изображений: {len(df)}")
@@ -285,10 +100,10 @@ def main():
     print(f"Минимальное отношение сторон: {df['aspect_ratio'].min():.2f}")
     print(f"Максимальное отношение сторон: {df['aspect_ratio'].max():.2f}")
     print(f"Среднее отношение сторон: {df['aspect_ratio'].mean():.2f}")
-    
 
     print("\nРаспределение по диапазонам:")
-    print(df['aspect_ratio_range'].value_counts())
+    print(df["aspect_ratio_range"].value_counts())
+
 
 if __name__ == "__main__":
     main()
