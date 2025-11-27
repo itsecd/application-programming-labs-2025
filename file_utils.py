@@ -52,5 +52,4 @@ def extract_and_format_names(text: str) -> List[str]:
         initial = first_name[0] + '.'
         result.append(f"{surname} {initial}")
 
-    result.sort()
     return result
