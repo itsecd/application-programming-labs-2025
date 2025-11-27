@@ -1,15 +1,17 @@
+import argparse
+import os
+import sys
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import Qt, QUrl
-import sys
-import argparse
-import os
+
 from lab2_var24 import FileIterator
 
 
 def get_songs_from_directory(dir_path: str) -> list:
     """
-    Получает список всех MP3-файлов из папки с помощью FileIterator.
+    Получает список всех MP3-файлов из папки с помощью FileIterator
     """
     iterator = FileIterator(dir_path)
     songs = list(iterator)
@@ -18,7 +20,7 @@ def get_songs_from_directory(dir_path: str) -> list:
 
 def parse_arguments():
     """
-    Парсит аргументы командной строки.
+    Парсит аргументы командной строки
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('dataset_dir', help='Путь к папке с MP3-файлами')
