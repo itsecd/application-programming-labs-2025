@@ -1,9 +1,6 @@
 import argparse
-import csv
 import os
 import sys
-import tempfile
-
 
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
@@ -13,25 +10,6 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import Qt, QUrl
 
 from lab2_var24 import FileIterator
-
-
-def read_tracks_from_csv(csv_path: str) -> list[str]:
-    """
-    Читает пути к трекам из CSV файла
-    """
-    tracks = []
-    try:
-        with open(csv_path, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                track_path = row.get('abs_path') or list(row.values())[0]
-                if track_path and track_path.strip():
-                    tracks.append(track_path.strip())
-    except Exception as e:
-        raise Exception(f"Ошибка при чтении CSV: {e}")
-    return tracks
-
-
 
 
 class AudioPlayer(QMainWindow):
@@ -55,10 +33,18 @@ class AudioPlayer(QMainWindow):
         
         main_layout = QVBoxLayout()
         
-      
+  
+        buttons_load_layout = QHBoxLayout()
+        
         self.btn_load_csv = QPushButton("Загрузить из CSV")
-        self.btn_load_csv.clicked.connect(self.load_csv_file)
-        main_layout.addWidget(self.btn_load_csv)
+        self.btn_load_csv.clicked.connect(self.load_csv)
+        buttons_load_layout.addWidget(self.btn_load_csv)
+        
+        self.btn_add_folder = QPushButton("Добавить треки из папки")
+        self.btn_add_folder.clicked.connect(self.add_folder)
+        buttons_load_layout.addWidget(self.btn_add_folder)
+        
+        main_layout.addLayout(buttons_load_layout)
         
         main_layout.addStretch()
         
@@ -90,7 +76,6 @@ class AudioPlayer(QMainWindow):
         
         central_widget.setLayout(main_layout)
         
-     
         self.btn_play.clicked.connect(self.play_track)
         self.btn_next.clicked.connect(self.next_track)
         self.btn_prev.clicked.connect(self.prev_track)
@@ -99,26 +84,31 @@ class AudioPlayer(QMainWindow):
         
         self.update_buttons_state()
         if self.songs:
-            self.create_iterator()
+            self.song_iterator = FileIterator(self.songs)
             self.next_track()
     
-    def create_iterator(self):
-        self.song_iterator = FileIterator(self.songs)
-        self.song_iterator.index = 0
+    def load_csv(self):
+        """Загружает треки из CSV файла"""
+        csv_path, _ = QFileDialog.getOpenFileName(self,"Выберите CSV файл","","CSV Files (*.csv)")
+        if csv_path:
+            self.song_iterator = FileIterator(csv_path)
+            self.next_track()
+            self.update_buttons_state()
+            QMessageBox.information(self, "Успех", f"Загружено {len(self.song_iterator.file_list)} трек(ов)")
     
-    def load_csv_file(self):
-        """Открывает диалог выбора CSV файла """
-        csv_path, _ = QFileDialog.getOpenFileName(self,"Выберите CSV файл с треками","","CSV Files (*.csv);;All Files (*)")
-    
-        self.songs = read_tracks_from_csv(csv_path)
-        self.create_iterator()
-        self.next_track()
-        self.update_buttons_state()
-        QMessageBox.information(self, "Успех", f"Загружено {len(self.songs)} трек(ов)")
+    def add_folder(self):
+        """Добавляет треки из папки"""
+        folder_path = QFileDialog.getExistingDirectory(self,"Выберите папку с треками")
+        if folder_path:
+            self.song_iterator = FileIterator(folder_path)
+            self.next_track()
+            self.update_buttons_state()
+            QMessageBox.information(self, "Успех", f"Загружено {len(self.song_iterator.file_list)} трек(ов)")
+            
     
     def update_buttons_state(self):
         """Включает/отключает кнопки в зависимости от наличия треков"""
-        has_songs = len(self.songs) > 0
+        has_songs = self.song_iterator is not None and len(self.song_iterator.file_list) > 0
         self.btn_play.setEnabled(has_songs)
         self.btn_next.setEnabled(has_songs)
         self.btn_prev.setEnabled(has_songs)
@@ -130,25 +120,21 @@ class AudioPlayer(QMainWindow):
             self.track_name_label.setText(f"Название трека: {track_name}")
             self.player.setMedia(QMediaContent(QUrl.fromLocalFile(self.current_track)))
             
-          
-            if self.song_iterator:
-                current_pos = self.song_iterator.index
-                total = len(self.song_iterator.file_list)
-                self.track_count_label.setText(f"Треки: {current_pos}/{total}")
+            current_pos = self.song_iterator.index
+            total = len(self.song_iterator.file_list)
+            self.track_count_label.setText(f"Треки: {current_pos}/{total}")
     
     def next_track(self):
         """Следующий трек"""
-        self.current_track = next(self.song_iterator)
+        try:
+            self.current_track = next(self.song_iterator)
+        except StopIteration:
+            self.song_iterator.index = 0
+            self.current_track = next(self.song_iterator)
+        
         self.update_track_info()
         self.player.play()
         self.btn_play.setText("Пауза")
-        
-        if not self.current_track:
-            self.song_iterator.index = 0
-            self.current_track = next(self.song_iterator)
-            self.update_track_info()
-            self.player.play()
-            self.btn_play.setText("Пауза")
     
     def prev_track(self):
         """Предыдущий трек"""
@@ -172,7 +158,7 @@ class AudioPlayer(QMainWindow):
             self.next_track()
     
     def on_duration_changed(self):
-        """Обновляет длительность"""
+        """Обновляет длительность """
         duration_ms = self.player.duration()
         if duration_ms > 0:
             seconds = duration_ms // 1000
@@ -183,13 +169,8 @@ class AudioPlayer(QMainWindow):
 
 def main():
     """Запуск приложения"""
-
-    initial_songs = []
-    
-  
-    
     app = QApplication(sys.argv)
-    window = AudioPlayer(initial_songs)
+    window = AudioPlayer()
     window.show()
     sys.exit(app.exec_())
 

@@ -11,15 +11,33 @@ from typing import List
 from bs4 import BeautifulSoup
 
 class FileIterator:
-    def __init__(self, dir_path: str) -> None:
-       
-        if isinstance(dir_path, list):
-            self.file_list = dir_path
+    def __init__(self, source) -> None:
+        """
+        Инициализация итератора
+        """
+        if isinstance(source, list):
+           
+            self.file_list = source
+        elif isinstance(source, str) and source.endswith('.csv'):
+          
+            self.file_list = self.read_csv(source)
         else:
-            self.dir_path = os.path.abspath(dir_path)
+      
+            self.dir_path = os.path.abspath(source)
             self.file_list = [os.path.join(self.dir_path, f) for f in os.listdir(self.dir_path)]
         
         self.index = 0
+    
+    def read_csv(self, csv_path: str) -> list:
+       
+        tracks = []
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                track_path = row.get('abs_path')
+                if track_path and track_path.strip():
+                    tracks.append(track_path.strip())
+        return tracks
     
     def __iter__(self):
         return self
@@ -33,7 +51,7 @@ class FileIterator:
         raise StopIteration
     
     def prev(self) -> str:
-        """Переход на предыдущий MP3 файл"""
+    
         self.index -= 2
         if self.index < 0:
             self.index = len(self.file_list) - 1
