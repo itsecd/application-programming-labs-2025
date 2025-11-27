@@ -1,4 +1,3 @@
-from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
@@ -43,13 +42,13 @@ def add_orientation_column(
     return df_new
 
 
-def sort_by_orientation(df: pd.DataFrame, col: str = "orientation") -> pd.DataFrame:
+def sort_by(df: pd.DataFrame, col: str = "orientation") -> pd.DataFrame:
     """Отсортировать по ориентации."""
     return df.sort_values(by=col)
 
 
 def filter_by_orientation(
-    df: pd.DataFrame, orientation: Orientation, col: str = "orientation"
+    df: pd.DataFrame, orientation: Orientation, orientation_col_title: str = "orientation"
 ) -> pd.DataFrame:
     """Отфильтровать по ориентации."""
-    return df[df[col] == orientation].copy()
+    return df[df[orientation_col_title] == orientation].copy()
