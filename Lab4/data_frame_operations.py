@@ -1,7 +1,4 @@
-import os
-
 import cv2
-import numpy as np
 import pandas
 
 
@@ -11,11 +8,13 @@ def create_DataFrame(file_path: str) -> pandas.DataFrame:
     return df
 
 
-def area_distrib(df:pandas.DataFrame) -> None:
-    df.insert(2,"area_average", None)
-    for i in os.listdir("dogs"):
-        path = os.path.join("dogs", i)
+def area_distrib(df: pandas.DataFrame) -> pandas.DataFrame:
+    df.insert(2, "area_average", None)
+    for index, row in df.iterrows():
+        path = row["Relative_file_path"]
         img = cv2.imread(path)
-        shape = img.shape
-        area = shape[0]*shape[1]
-        df["area_average"] = area
+        if img is not None:
+            height, width = img.shape[:2]
+            area = height * width
+            df.at[index, "area_average"] = area
+    return df

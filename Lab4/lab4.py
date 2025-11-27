@@ -2,6 +2,9 @@ import argparse
 
 
 import data_frame_operations
+import sort_and_filter
+import make_graph
+
 
 def parsing() -> tuple[str, str]:
     parser = argparse.ArgumentParser()
@@ -13,8 +16,11 @@ def parsing() -> tuple[str, str]:
 def main():
     file_path = parsing()
     data_frame = data_frame_operations.create_DataFrame(file_path)
-    print(data_frame)
-    data_frame_operations.area_distrib(data_frame)
+    data_frame = data_frame_operations.area_distrib(data_frame)
+    data_frame = sort_and_filter.filter_by_area(data_frame, 3500, 7766200)
+    data_frame = sort_and_filter.df_sort(data_frame, "area_average")
+    data_frame = make_graph.add_range_column(data_frame)
+    make_graph.make_histogram(data_frame)
 
 
 if __name__ == "__main__":
