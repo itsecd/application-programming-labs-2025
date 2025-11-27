@@ -4,9 +4,9 @@ from transformation import to_grayscale, show_pair
 import sys
 
 def main():
-    args = parse_args()
-
     try:
+        args = parse_args()
+
         img = read_image(args.input)
 
         shape = give_image_info(img)
