@@ -63,6 +63,13 @@ class Path_Iterator:
         else:
             raise StopIteration
 
+    def __prev__(self):
+            if self.counter > 0:
+                self.counter -= 1
+                path = self.items[self.counter]
+                return path
+            else:
+                raise StopIteration
 
 def parsing() -> tuple[str, str]:
     """
@@ -88,3 +95,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
