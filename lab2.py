@@ -1,3 +1,4 @@
+import argparse
 import csv
 import time
 import os
@@ -51,7 +52,7 @@ class ImagePathIterator:
                 for row in reader:
                     self.file_paths.append(row["absolute_path"])
         except Exception as e:
-            print(f"Ошибка при чтении файла аннотации: {e}")
+            raise Exception(f"Ошибка при чтении файла аннотации:{e}")
 
     def _load_from_folder(self):
         """Загружает пути из папки"""
@@ -60,7 +61,7 @@ class ImagePathIterator:
                 if file_path.is_file():
                     self.file_paths.append(str(file_path.absolute()))
         except Exception as e:
-            print(f"Ошибка при чтении папки: {e}")
+            raise Exception(f"Ошибка при чтении папки:{e}")
 
     def __iter__(self):
         """Возвращает сам объект как итератор"""
@@ -120,6 +121,21 @@ def create_annotation_csv(image_folder, output_csv="annotation.csv"):
                 )
     return output_csv
 
+def parse_arguments():
+    """
+    Парсит аргументы командной строки для настройки скачивания
+    """
+    parser = argparse.ArgumentParser(description='Скачивание изображений с Bing')
+    parser.add_argument('--keyword', type=str, default='pig',
+                       help='Ключевое слово для поиска (по умолчанию: pig)')
+    parser.add_argument('--output_dir', type=str, default='downloaded_images',
+                       help='Папка для сохранения изображений (по умолчанию: downloaded_images)')
+    parser.add_argument('--min_images', type=int, default=50,
+                       help='Минимальное количество изображений (по умолчанию: 50)')
+    parser.add_argument('--max_time', type=int, default=60,
+                       help='Максимальное время скачивания в секундах (по умолчанию: 60)')
+    
+    return parser.parse_args()
 
 def download_images_with_timing(keyword, output_dir, min_images=50, max_time=60):
     """
@@ -137,7 +153,7 @@ def download_images_with_timing(keyword, output_dir, min_images=50, max_time=60)
     try:
         os.makedirs(output_dir, exist_ok=True)
     except OSError as e:
-        raise OSError("Не удалось создать дирректорию")
+        raise OSError(f"Не удалось создать дирректорию {e}")
     downloaded_count = [0]
 
     start_time = time.time()
@@ -148,7 +164,7 @@ def download_images_with_timing(keyword, output_dir, min_images=50, max_time=60)
             crawler = BingImageCrawler(storage={"root_dir": output_dir})
             crawler.crawl(keyword=keyword, max_num=1000)
         except Exception as e:
-            print(f"Ошибка при скачивании: {e}")
+            raise Exception(f"Ошибка при скачивании: {e}")
 
     # поток
     crawler_thread = threading.Thread(target=crawler_task)
@@ -194,10 +210,12 @@ def download_images_with_timing(keyword, output_dir, min_images=50, max_time=60)
 
 def main() -> None:
     """Основная функция"""
-    keyword = "pig"
-    output_dir = "downloaded_images"
-    min_images = 50
-    max_time = 60
+    args = parse_arguments()
+
+    keyword = args.keyword
+    output_dir = args.output_dir
+    min_images = args.min_images
+    max_time = args.max_time
 
     print("ПРОГРАММА ДЛЯ СКАЧИВАНИЯ ИЗОБРАЖЕНИЙ")
     count, time_spent = download_images_with_timing(
@@ -223,7 +241,7 @@ def main() -> None:
         print(f"Аннотация успешно создана: {annotation_file}")
 
     except Exception as e:
-        print(f"Ошибка при создании аннотации: {e}")
+        raise Exception(f"Ошибка при создании аннотации:{e}")
 
 
 if __name__ == "__main__":
