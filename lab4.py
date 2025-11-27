@@ -286,6 +286,7 @@ def main():
     print(f"Максимальное отношение сторон: {df['aspect_ratio'].max():.2f}")
     print(f"Среднее отношение сторон: {df['aspect_ratio'].mean():.2f}")
     
+
     print("\nРаспределение по диапазонам:")
     print(df['aspect_ratio_range'].value_counts())
 
