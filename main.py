@@ -1,7 +1,7 @@
 # main_lab.py
 import os
 import sys
-from dataframe import create_dataframe_from_annotation
+from dataframe import create_dataframe_from_annotation, name_columns
 from parser import parse_args
 
 
@@ -23,6 +23,12 @@ def main():
                              f"'{args.input}'. Ожидается '.csv'.")
 
         df = create_dataframe_from_annotation(args.input)
+        
+        if df.empty:
+            print("DataFrame пуст")
+            sys.exit(1)
+
+        df = name_columns(df, "absolute_path", "relative_path")
 
     except FileNotFoundError as e:
         print(e)
