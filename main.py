@@ -2,6 +2,7 @@
 import os
 import sys
 from dataframe import create_dataframe_from_annotation, name_columns, add_brightness_columns
+from sort_and_filter import sort_dataframe_by_brightness, filter_dataframe_by_brightness
 from parser import parse_args
 
 
@@ -31,6 +32,13 @@ def main():
         df = name_columns(df, "absolute_path", "relative_path")
 
         df = add_brightness_columns(df, "absolute_path")
+
+        df_sorted = sort_dataframe_by_brightness(df, "R")
+
+        df_filtered = filter_dataframe_by_brightness(df_sorted,
+                                                     min_val=50,
+                                                     max_val=150,
+                                                     column_name="R")
         
     except FileNotFoundError as e:
         print(e)
