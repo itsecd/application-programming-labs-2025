@@ -1,5 +1,5 @@
-﻿import requests
-from func import (get_args, run_downloads, print_summary)
+import requests
+from func import get_args, run_downloads, print_summary
 
 
 def main(out_dir: str, csv_out: str) -> None:
@@ -13,8 +13,8 @@ if __name__ == "__main__":
     try:
         main(args.output, args.csv)
     except FileNotFoundError as err:
-        print(f'Файл не найден: "{err.filename}"') 
+        print(f'Файл не найден: "{err.filename}"')
     except requests.RequestException as err:
-        print(f"Ошибка сети: {err}")  
+        print(f"Ошибка сети: {err}")
     except Exception as err:
-        print(f"Непредвиденная ошибка: {err}") 
+        print(f"Непредвиденная ошибка: {err}")
