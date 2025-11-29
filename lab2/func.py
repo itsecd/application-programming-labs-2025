@@ -1,10 +1,11 @@
-﻿import argparse
+import argparse
 import csv
 import os
 import random
 import requests
 from bs4 import BeautifulSoup
 from iter import SoundtrackIterator
+
 
 def get_args() -> argparse.Namespace:
     """Парсинг аргументов командной строки"""
@@ -13,6 +14,7 @@ def get_args() -> argparse.Namespace:
     parser.add_argument("-c", "--csv", type=str, default="downloads/ann.csv")
     parser.add_argument("-n", "--number", type=int, default=50)
     return parser.parse_args()
+
 
 def collect_tracks(genre: str) -> list[dict[str, str]]:
     """
@@ -26,7 +28,7 @@ def collect_tracks(genre: str) -> list[dict[str, str]]:
     }
 
     if genre == "R&B":
-        url_genre = "r&b"
+        url_genre = "contemporary-r-and-b"
     else:
         url_genre = genre
     
@@ -53,6 +55,7 @@ def collect_tracks(genre: str) -> list[dict[str, str]]:
         })
     return tracks
 
+
 def download_audio_track(gen_fol: str, url: str) -> str:
     """Скачивает аудиофайл в папку жанра"""
     os.makedirs(gen_fol, exist_ok=True)
@@ -66,6 +69,7 @@ def download_audio_track(gen_fol: str, url: str) -> str:
                 for data_part in response.iter_content(8192):
                     f.write(data_part)
     return filename
+
 
 def handle_genre(genre: str, base_dir: str, writer: csv.writer, tracks_per_genre: int) -> int:
     """Обрабатывает один жанр: парсит, скачивает треки и записывает в CSV"""
@@ -98,6 +102,7 @@ def handle_genre(genre: str, base_dir: str, writer: csv.writer, tracks_per_genre
             print(f"Ошибка загрузки '{track['title']}': {e}")
     return downloaded_count
 
+
 def run_downloads(out_dir: str, csv_file: str, genres: list[str]) -> dict[str, int]:
     """Организует загрузку треков по всем жанрам и формирует CSV-аннотацию"""
 
@@ -122,6 +127,7 @@ def run_downloads(out_dir: str, csv_file: str, genres: list[str]) -> dict[str, i
                 results["tracks_total"] += downloaded
 
     return results
+
 
 def print_summary(csv_file: str, stats: dict[str, int]) -> None:
     """Вывод статистики и предпросмотра содержимого CSV."""
