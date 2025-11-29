@@ -1,7 +1,7 @@
 # main_lab.py
 import os
 import sys
-from dataframe import create_dataframe_from_annotation, name_columns
+from dataframe import create_dataframe_from_annotation, name_columns, add_brightness_columns
 from parser import parse_args
 
 
@@ -30,6 +30,8 @@ def main():
 
         df = name_columns(df, "absolute_path", "relative_path")
 
+        df = add_brightness_columns(df, "absolute_path")
+        
     except FileNotFoundError as e:
         print(e)
         sys.exit(1)

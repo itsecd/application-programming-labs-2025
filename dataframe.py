@@ -44,3 +44,21 @@ def name_columns(df: pd.DataFrame,
     df = df[[name_fist_column, name_second_column]].copy()
     
     return df
+
+def add_brightness_columns(df: pd.DataFrame,
+                           name_fist_column: str) -> pd.DataFrame:
+    """
+    Добавление колонок со средними значениями яркости R, G, B
+    :param df: сформированный с именами колонок DataFrame
+    :param name_fist_column: Имя первой колонки
+    :return: DataFrame с добавленными колонками со средними значениями яркости по каждому каналу
+    """
+    results = df[name_fist_column].apply(calculate_average_brightness)
+
+    df["R"] = results.apply(lambda x: x[0])
+    df["G"] = results.apply(lambda x: x[1])
+    df["B"] = results.apply(lambda x: x[2])
+
+    df.dropna(subset=["R", "G", "B"], inplace=True)
+
+    return df
