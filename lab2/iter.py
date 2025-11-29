@@ -1,4 +1,4 @@
-﻿import csv
+import csv
 
 
 class SoundtrackIterator:
@@ -20,4 +20,3 @@ class SoundtrackIterator:
             return row
         else:
             raise StopIteration
-        
