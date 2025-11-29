@@ -1,10 +1,13 @@
 # main_lab.py
+from dataframe import (create_dataframe_from_annotation,
+                       name_columns,
+                       add_brightness_columns,
+                       save_dataframe)
 import os
-import sys
-from dataframe import create_dataframe_from_annotation, name_columns, add_brightness_columns
-from sort_and_filter import sort_dataframe_by_brightness, filter_dataframe_by_brightness
-from visualization import plot_brightness_data
 from parser import parse_args
+from sort_and_filter import sort_dataframe_by_brightness, filter_dataframe_by_brightness
+import sys
+from visualization import plot_brightness_data
 
 
 def main():
@@ -16,13 +19,14 @@ def main():
             raise FileNotFoundError(f"Ошибка: Файл не найден по пути: '{args.input}'")
 
         if not os.path.isfile(args.input):
-            raise ValueError(f"Ошибка: Указанный путь '{args.input}' является директорией, а не файлом.")
+            raise ValueError(f"Ошибка: Указанный путь '{args.input}'"
+                             f" является директорией, а не файлом.")
 
         _, ext = os.path.splitext(args.input)
 
         if ext.lower() != '.csv':
             raise ValueError(f"Ошибка: Файл '{args.input}' имеет некорректное расширение"
-                             f"'{args.input}'. Ожидается '.csv'.")
+                             f" '{args.input}'. Ожидается '.csv'.")
 
         df = create_dataframe_from_annotation(args.input)
         
@@ -42,6 +46,8 @@ def main():
                                                      column_name="R")
 
         plot_brightness_data(df_filtered, args.output)
+
+        save_dataframe(df_filtered, output_file='final_processed_data.csv')
 
     except FileNotFoundError as e:
         print(e)

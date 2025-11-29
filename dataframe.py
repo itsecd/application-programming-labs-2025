@@ -1,5 +1,5 @@
-import pandas as pd
 from image_processor import calculate_average_brightness
+import pandas as pd
 
 def create_dataframe_from_annotation(annotation_path: str) -> pd.DataFrame:
     """
@@ -62,3 +62,11 @@ def add_brightness_columns(df: pd.DataFrame,
     df.dropna(subset=["R", "G", "B"], inplace=True)
 
     return df
+
+def save_dataframe(df: pd.DataFrame, output_file: str) -> None:
+    """
+    Сохранение обработанного DataFrame
+    :param df: обработанный DataFrame
+    :param output_file: путь к файлу для сохранения
+    """
+    df.to_csv(output_file, index=False)
