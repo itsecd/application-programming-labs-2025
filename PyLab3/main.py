@@ -56,78 +56,31 @@ def plot_audio_comparison(
 ):
     """Создание графиков сравнения исходного и обработанного аудио."""
     max_samples = min(len(original_audio), 3 * sample_rate)
-    
     time_axis = np.arange(max_samples) / sample_rate
     
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
     
-    if len(original_audio.shape) == 1:
-        ax1.plot(
-            time_axis, 
-            original_audio[:max_samples], 
-            'b-', 
-            alpha=0.7, 
-            linewidth=0.5
-        )
-        ax1.set_ylabel('Амплитуда')
-    else:
-        ax1.plot(
-            time_axis,
-            original_audio[:max_samples, 0],
-            'b-',
-            alpha=0.7,
-            linewidth=0.5,
-            label='Канал 1'
-        )
-        if original_audio.shape[1] > 1:
-            ax1.plot(
-                time_axis,
-                original_audio[:max_samples, 1],
-                'r-',
-                alpha=0.7,
-                linewidth=0.5,
-                label='Канал 2'
-            )
-        ax1.set_ylabel('Амплитуда')
-        ax1.legend()
+    def _plot_audio_signal(ax, audio, title, colors=('b-', 'r-'), alpha=0.7, linewidth=0.5):
+        """Вспомогательная функция для построения аудиосигнала."""
+        if len(audio.shape) == 1:
+            ax.plot(time_axis, audio[:max_samples], colors[0], alpha=alpha, linewidth=linewidth)
+        else:
+            ax.plot(time_axis, audio[:max_samples, 0], colors[0], alpha=alpha, 
+                   linewidth=linewidth, label='Канал 1')
+            if audio.shape[1] > 1:
+                ax.plot(time_axis, audio[:max_samples, 1], colors[1], alpha=alpha, 
+                       linewidth=linewidth, label='Канал 2')
+                ax.legend()
+        
+        ax.set_ylabel('Амплитуда')
+        ax.set_xlabel('Время (секунды)')
+        ax.set_title(title)
+        ax.grid(True, alpha=0.3)
     
-    ax1.set_title('Исходный аудиосигнал')
-    ax1.set_xlabel('Время (секунды)')
-    ax1.grid(True, alpha=0.3)
-    
-    if len(processed_audio.shape) == 1:
-        ax2.plot(
-            time_axis,
-            processed_audio[:max_samples],
-            'g-',
-            alpha=0.7,
-            linewidth=0.5
-        )
-        ax2.set_ylabel('Амплитуда')
-    else:
-        ax2.plot(
-            time_axis,
-            processed_audio[:max_samples, 0],
-            'g-',
-            alpha=0.7,
-            linewidth=0.5,
-            label='Канал 1'
-        )
-        if processed_audio.shape[1] > 1:
-            ax2.plot(
-                time_axis,
-                processed_audio[:max_samples, 1],
-                'm-',
-                alpha=0.7,
-                linewidth=0.5,
-                label='Канал 2'
-            )
-        ax2.set_ylabel('Амплитуда')
-        ax2.legend()
-    
-    ax2.set_title('Обработанный аудиосигнал (уменьшенная амплитуда)')
-    ax2.set_xlabel('Время (секунды)')
-    ax2.grid(True, alpha=0.3)
+    # Построение исходного и обработанного аудио
+    _plot_audio_signal(ax1, original_audio, 'Исходный аудиосигнал', ('b-', 'r-'))
+    _plot_audio_signal(ax2, processed_audio, 'Обработанный аудиосигнал (уменьшенная амплитуда)', 
+                      ('g-', 'm-'))
     
     plt.tight_layout()
     
@@ -136,19 +89,6 @@ def plot_audio_comparison(
     print(f"График сравнения сохранен как: {plot_filename}")
     
     plt.show()
-
-
-def save_audio(audio_data, sample_rate, output_path):
-    """Сохранение аудиоданных в файл."""
-    try:
-        if audio_data.dtype in [np.int16, np.int32]:
-            wavfile.write(output_path, sample_rate, audio_data)
-        else:
-            audio_data_int16 = (audio_data * 32768.0).astype(np.int16)
-            wavfile.write(output_path, sample_rate, audio_data_int16)
-    except Exception:
-        sf.write(output_path, audio_data, sample_rate)
-
 
 def main():
     """Основная функция программы."""
