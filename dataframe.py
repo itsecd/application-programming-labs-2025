@@ -17,7 +17,7 @@ def name_columns(df: pd.DataFrame,
                  name_second_column: str) -> pd.DataFrame:
     """
     Именование колонок сформированного DataFrame
-    :param df: сформированный DataFrame
+    :param df: Cформированный DataFrame
     :param name_fist_column: Имя первой колонки
     :param name_second_column: Имя второй колонки
     :return: именованный DataFrame
@@ -49,7 +49,7 @@ def add_brightness_columns(df: pd.DataFrame,
                            name_fist_column: str) -> pd.DataFrame:
     """
     Добавление колонок со средними значениями яркости R, G, B
-    :param df: сформированный с именами колонок DataFrame
+    :param df: Cформированный с именами колонок DataFrame
     :param name_fist_column: Имя первой колонки
     :return: DataFrame с добавленными колонками со средними значениями яркости по каждому каналу
     """
