@@ -1,6 +1,7 @@
 # main_lab.py
 import os
 import sys
+from dataframe import create_dataframe_from_annotation
 from parser import parse_args
 
 
@@ -20,6 +21,8 @@ def main():
         if ext.lower() != '.csv':
             raise ValueError(f"Ошибка: Файл '{args.input}' имеет некорректное расширение"
                              f"'{args.input}'. Ожидается '.csv'.")
+
+        df = create_dataframe_from_annotation(args.input)
 
     except FileNotFoundError as e:
         print(e)
