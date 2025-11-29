@@ -18,7 +18,7 @@ def main():
         
         df = processor.load_annotation_data(annotation_file)
         
-        image_paths = df['Абсолютный_путь'].tolist()
+        image_paths = df['absolute_path'].tolist()
         brightness_values = analyzer.process_images_brightness(image_paths)
         df_with_brightness = processor.add_brightness_column(brightness_values)
         stats = processor.get_statistics()
@@ -32,6 +32,7 @@ def main():
         processor.save_dataframe('bird_images_analysis.csv')
 
         print("Анализ завершен успешно!")
+        print(f"Статистика: {stats}")
         
 
     except FileNotFoundError as e:

@@ -21,7 +21,7 @@ class DataVisualizer:
 
         plt.plot(
             range(len(sorted_df)),
-            sorted_df['Средняя_яркость'],
+            sorted_df['brightness'],  # ИЗМЕНЕНО: 'average_brightness' -> 'brightness'
             marker='o',
             linestyle='-',
             linewidth=1,
