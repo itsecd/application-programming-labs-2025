@@ -1,9 +1,7 @@
-﻿import argparse
+import argparse
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import os
-from audio_mixer import AudioMixer
 
 
 def get_args() -> argparse.Namespace:
@@ -18,31 +16,25 @@ def get_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+import soundfile as sf
+
 def build_dataframe(annotation_file: str) -> pd.DataFrame:
-    """Создание DataFrame с путями и амплитудами"""
     df_annotation = pd.read_csv(annotation_file)
- 
     df = pd.DataFrame({
         'абсолютный_путь': df_annotation['Абсолютный путь'],
         'относительный_путь': df_annotation['Относительный путь']
     })
     
-    mixer = AudioMixer()
     amplitudes = []
-    
     for audio_path in df['абсолютный_путь']:
         try:
-            audio_data, _ = mixer.read_audio_file(audio_path)
-            if audio_data is not None:
-                mean_amp = np.mean(np.abs(audio_data))
-                amplitudes.append(mean_amp)
-            else:
-                amplitudes.append(0.0)
+            audio_data, _ = sf.read(audio_path)
+            mean_amp = np.mean(np.abs(audio_data))
+            amplitudes.append(mean_amp)
         except Exception:
             amplitudes.append(0.0)
     
     df['средняя_амплитуда'] = amplitudes
-    
     return df
 
 
