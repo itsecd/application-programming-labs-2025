@@ -3,6 +3,7 @@ import os
 import sys
 from dataframe import create_dataframe_from_annotation, name_columns, add_brightness_columns
 from sort_and_filter import sort_dataframe_by_brightness, filter_dataframe_by_brightness
+from visualization import plot_brightness_data
 from parser import parse_args
 
 
@@ -39,7 +40,9 @@ def main():
                                                      min_val=50,
                                                      max_val=150,
                                                      column_name="R")
-        
+
+        plot_brightness_data(df_filtered, args.output)
+
     except FileNotFoundError as e:
         print(e)
         sys.exit(1)
