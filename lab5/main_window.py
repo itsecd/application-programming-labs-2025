@@ -46,7 +46,7 @@ class MainWindow(QDialog):
             raise FileNotFoundError("Файл аннотация не найден")
         
         self.df = pd.read_csv(self.filepath)
-
+        self.df.columns = ['absolute_path', 'relative_path']
         self.table.setRowCount(len(self.df))
         self.table.setColumnCount(len(self.df.columns))
         self.table.setHorizontalHeaderLabels(self.df.columns)
@@ -54,15 +54,9 @@ class MainWindow(QDialog):
         for row_index, row_data in self.df.iterrows():
             item_abs = QTableWidgetItem(str(row_data["absolute_path"]))
             item_rel = QTableWidgetItem(str(row_data["relative_path"]))
-            item_r_avg = QTableWidgetItem(str(row_data["r_avg"]))
-            item_g_avg = QTableWidgetItem(str(row_data["g_avg"]))
-            item_b_avg = QTableWidgetItem(str(row_data["b_avg"]))
-            
+
             self.table.setItem(row_index, 0, item_abs)    
             self.table.setItem(row_index, 1, item_rel)   
-            self.table.setItem(row_index, 2, item_r_avg)  
-            self.table.setItem(row_index, 3, item_g_avg) 
-            self.table.setItem(row_index, 4, item_b_avg)  
 
         self.iterator = FileIterator(self.filepath)
         self.table.resizeColumnsToContents()
