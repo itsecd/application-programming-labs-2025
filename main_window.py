@@ -21,14 +21,18 @@ class MainWindow(QMainWindow):
     """
 
     def __init__(self: QMainWindow) -> None:
+        """
+        Инициализация главного окна и внутренних переменных
+        """
         super().__init__()
+        self.setWindowTitle("Просмотр датасета изображений (Вариант 6)")
+        self.setGeometry(100, 100, window_width, window_heights)
 
         self.iterator = None
         self.current_pixmap = None
-        self.next_button = None
-        self.select_file_button = None
-        self.image_label = None
-        self.status_bar = None
+
+        self._setup_ui()
+        self.next_button.setEnabled(False)
 
     def _setup_ui(self: QMainWindow) -> None:
         pass
