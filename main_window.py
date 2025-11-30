@@ -157,10 +157,6 @@ class MainWindow(QMainWindow):
             return
 
         self.current_pixmap = pixmap
-
-        self.image_label.setPixmap(self.current_pixmap)
-
-        self.current_pixmap = pixmap
         self._scale_and_set_pixmap()
 
     def _scale_and_set_pixmap(self: QWidget) -> None:
@@ -183,8 +179,16 @@ class MainWindow(QMainWindow):
 
         self.image_label.setPixmap(scaled_pixmap)
 
-    def resizeEvent(self, event: QResizeEvent) -> None:
+    def resizeEvent(self: QResizeEvent, event: QResizeEvent) -> None:
+        """
+        Переопределяет изменение размера окна,
+        чтобы перемасштабировать изображение при изменении размера
+        :param event: Изменение размера
+        """
         super().resizeEvent(event)
+
+        if self.current_pixmap is not None:
+            self._scale_and_set_pixmap()
 
 
 def main()-> None:
