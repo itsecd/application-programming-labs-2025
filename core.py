@@ -45,6 +45,31 @@ def add_image_width_column(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def sort_by_width(df: pd.DataFrame, ascending: bool = True) -> pd.DataFrame:
+    """
+    Сортирует DataFrame по ширине изображения.
+    """
+
+    sorted_df = df.sort_values(by='image_width', ascending=ascending).reset_index(drop=True)
+    return sorted_df
+
+
+def filter_by_width(df: pd.DataFrame, min_width: Optional[int] = None, max_width: Optional[int] = None) -> pd.DataFrame:
+    """
+    Фильтрует DataFrame по минимальной или максимальной ширине изображения.
+    """
+
+    filtered_df = df.copy()
+
+    if min_width is not None:
+        filtered_df = filtered_df[filtered_df['image_width'] >= min_width]
+
+    if max_width is not None:
+        filtered_df = filtered_df[filtered_df['image_width'] <= max_width]
+
+    return filtered_df
+
+
 def save_dataframe(df: pd.DataFrame, output_path: str) -> None:
     """
     Сохраняет DataFrame в CSV файл.
