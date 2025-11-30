@@ -1,11 +1,13 @@
 import argparse
+from typing import Optional
 import os
 import csv
+import time
 import requests
 from bs4 import BeautifulSoup
 
 class FilePathIterator:
-    def __init__(self, annotation : Optional[str] = None, output_dir : Optional[str] = None) -> None:
+    def __init__(self, annotation = Optional[None], output_dir = Optional[None]) -> Optional[None]:
         """
         Итератор по путям к файлам
         :param annotation_file: путь к .csv файлу с аннотацией
@@ -66,7 +68,7 @@ def download_audio_file(url: str, filename: str, output_dir: str) -> Optional[st
         return None
 
 
-def parsing_site(base_url: str, genre: str, count_per_genre: int) -> List[str]:
+def parsing_site(base_url: str, genre: str, count_per_genre: int) -> list[str]:
     """
     Нахождение ссылок с файлами нужного жанраю
     """
@@ -84,13 +86,14 @@ def parsing_site(base_url: str, genre: str, count_per_genre: int) -> List[str]:
             soup = BeautifulSoup(page.content, 'html.parser')
             
             audio_players = soup.find_all('div', {'data-audio-player-preview-url-value': True})
-            for player in audio_players: #берем опредленные <div>
+            for player in audio_players:
                 if len(audio_links) >= count_per_genre:
                     break
                     
                 audio_url = player.get('data-audio-player-preview-url-value')
                 if audio_url and audio_url.startswith('http'):
                     audio_links.append(audio_url)
+                    print(f"Ссылка на файл успешно сохранена")
             
            
         except Exception as e:
@@ -100,7 +103,7 @@ def parsing_site(base_url: str, genre: str, count_per_genre: int) -> List[str]:
     return audio_links[:count_per_genre]
 
 
-def create_annotation(audio_files: List[Tuple[str, str]], output_dir: str, annotation: str, genre: str) -> None:
+def create_annotation(audio_files: list[tuple[str, str]], output_dir: str, annotation: str, genre: str) -> None:
     """
     Создание .csv файла.
     """
@@ -128,7 +131,7 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
     
     genres = ['rock', 'jazz', 'contemporary-r-and-b']
-    files_per_genre = 20
+    files_per_genre = 5
     
     base_url = 'https://mixkit.co/free-stock-music'
     all_audio_files = []
@@ -150,6 +153,8 @@ def main():
                 print(f"Ошибка при обработке файла {i+1} для жанра {genre}: {e}")
 
         create_annotation(all_audio_files, args.output_dir, args.annotation, genre)
+
+
     
 
 if __name__ == "__main__":
