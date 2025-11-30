@@ -16,7 +16,7 @@ def parse_arguments() -> list:
     return [args.img_path, args.output_path]
 
 
-def read_image(input_path):
+def read_image(input_path) -> np.ndarray:
     """
     Загрузка исходного изображения
     """
@@ -61,4 +61,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+
     main()
