@@ -160,8 +160,28 @@ class MainWindow(QMainWindow):
 
         self.image_label.setPixmap(self.current_pixmap)
 
-    def _scale_and_set_pixmap(self) -> None:
-        pass
+        self.current_pixmap = pixmap
+        self._scale_and_set_pixmap()
+
+    def _scale_and_set_pixmap(self: QWidget) -> None:
+        """
+        Масштабирует текущий QPixmap под размер метки с сохранением пропорций
+        """
+        if self.current_pixmap is None:
+            return
+
+        label_size = self.image_label.size()
+
+        if label_size.width() <= 0 or label_size.height() <= 0:
+            return
+
+        scaled_pixmap = self.current_pixmap.scaled(
+            label_size,
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation
+        )
+
+        self.image_label.setPixmap(scaled_pixmap)
 
     def resizeEvent(self, event: QResizeEvent) -> None:
         super().resizeEvent(event)
