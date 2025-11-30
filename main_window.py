@@ -76,8 +76,34 @@ class MainWindow(QMainWindow):
         self.status_bar = self.statusBar()
         
 
-    def select_annotation_file(self) -> None:
-        pass
+    def select_annotation_file(self: QWidget) -> None:
+        """
+        Открывает QFileDialog для выбора файла и инициализирует итератор
+        """
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Выберите файл аннотации",
+            "",
+            "CSV Files (*.csv);;All Files (*)"
+        )
+
+        if file_path:
+            try:
+                self.iterator = FileIterator(file_path)
+                self.load_next_image()
+
+                self.next_button.setEnabled(True)
+                self.select_file_button.setText("Сменить аннотацию")
+
+            except Exception as e:
+                QMessageBox.critical(
+                    self,
+                    "Ошибка Инициализации",
+                    f"Не удалось инициализировать итератор: {e}"
+                )
+                self.status_bar.showMessage("Ошибка: Итератор не инициализирован.")
+                self.iterator = None
+                self.next_button.setEnabled(False)
 
     def load_next_image(self) -> None:
         pass
