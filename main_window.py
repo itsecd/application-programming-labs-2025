@@ -105,8 +105,34 @@ class MainWindow(QMainWindow):
                 self.iterator = None
                 self.next_button.setEnabled(False)
 
-    def load_next_image(self) -> None:
-        pass
+    def load_next_image(self: QWidget) -> None:
+        """
+        Получает следующий путь из итератора и отображает изображение
+        """
+        if not self.iterator:
+            self.status_bar.showMessage("Ошибка: Итератор не активен.")
+            return
+
+        try:
+            line = next(self.iterator).strip()
+
+            if ',' in line:
+                image_path = line.split(',')[0].strip()
+            else:
+                image_path = line.strip()
+
+            self._display_image(image_path)
+            self.status_bar.showMessage(
+                f"Загружен файл: {os.path.basename(image_path)}"
+            )
+
+        except StopIteration:
+            self.status_bar.showMessage("Конец датасета. Файлы закончились.")
+            self.next_button.setEnabled(False)
+            self.image_label.setText("Датасет просмотрен.")
+            self.current_pixmap = None
+        except Exception as e:
+            self.status_bar.showMessage(f"Ошибка при загрузке данных: {e}")
 
     def _display_image(self, path: str) -> None:
         pass
