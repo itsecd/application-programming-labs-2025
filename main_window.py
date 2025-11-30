@@ -54,11 +54,27 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.image_label)
 
         control_layout = QHBoxLayout()
+
+        self.select_file_button = QPushButton("Выбрать аннотацию (CSV)")
+        self.select_file_button.clicked.connect(self.select_annotation_file)
+        control_layout.addWidget(self.select_file_button)
+
+        self.next_button = QPushButton("Следующее изображение")
+        self.next_button.clicked.connect(self.load_next_image)
+        control_layout.addWidget(self.next_button)
+
+        main_layout.addLayout(control_layout)
+
+        self.status_bar = self.statusBar()
+        self.status_bar.showMessage("Ожидание выбора файла.")
+
+        control_layout = QHBoxLayout()
         main_layout.addLayout(control_layout)
 
         self.next_button = QPushButton()
         self.select_file_button = QPushButton()
         self.status_bar = self.statusBar()
+        
 
     def select_annotation_file(self) -> None:
         pass
