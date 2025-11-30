@@ -134,8 +134,31 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.status_bar.showMessage(f"Ошибка при загрузке данных: {e}")
 
-    def _display_image(self, path: str) -> None:
-        pass
+    def _display_image(self: QWidget, path: str) -> None:
+        """
+        Загружает изображение QPixmap и устанавливает его в метку
+        :param path: Полный путь к файлу изображения
+        """
+
+        if not os.path.exists(path):
+            self.image_label.setText(
+                f"Ошибка: Изображение не найдено: {path}"
+            )
+            self.current_pixmap = None
+            return
+
+        pixmap = QPixmap(path)
+
+        if pixmap.isNull():
+            self.image_label.setText(
+                f"Ошибка: Не удалось загрузить изображение из файла: {path}"
+            )
+            self.current_pixmap = None
+            return
+
+        self.current_pixmap = pixmap
+
+        self.image_label.setPixmap(self.current_pixmap)
 
     def _scale_and_set_pixmap(self) -> None:
         pass
