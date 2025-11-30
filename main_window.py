@@ -35,7 +35,30 @@ class MainWindow(QMainWindow):
         self.next_button.setEnabled(False)
 
     def _setup_ui(self: QMainWindow) -> None:
-        pass
+        """
+        Создает и компонует виджеты интерфейса
+        """
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
+        main_layout = QVBoxLayout(central_widget)
+
+        self.image_label = QLabel("Выберите файл аннотации")
+        self.image_label.setAlignment(Qt.AlignCenter)
+        self.image_label.setStyleSheet("border: 1px solid #ccc; background-color: #f0f0f0;")
+
+        self.image_label.setSizePolicy(
+            QtWidgets.QSizePolicy.Ignored,
+            QtWidgets.QSizePolicy.Ignored)
+
+        main_layout.addWidget(self.image_label)
+
+        control_layout = QHBoxLayout()
+        main_layout.addLayout(control_layout)
+
+        self.next_button = QPushButton()
+        self.select_file_button = QPushButton()
+        self.status_bar = self.statusBar()
 
     def select_annotation_file(self) -> None:
         pass
