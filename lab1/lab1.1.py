@@ -21,12 +21,27 @@ def read_file(filename):
         raise Exception(f"Ошибка при чтении файла: {e}")
 
 
+def find_moscow(data):
+    """Поиск анкет из Москвы"""
+    pattern = r"Город:\s*(г\.?\s*)?[Мм]осква\b"
+    result = []
+    forms = data.split("\n\n")
+    
+    for form in forms:
+        if re.search(pattern, form):
+            result.append(form)
+    
+    return result
+
+
 def main():
      try:
         args = get_args()
         text = read_file(args.in_file)
-        print(text)
-        print(f"Файл успешно прочитан, размер: {len(data)} символов")
+        moscow_list = find_moscow(text)
+        print(f"Найдено анкет: {len(moscow_list)}")
+        for i in moscow_list:
+            print(i, sep="/n")
      except Exception as e:
         print(f"Ошибка: {e}")
 
