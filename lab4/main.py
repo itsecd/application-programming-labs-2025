@@ -2,6 +2,7 @@ import argparse
 from functions import read_annotation_file, calculate_aspect_ratios, add_range_column, sort_by_aspect_ratio, filter_by_range, create_histogram
 
 def main():
+    """Основная функция для анализа соотношений сторон изображений."""
     
     try:
         # Парсинг аргументов командной строки
