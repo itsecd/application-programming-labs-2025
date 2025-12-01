@@ -12,14 +12,24 @@ def get_args():
 
 def read_file(filename):
     """Чтение содержимого файла"""
-    with open(filename, "r", encoding="utf-8") as f:
-        return f.read()
+    try:
+        with open(filename, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Файл {filename} не найден")
+    except Exception as e:
+        raise Exception(f"Ошибка при чтении файла: {e}")
 
-    
+
 def main():
+     try:
         args = get_args()
         text = read_file(args.in_file)
         print(text)
-       
+        print(f"Файл успешно прочитан, размер: {len(data)} символов")
+     except Exception as e:
+        print(f"Ошибка: {e}")
+
+        
 if __name__ == '__main__':
     main()
