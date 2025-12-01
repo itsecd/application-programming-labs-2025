@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from functions import create_pixel_art, read_image, convert_bgr_to_rgb, convert_rgb_to_bgr, save_image, display_images
 
 def main():
+    """Основная функция для преобразования изображения в пиксель-арт."""
     
     try:
         # Парсинг аргументов командной строки
