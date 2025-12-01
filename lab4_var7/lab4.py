@@ -40,6 +40,22 @@ def calculate_image_brightness(absolute_path: str) -> float:
     return 0.0
 
 
+def add_brightness_column(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Добавление колонки с яркостью изображений.
+    """
+
+    df['brightness'] = df['absolute_path'].apply(calculate_image_brightness)
+    
+    failed_count = (df['brightness'] == 0.0).sum()
+    if failed_count > 0:
+        print(f"Не удалось обработать изображений: {failed_count}")
+    
+    df = df[df['brightness'] > 0.0]
+
+    return df
+
+
 def add_brightness_range_column(df: pd.DataFrame, bins) -> pd.DataFrame:
     """
     Добавление колонки с диапазонами яркости.
@@ -131,12 +147,7 @@ def main() -> None:
         df = load_annotation_data(args.annotation)
         print(f"Загружено изображений: {len(df)}")
 
-        df['brightness'] = df['absolute_path'].apply(calculate_image_brightness)
-        
-        failed_count = (df['brightness'] == 0.0).sum()
-        print(f"Не удалось обработать изображений: {failed_count}")
-        
-        df = df[df['brightness'] > 0.0]
+        df = add_brightness_column(df)
         print(f"Успешно обработано изображений: {len(df)}")
 
         df, brightness_labels = add_brightness_range_column(df, args.bins)
@@ -154,7 +165,7 @@ def main() -> None:
             else:
                 print(f"\nДиапазон '{args.filter_range}' не найден")
                 print(f"Доступные диапазоны: {', '.join(brightness_labels)}")
-        
+
         create_histogram(df_sorted, args.output_plot, args.show)
         print(f"Гистограмма сохранена: {args.output_plot}")
 
