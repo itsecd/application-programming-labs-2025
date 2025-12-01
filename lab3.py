@@ -1,109 +1,145 @@
-import argparse
-import os
-from PIL import Image
+import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
+import csv
+import os
 
-def create_test_images():
-    if not os.path.exists('photo1.png'):
-        img1 = np.zeros((300, 400, 3), dtype=np.uint8)
-        for i in range(400):
-            img1[:, i] = [100, 100, 255 - i//2]
-        Image.fromarray(img1).save('photo1.png')
-        print("Создано тестовое изображение: photo1.png")
-    
-    if not os.path.exists('photo2.png'):
-        img2 = np.zeros((300, 400, 3), dtype=np.uint8)
-        for i in range(400):
-            img2[:, i] = [255 - i//2, 100, 100]
-        Image.fromarray(img2).save('photo2.png')
-        print("Создано тестовое изображение: photo2.png")
 
-def load_image(image_path):
-    if not os.path.exists(image_path):
-        raise FileNotFoundError(f"Файл {image_path} не найден")
-    image = Image.open(image_path)
-    image_array = np.array(image)
-    return image_array
-
-def stitch_images(image1, image2, direction='horizontal'):
-    h1, w1 = image1.shape[:2]
-    h2, w2 = image2.shape[:2]
-    
-    if direction == 'horizontal':
-        if h1 != h2:
-            min_height = min(h1, h2)
-            image1_resized = np.array(Image.fromarray(image1).resize((w1, min_height)))
-            image2_resized = np.array(Image.fromarray(image2).resize((w2, min_height)))
-            result = np.hstack((image1_resized, image2_resized))
-        else:
-            result = np.hstack((image1, image2))
-            
-    elif direction == 'vertical':
-        if w1 != w2:
-            min_width = min(w1, w2)
-            image1_resized = np.array(Image.fromarray(image1).resize((min_width, h1)))
-            image2_resized = np.array(Image.fromarray(image2).resize((min_width, h2)))
-            result = np.vstack((image1_resized, image2_resized))
-        else:
-            result = np.vstack((image1, image2))
-    
-    return result
-
-def display_images(original1, original2, result):
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-    
-    axes[0].imshow(original1)
-    axes[0].set_title(f'Изображение 1\n{original1.shape[1]}x{original1.shape[0]}')
-    axes[0].axis('off')
-    
-    axes[1].imshow(original2)
-    axes[1].set_title(f'Изображение 2\n{original2.shape[1]}x{original2.shape[0]}')
-    axes[1].axis('off')
-    
-    axes[2].imshow(result)
-    axes[2].set_title(f'Результат\n{result.shape[1]}x{result.shape[0]}')
-    axes[2].axis('off')
-    
-    plt.tight_layout()
-    plt.show()
-
-def save_image(image, output_path):
-    Image.fromarray(image).save(output_path)
-    print(f"Результат сохранен в: {output_path}")
-
-def main():
-    parser = argparse.ArgumentParser(description='Соединение двух изображений')
-    parser.add_argument('image1', type=str, help='Путь к первому изображению')
-    parser.add_argument('image2', type=str, help='Путь ко второму изображению')
-    parser.add_argument('--output', type=str, default='stitched_result.jpg')
-    parser.add_argument('--direction', type=str, choices=['horizontal', 'vertical'], default='horizontal')
-    
-    args = parser.parse_args()
-    
+def load_images(image_path1: str, image_path2: str) -> tuple:
+    """
+    Загрузка двух изображений
+    """
     try:
-        create_test_images()
+        image1 = cv2.imread(image_path1)
+        image2 = cv2.imread(image_path2)
         
-        print("Загрузка изображений...")
-        image1 = load_image(args.image1)
-        image2 = load_image(args.image2)
-        
-        print(f"Изображение 1: {image1.shape[1]}x{image1.shape[0]}")
-        print(f"Изображение 2: {image2.shape[1]}x{image2.shape[0]}")
-        
-        print(f"Соединение изображений ({args.direction})...")
-        result = stitch_images(image1, image2, args.direction)
-        
-        print(f"Результат: {result.shape[1]}x{result.shape[0]}")
-        
-        print("Отображение результатов...")
-        display_images(image1, image2, result)
-        
-        print("Сохранение результата...")
-        save_image(result, args.output)
+        if image1 is None or image2 is None:
+            print("Ошибка: не удалось загрузить изображения")
+            return None, None
+            
+        return image1, image2
         
     except Exception as e:
-        print(f"Ошибка: {e}")
+        print(f"Ошибка при загрузке: {e}")
+        return None, None
+
+
+def get_dimensions(image: np.ndarray) -> tuple:
+    """
+    Получение размеров изображения
+    """
+    return image.shape[0], image.shape[1]
+
+
+def combine_images(image1: np.ndarray, image2: np.ndarray) -> np.ndarray:
+    """
+    Объединение двух изображений
+    """
+    scale_factor = image1.shape[0] / image2.shape[0]
+    new_width = int(image2.shape[1] * scale_factor)
+    resized_image2 = cv2.resize(image2, (new_width, image1.shape[0]))
+    
+    combined = np.hstack((image1, resized_image2))
+    return combined
+
+
+def save_annotation(annotation_path: str, source1: str, source2: str, result_path: str, result_size: tuple) -> None:
+    """
+    Сохранение информации в файл аннотации
+    """
+    file_exists = os.path.exists(annotation_path)
+    
+    with open(annotation_path, 'a', newline='', encoding='utf-8') as annotation_file:
+        writer = csv.writer(annotation_file)
+        
+        if not file_exists:
+            writer.writerow(['Изображение 1', 'Изображение 2', 'Результат', 'Ширина', 'Высота'])
+        
+        height, width = result_size
+        writer.writerow([source1, source2, result_path, width, height])
+    
+    print(f"Аннотация сохранена в: {annotation_path}")
+
+
+def display_result(original: np.ndarray, result: np.ndarray) -> None:
+    """
+    Отображение оригинального и результирующего изображений
+    """
+    if len(original.shape) == 3 and original.shape[2] == 3:
+        original_display = cv2.cvtColor(original, cv2.COLOR_BGR2RGB)
+    else: 
+        original_display = original
+
+    if len(result.shape) == 3 and result.shape[2] == 3:
+        result_display = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+    else: 
+        result_display = result
+
+    plt.subplot(2, 1, 1)
+    plt.imshow(original_display)
+    plt.axis('off')
+    plt.title('Исходное изображение')
+
+    plt.subplot(2, 1, 2)
+    plt.imshow(result_display)
+    plt.axis('off')
+    plt.title('Объединенное изображение')
+
+    plt.show()
+
+
+def save_image(output_path: str, image: np.ndarray) -> None:
+    """
+    Сохранение изображения
+    """
+    if not output_path.endswith('.jpg'):
+        output_path += '.jpg'
+    
+    cv2.imwrite(output_path, image)
+    print(f"Изображение сохранено: {output_path}")
+
+
+def main():
+    """
+    Основная функция
+    """
+    parser = argparse.ArgumentParser(description="Объединение изображений")
+    parser.add_argument("--image_1", "-i1", default="fish_images/range_1/000001.jpg", 
+                       type=str, help="Путь к первому изображению")
+    parser.add_argument("--image_2", "-i2", default="fish_images/range_1/000002.jpg", 
+                       type=str, help="Путь ко второму изображению")
+    parser.add_argument("--result", "-r", default="result_image.jpg", 
+                       type=str, help="Путь для сохранения результата")
+    parser.add_argument("--annotation", "-a", default="annotation.csv", 
+                       type=str, help="Файл аннотации (CSV)")
+    
+    args = parser.parse_args()
+
+    # Загрузка изображений
+    image1, image2 = load_images(args.image_1, args.image_2)
+    
+    if image1 is None or image2 is None:
+        return
+    
+    # Получение размеров
+    height1, width1 = get_dimensions(image1)
+    print(f"Размер первого изображения: {width1}x{height1}")
+    
+    # Объединение изображений
+    combined_image = combine_images(image1, image2)
+    
+    # Сохранение результата
+    save_image(args.result, combined_image)
+    
+    # Сохранение аннотации
+    result_height, result_width = get_dimensions(combined_image)
+    save_annotation(args.annotation, args.image_1, args.image_2, 
+                   args.result, (result_height, result_width))
+    
+    # Отображение результатов
+    display_result(image1, combined_image)
+
 
 if __name__ == "__main__":
     main()

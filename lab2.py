@@ -3,10 +3,14 @@ import csv
 import argparse
 import random
 import time
+
 from icrawler.builtin import BingImageCrawler
 from pathlib import Path
 
-class ImageIterator:
+
+class ImageIterator: 
+    """ Создаем класс итератора """
+
     def __init__(self, annotation_file):
         self.annotation_file = annotation_file
         self.data = []
@@ -35,6 +39,8 @@ class ImageIterator:
             raise StopIteration
 
 def cleanup_directory(directory):
+    """ Функиця для очистки директории """
+
     for file_path in Path(directory).rglob('*.*'):
         if file_path.is_file():
             if file_path.suffix.lower() in ['.txt', '.tmp', '']:
@@ -44,6 +50,7 @@ def cleanup_directory(directory):
                     pass
 
 def download_images(output_dir, size_ranges, total_min=80, total_max=200):
+    """Функция для загрузки изображений """
     os.makedirs(output_dir, exist_ok=True)
     
     num_ranges = len(size_ranges)
@@ -129,6 +136,8 @@ def download_images(output_dir, size_ranges, total_min=80, total_max=200):
     return all_files
 
 def create_annotation(files, annotation_file):
+""" Функция для создания аннотации """
+
     with open(annotation_file, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow(['absolute_path', 'relative_path'])
