@@ -5,6 +5,7 @@ from functions import ImageIterator, download_images, create_annotation
 
 
 def main() -> None:
+    """Основная функция программы для скачивания изображений и создания аннотации."""
     try:
         parser = argparse.ArgumentParser(description='Скачать изображения свиней')
         parser.add_argument('--output-dir', required=True, help='Папка для изображений')
