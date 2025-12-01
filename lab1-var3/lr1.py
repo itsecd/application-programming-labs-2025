@@ -33,9 +33,9 @@ def read_people_from_file(filename: str) -> List[List[str]]:
         with open(filename, "r", encoding="utf-8") as f:
             lines = [line.strip() for line in f if line.strip()]
     except FileNotFoundError:
-        raise
-    except Exception:
-        raise
+        raise FileNotFoundError(f"Файл '{filename}' не найден.")
+    except Exception as e:
+        raise RuntimeError(f"Ошибка при чтении файла: {e}")
 
     current_person: List[str] = []
     for line in lines:
@@ -57,15 +57,22 @@ def save_people_to_file(people: List[List[str]], filename: str) -> None:
         with open(filename, "w", encoding="utf-8") as out:
             for person in people:
                 out.write("\n".join(person) + "\n")
-    except Exception:
-        raise
+    except Exception as e:
+        raise RuntimeError(f"Ошибка при записи в файл '{filename}': {e}")
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("filename", type=str, help="input file")
     args = parser.parse_args()
 
-    people_30_40 = read_people_from_file(args.filename)
-    print(len(people_30_40))
-    save_people_to_file(people_30_40, "result.txt")
+    try:
+        people_30_40 = read_people_from_file(args.filename)
+        print(len(people_30_40))
+        save_people_to_file(people_30_40, "result.txt")
+    except Exception as e:
+        print(f"Ошибка: {e}")
+
+
+if __name__ == "__main__":
+    main()
