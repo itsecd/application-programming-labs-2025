@@ -11,7 +11,7 @@ def load_annotation_data(annotation_path: str) -> pd.DataFrame:
     Загрузка данных из файла аннотации.
     """
     
-    df = pd.read_csv(annotation_path, header=None)
+    df = pd.read_csv(annotation_path, header=0)
     df.columns = ['absolute_path', 'relative_path']
     return df
 
