@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from PIL import Image
 import numpy as np
-from typing import List, Dict, Tuple, Optional, Union
+from typing import List, Dict, Tuple, Union
 from ImagePathIterator import ImagePathIterator
 
 
@@ -25,7 +25,7 @@ def load_image_paths(csv_file: str) -> List[str]:
         return []
 
 
-def brightness_range_calculating(image_path: str) -> Optional[float]:
+def brightness_range_calculating(image_path: str) -> Union[float, None]:
     """Вычисление диапазона яркости для одного изображения."""
     if not os.path.exists(image_path):
         return None
@@ -53,7 +53,7 @@ def brightness_range_calculating(image_path: str) -> Optional[float]:
 def process_brightness(
     image_paths: List[str], 
     original_csv: str, 
-    brightness_ranges: Optional[Dict[str, Tuple[float, float]]] = None
+    brightness_ranges: Dict[str, Tuple[float, float]] = None
 ) -> pd.DataFrame:
     """Обработка яркости для всех изображений с сохранением исходных данных."""
     original_df = pd.read_csv(original_csv, encoding='utf-8')
@@ -103,8 +103,8 @@ def sort_by_brightness(
 
 def filter_by_brightness(
     df: pd.DataFrame, 
-    min_range: Optional[float] = None, 
-    max_range: Optional[float] = None
+    min_range: float = None, 
+    max_range: float = None
 ) -> pd.DataFrame:
     """Фильтрация диапазона яркости"""
     filtered_df = df.copy()

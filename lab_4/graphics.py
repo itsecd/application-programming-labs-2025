@@ -1,10 +1,10 @@
 """Модуль для визуализации и сохранения результатов."""
 import matplotlib.pyplot as plt
 import pandas as pd
-from typing import Optional
+from typing import Union
 
 
-def create_graph(df: pd.DataFrame) -> Optional[plt.Figure]:
+def create_graph(df: pd.DataFrame) -> Union[plt.Figure, None]:
     """Создание гистограммы распределения яркости по диапазонам."""
     if df.empty or 'Brightness_range_label' not in df.columns:
         return None
