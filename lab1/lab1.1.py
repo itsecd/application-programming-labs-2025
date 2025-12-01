@@ -34,17 +34,32 @@ def find_moscow(data):
     return result
 
 
+def save_data(data_list, out_path):
+    """Сохранение данных в новый файл"""
+    try:
+        with open(out_path, "w", encoding="utf-8") as f:
+            for item in data_list:
+                f.write(item + "\n\n")
+        print(f"Анкеты сохранены в файл: {out_path}")
+    except Exception as e:
+        raise Exception(f"Ошибка при сохранении файла: {e}")
+
+
 def main():
-     try:
+    try:
         args = get_args()
         text = read_file(args.in_file)
         moscow_list = find_moscow(text)
         print(f"Найдено анкет: {len(moscow_list)}")
-        for i in moscow_list:
-            print(i, sep="/n")
-     except Exception as e:
+
+        if moscow_list:
+            save_data(moscow_list, args.out_file)
+        else:
+            print("Анкеты жителей Москвы не найдены, файл не создан.")
+            
+    except Exception as e:
         print(f"Ошибка: {e}")
 
-        
+
 if __name__ == '__main__':
     main()
