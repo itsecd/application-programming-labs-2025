@@ -3,31 +3,53 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import os
 
+# Пути к файлам
 input_csv = "/Users/mera/Documents/tuition/3semester/AD/application-programming-labs-2025/lab2-var3/fish_annotation.csv"
-output_csv = "/Users/mera/Documents/tuition/3semester/AD/application-programming-labs-2025/lab4-var3/lab3_output.csv"
+output_csv = "/Users/mera/Documents/tuition/3semester/AD/application-programming-labs-2025/lab4-var3/lab4_output.csv"
 plot_file = "/Users/mera/Documents/tuition/3semester/AD/application-programming-labs-2025/lab4-var3/area_plot.png"
 
+# Чтение исходного CSV
 df = pd.read_csv(input_csv)
-df['absolute_path'] = df['absolute_path'].astype(str).str.strip()
 
-def get_area(path):
+# Оформляем DataFrame с абсолютными и относительными путями
+df_clean = pd.DataFrame({
+    "Абсолютный путь": df['absolute_path'].astype(str).str.strip(),
+    "Относительный путь": df['relative_path'].astype(str).str.strip()
+})
+
+# Функция для вычисления площади изображения
+def вычислить_площадь(path):
     try:
         with Image.open(path) as img:
             return img.width * img.height
     except:
         return 0
 
-df['Area'] = df['absolute_path'].apply(get_area)
-df_sorted = df.sort_values(by='Area').reset_index(drop=True)
-df_filtered = df_sorted[df_sorted['Area'] > 0].reset_index(drop=True)
+# Добавляем колонку с площадью
+df_clean["Площадь"] = df_clean["Абсолютный путь"].apply(вычислить_площадь)
 
+# Функция сортировки по площади
+def сортировать_по_площади(df):
+    return df.sort_values(by="Площадь").reset_index(drop=True)
+
+# Функция фильтрации по площади (оставляем только >0)
+def фильтровать_по_площади(df):
+    return df[df["Площадь"] > 0].reset_index(drop=True)
+
+# Применяем сортировку и фильтрацию
+df_sorted = сортировать_по_площади(df_clean)
+df_filtered = фильтровать_по_площади(df_sorted)
+
+# Сохраняем DataFrame в CSV
 df_filtered.to_csv(output_csv, index=False)
 
-plt.figure(figsize=(10, 6))
-plt.plot(range(1, len(df_filtered) + 1), df_filtered['Area'], marker='o')
-plt.xlabel("Image Index (sorted)")
-plt.ylabel("Area")
-plt.title("Image Areas")
+# Строим график
+plt.figure(figsize=(8,5))
+plt.plot(range(1, len(df_filtered)+1), df_filtered["Площадь"], marker='o')
+plt.xlabel("Номер изображения в отсортированном списке")
+plt.ylabel("Площадь (px²)")
+plt.title("Площади изображений")
 plt.grid(True)
+plt.tight_layout()
 plt.savefig(plot_file)
 plt.show()
