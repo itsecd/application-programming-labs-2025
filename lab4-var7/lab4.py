@@ -70,10 +70,19 @@ def plot_histogram(df, step, output="brightness_histogram.png"):
     plt.close()
 
 
+def check_range(value):
+    ivalue = int(value)
+    if 8 <= ivalue <= 256:
+        return ivalue
+    else:
+        print( f"значение должно быть от 8 до 256, получено {ivalue}. используется значение по умолчанию")
+        return 16
+
 def main():
-    parser = argparse.ArgumentParser(description="Histogram lab")
-    parser.add_argument("--range", type=int, default=32,
-                        help="размер диапазона яркости для гистограммы (например 32)")
+    parser = argparse.ArgumentParser(description="histogram lab")
+    parser.add_argument("--range", type=check_range, default=16,
+                        help="размер диапазона яркости для гистограммы (например 16)")
+
     args = parser.parse_args()
     step = args.range
 
