@@ -57,6 +57,23 @@ def add_brightness_range_column(df: pd.DataFrame, bins) -> pd.DataFrame:
     return df, labels
 
 
+def sort_by_brightness(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Сортировка DataFrame по яркости.
+    """
+
+    return df.sort_values(by="brightness", ascending=True)
+
+
+def filter_by_brightness_range(df: pd.DataFrame, brightness_range: str) -> pd.DataFrame:
+    """
+    Фильтрация DataFrame по диапазону яркости.
+    """
+
+    mask = df['brightness_range'] == brightness_range
+    return df[mask]
+
+
 def create_histogram(df: pd.DataFrame, output_path: str, show_plot: bool = False) -> None:
     """
     Построение гистограммы распределения яркости.
@@ -93,6 +110,8 @@ def main() -> None:
                        help='Путь для сохранения гистограммы')
     parser.add_argument('--bins', '-b', nargs='+', type=int, default=[0, 51, 102, 153, 204, 256],
                        help='Границы диапазонов яркости')
+    parser.add_argument('--filter_range', '-f',
+                       help='Диапазон для фильтрации')
     parser.add_argument('--show', action='store_true',
                        help='Показать график')
     
@@ -101,23 +120,32 @@ def main() -> None:
     try:
         df = load_annotation_data(args.annotation)
         print(f"Загружено изображений: {len(df)}")
-        
-        # Добавляем колонку с яркостью
+
         df['brightness'] = df['absolute_path'].apply(calculate_image_brightness)
-        
-        # Выводим результаты
+
         failed_count = (df['brightness'] == 0.0).sum()
         print(f"Не удалось обработать изображений: {failed_count}")
         
         df = df[df['brightness'] > 0.0]
         print(f"Успешно обработано изображений: {len(df)}")
-        
-        # Добавляем диапазоны яркости
+
         df, brightness_labels = add_brightness_range_column(df, args.bins)
         print(f"Диапазоны яркости: {', '.join(brightness_labels)}")
-        
-        # Создаем гистограмму
-        create_histogram(df, args.output_plot, args.show)
+
+        df_sorted = sort_by_brightness(df)
+
+        if args.filter_range:
+            if args.filter_range in brightness_labels:
+                df_filtered = filter_by_brightness_range(df_sorted, args.filter_range)
+                print(f"\nРезультат фильтрации по диапазону '{args.filter_range}':")
+                print(f"Найдено изображений: {len(df_filtered)}")
+                if len(df_filtered) > 0:
+                    print(df_filtered[['relative_path', 'brightness', 'brightness_range']].head())
+            else:
+                print(f"\nДиапазон '{args.filter_range}' не найден")
+                print(f"Доступные диапазоны: {', '.join(brightness_labels)}")
+
+        create_histogram(df_sorted, args.output_plot, args.show)
         print(f"Гистограмма сохранена: {args.output_plot}")
         
     except FileNotFoundError as e:
