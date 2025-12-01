@@ -122,26 +122,40 @@ def save_dataframe(df: pd.DataFrame, output_csv_path: str) -> None:
     df.to_csv(output_csv_path, index=False)
 
 
+def parse_arguments():
+    """
+    Парсинг аргументов командной строки.
+    """
+
+    parser = argparse.ArgumentParser(description="Анализ яркости изображений")
+    
+    parser.add_argument('--annotation', '-a', required=True,
+                       help='Путь к файлу аннотации CSV')
+    
+    parser.add_argument('--output_csv', '-oc', default='analysis_results.csv',
+                       help='Путь для сохранения результатов в CSV')
+    
+    parser.add_argument('--output_plot', '-op', default='brightness_histogram.png',
+                       help='Путь для сохранения гистограммы')
+    
+    parser.add_argument('--bins', '-b', nargs='+', type=int, default=[0, 51, 102, 153, 204, 256],
+                       help='Границы диапазонов яркости')
+    
+    parser.add_argument('--filter_range', '-f',
+                       help='Диапазон для фильтрации')
+    
+    parser.add_argument('--show', action='store_true',
+                       help='Показать график')
+
+    return parser.parse_args()
+
+
 def main() -> None:
     """
     Основная функция программы.
     """
-    
-    parser = argparse.ArgumentParser(description="Анализ яркости изображений")
-    parser.add_argument('--annotation', '-a', required=True,
-                       help='Путь к файлу аннотации CSV')
-    parser.add_argument('--output_csv', '-oc', default='analysis_results.csv',
-                       help='Путь для сохранения результатов в CSV')
-    parser.add_argument('--output_plot', '-op', default='brightness_histogram.png',
-                       help='Путь для сохранения гистограммы')
-    parser.add_argument('--bins', '-b', nargs='+', type=int, default=[0, 51, 102, 153, 204, 256],
-                       help='Границы диапазонов яркости')
-    parser.add_argument('--filter_range', '-f',
-                       help='Диапазон для фильтрации')
-    parser.add_argument('--show', action='store_true',
-                       help='Показать график')
-    
-    args = parser.parse_args()
+
+    args = parse_arguments()
     
     try:
         df = load_annotation_data(args.annotation)
