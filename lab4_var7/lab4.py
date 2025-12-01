@@ -98,6 +98,14 @@ def create_histogram(df: pd.DataFrame, output_path: str, show_plot: bool = False
         plt.close()
 
 
+def save_dataframe(df: pd.DataFrame, output_csv_path: str) -> None:
+    """
+    Сохранение DataFrame в CSV файл.
+    """
+
+    df.to_csv(output_csv_path, index=False)
+
+
 def main() -> None:
     """
     Основная функция программы.
@@ -106,6 +114,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Анализ яркости изображений")
     parser.add_argument('--annotation', '-a', required=True,
                        help='Путь к файлу аннотации CSV')
+    parser.add_argument('--output_csv', '-oc', default='analysis_results.csv',
+                       help='Путь для сохранения результатов в CSV')
     parser.add_argument('--output_plot', '-op', default='brightness_histogram.png',
                        help='Путь для сохранения гистограммы')
     parser.add_argument('--bins', '-b', nargs='+', type=int, default=[0, 51, 102, 153, 204, 256],
@@ -122,7 +132,7 @@ def main() -> None:
         print(f"Загружено изображений: {len(df)}")
 
         df['brightness'] = df['absolute_path'].apply(calculate_image_brightness)
-
+        
         failed_count = (df['brightness'] == 0.0).sum()
         print(f"Не удалось обработать изображений: {failed_count}")
         
@@ -144,9 +154,12 @@ def main() -> None:
             else:
                 print(f"\nДиапазон '{args.filter_range}' не найден")
                 print(f"Доступные диапазоны: {', '.join(brightness_labels)}")
-
+        
         create_histogram(df_sorted, args.output_plot, args.show)
         print(f"Гистограмма сохранена: {args.output_plot}")
+
+        save_dataframe(df_sorted, args.output_csv)
+        print(f"Результаты сохранены в CSV: {args.output_csv}")
         
     except FileNotFoundError as e:
         print(f"Ошибка: {e}")
