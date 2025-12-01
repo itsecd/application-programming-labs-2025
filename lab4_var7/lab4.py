@@ -1,4 +1,3 @@
-# lab4.py
 import argparse
 import os
 
@@ -41,6 +40,47 @@ def calculate_image_brightness(absolute_path: str) -> float:
     return 0.0
 
 
+def add_brightness_range_column(df: pd.DataFrame, bins) -> pd.DataFrame:
+    """
+    Добавление колонки с диапазонами яркости.
+    """
+
+    if bins is None:
+        bins = [0, 51, 102, 153, 204, 256]
+    
+    labels = []
+    for i in range(len(bins) - 1):
+        labels.append(f"{bins[i]}-{bins[i+1]-1}")
+
+    df['brightness_range'] = pd.cut(df['brightness'], bins=bins, labels=labels, right=False)
+
+    return df, labels
+
+
+def create_histogram(df: pd.DataFrame, output_path: str, show_plot: bool = False) -> None:
+    """
+    Построение гистограммы распределения яркости.
+    """
+
+    ranges = df['brightness_range'].value_counts().sort_index()
+
+    plt.figure(figsize=(10, 6))
+    ranges.plot(kind='bar')
+
+    plt.title('Гистограмма распределения яркости изображений')
+    plt.xlabel('Диапазон яркости')
+    plt.ylabel('Количество изображений')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    plt.savefig(output_path)
+    
+    if show_plot:
+        plt.show()
+    else:
+        plt.close()
+
+
 def main() -> None:
     """
     Основная функция программы.
@@ -49,6 +89,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Анализ яркости изображений")
     parser.add_argument('--annotation', '-a', required=True,
                        help='Путь к файлу аннотации CSV')
+    parser.add_argument('--output_plot', '-op', default='brightness_histogram.png',
+                       help='Путь для сохранения гистограммы')
+    parser.add_argument('--bins', '-b', nargs='+', type=int, default=[0, 51, 102, 153, 204, 256],
+                       help='Границы диапазонов яркости')
+    parser.add_argument('--show', action='store_true',
+                       help='Показать график')
     
     args = parser.parse_args()
     
@@ -65,6 +111,14 @@ def main() -> None:
         
         df = df[df['brightness'] > 0.0]
         print(f"Успешно обработано изображений: {len(df)}")
+        
+        # Добавляем диапазоны яркости
+        df, brightness_labels = add_brightness_range_column(df, args.bins)
+        print(f"Диапазоны яркости: {', '.join(brightness_labels)}")
+        
+        # Создаем гистограмму
+        create_histogram(df, args.output_plot, args.show)
+        print(f"Гистограмма сохранена: {args.output_plot}")
         
     except FileNotFoundError as e:
         print(f"Ошибка: {e}")
