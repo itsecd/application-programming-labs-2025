@@ -11,17 +11,8 @@ def load_annotation_data(annotation_path: str) -> pd.DataFrame:
     Загрузка данных из файла аннотации.
     """
     
-    try:
-        df = pd.read_csv(annotation_path)
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Файл не найден: {annotation_path}")
-    
-    if len(df.columns) >= 2:
-        df = df.iloc[:, :2]
-        df.columns = ['absolute_path', 'relative_path']
-    else:
-        raise ValueError("В CSV недостаточно колонок")
-    
+    df = pd.read_csv(annotation_path, header=None)
+    df.columns = ['absolute_path', 'relative_path']
     return df
 
 
@@ -30,13 +21,10 @@ def calculate_image_brightness(absolute_path: str) -> float:
     Вычисление средней яркости изображения.
     """
 
-    try:
-        image = cv2.imread(absolute_path)
-        if image is not None:
-            return float(image.mean())
-    except Exception:
-        pass
-    return 0.0
+    image = cv2.imread(absolute_path)
+    if image is not None:
+        return float(image.mean())
+    return np.nan
 
 
 def add_brightness_column(df: pd.DataFrame) -> pd.DataFrame:
@@ -46,12 +34,12 @@ def add_brightness_column(df: pd.DataFrame) -> pd.DataFrame:
 
     df['brightness'] = df['absolute_path'].apply(calculate_image_brightness)
     
-    failed_count = (df['brightness'] == 0.0).sum()
+    failed_count = df['brightness'].isna().sum()
     if failed_count > 0:
         print(f"Не удалось обработать изображений: {failed_count}")
     
-    df = df[df['brightness'] > 0.0]
-
+    df = df.dropna(subset=['brightness'])
+    
     return df
 
 
