@@ -82,16 +82,10 @@ def sort_profiles_by_names(profiles: List[Dict[str, str]]) -> Tuple[List[Dict[st
     return sorted_profiles, invalid_profiles
 
 
-def save_to_new_file(profiles: List[Dict[str, str]], original_filename: str) -> Optional[str]:
-    """Сохранение результата в новый файл с сохранением структуры"""
-    if '.' in original_filename:
-        name_part = original_filename.rsplit('.', 1)[0]
-        new_filename = f"{name_part}_sorted.txt"
-    else:
-        new_filename = f"{original_filename}_sorted.txt"
-
+def save_to_file(profiles: List[Dict[str, str]], output_filename: str) -> str:
+    """Сохранение результата в указанный файл с сохранением структуры"""
     try:
-        with open(new_filename, 'w', encoding='utf-8') as file:
+        with open(output_filename, 'w', encoding='utf-8') as file:
             for i, profile in enumerate(profiles, 1):
                 file.write(f"{i})\n")
                 file.write(f"Фамилия: {profile['surname']}\n")
@@ -101,10 +95,9 @@ def save_to_new_file(profiles: List[Dict[str, str]], original_filename: str) -> 
                 file.write(f"Номер телефона или email: {profile['contact']}\n")
                 file.write(f"Город: {profile['city']}\n\n")
 
-        return new_filename
+        return output_filename
     except Exception as e:
-        print(f"Ошибка при сохранении файла: {e}")
-        return None
+        raise Exception(f"Ошибка при сохранении файла: {e}")
 
 
 def filter_and_print_invalid_profiles(invalid_profiles: List[Dict[str, str]]) -> None:
@@ -132,14 +125,16 @@ def print_sorted_profiles(sorted_profiles: List[Dict[str, str]]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description='Сортировка анкет по фамилиям и именам')
-    parser.add_argument('filename', type=str, help='Название файла с анкетами')
+    parser.add_argument('input_file', type=str, help='Название входного файла с анкетами')
+    parser.add_argument('output_file', type=str, help='Название выходного файла для результата')
 
     args = parser.parse_args()
-    filename = args.filename
+    input_filename = args.input_file
+    output_filename = args.output_file
 
     print("Чтение файла...")
     try:
-        lines = read_file(filename)
+        lines = read_file(input_filename)
     except (FileNotFoundError, Exception) as e:
         print(e)
         sys.exit(1)
@@ -160,12 +155,14 @@ def main() -> None:
     if invalid_profiles:
         filter_and_print_invalid_profiles(invalid_profiles)
 
-    print("\nСохранение результата...")
-    saved_file = save_to_new_file(sorted_profiles, filename)
-
-    if saved_file:
-        print(f"Результат сохранен в файл: {saved_file}")
+    print(f"\nСохранение результата в {output_filename}...")
+    try:
+        saved_file = save_to_file(sorted_profiles, output_filename)
+        print(f"Результат успешно сохранен в файл: {saved_file}")
         print(f"Всего сохранено {len(sorted_profiles)} анкет")
+    except Exception as e:
+        print(e)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
