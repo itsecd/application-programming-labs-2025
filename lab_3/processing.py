@@ -37,7 +37,7 @@ def apply_gradient_lightening(
         gradient = np.linspace(0, 1, height, dtype=np.float32)
         gradient = np.tile(gradient, (width, 1)).T
 
-    brightening = gradient[:, :, np.newaxis] * 100 * intensity
+    brightening = gradient[:, :, np.newaxis] * 255 * intensity
     result += brightening
 
     return np.clip(result, 0, 255).astype(np.uint8)
