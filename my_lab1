@@ -71,16 +71,16 @@ def main():
         args = parse_arguments()
         data = read_file(args.filename)
         candidates = split_candidates(data)
-        fulfilling_candidates = find_candidates(candidates, "927")
-        if fulfilling_candidates:
-            for item in fulfilling_candidates:
+        needed_candidates = find_candidates(candidates, "927")
+        if needed_candidates:
+            for item in needed_candidates:
                 print(item)
-            print(f"Number of fulfilling candidates: {len(fulfilling_candidates)}")
+            print(f"Number of needed candidates: {len(needed_candidates)}")
             if args.output:
-                write_in_file(args.output, fulfilling_candidates)
+                write_in_file(args.output, needed_candidates)
                 print(f"Successfully write output to: {args.output}")
         else:
-            print("No fulfilling candidates!")
+            print("No needed candidates!")
 
     except Exception:
         print("Something wrong happend")
