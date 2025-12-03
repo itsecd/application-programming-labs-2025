@@ -78,7 +78,7 @@ def load_image(image_path: str) -> Tuple[np.ndarray, str]:
         raise ValueError(f"Ошибка загрузки изображения: {e}")
 
 
-def get_image_size(img_array: np.ndarray) -> Tuple[int, int, Optional[int]]:
+def get_image_size(img_array: np.ndarray) -> Tuple[int, int, int]:
     """
     Получение размеров изображения
 
