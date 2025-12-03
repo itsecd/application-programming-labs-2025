@@ -113,16 +113,7 @@ def download_images(keyword: str, output_dir: str, max_num: int, timeout: int = 
             filters=filters if filters else None
         )
 
-        """
-        downloaded_files = []
-        for file_path in Path(output_dir).rglob('*.*'):
-            if (file_path.is_file() and 
-                file_path.stat().st_size > 0 and
-                file_path.suffix.lower() in {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'}):
-                downloaded_files.append(str(file_path))
-        
-        print(f"Изображений сохранено: {len(downloaded_files)}")
-        """
+ 
     except Exception as e:
         raise Exception(f"Ошибка при скачивании: {e}")
 def count_downloaded_files(output_dir:str)-> int:
