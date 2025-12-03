@@ -44,7 +44,7 @@ def download_audio(audio_path: Path) -> tuple[np.ndarray, int]:
     return data, samplerate
 
 
-def save_audio(audio_path, data, samplerate) -> None:
+def save_audio(audio_path: Path, data: np.ndarray, samplerate: int) -> None:
     """
     Сохранение файла.
     """
@@ -135,7 +135,7 @@ def demonstrate_result(data: np.ndarray, new_data: np.ndarray, samplerate: int) 
     ax2.set_title('Mixed Audio')
     ax2.set_xlabel('Time')
     ax2.set_ylabel('Amplitude')
-    ax2.axhline(0, color='black', linewidth=0.5, ls='--')
+    # ax2.axhline(0, color='black', linewidth=0.5, ls='--')
     ax2.grid(color='gray', linestyle='--', linewidth=0.3)
     ax2.legend()
     ax2.set_ylim([-y_max, y_max])
