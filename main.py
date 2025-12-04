@@ -4,6 +4,7 @@ import os
 import threading
 import time
 from typing import Iterator
+
 from icrawler.builtin import BingImageCrawler
 
 
@@ -13,8 +14,8 @@ class FilePathIterator:
     def __init__(
         self,
         dirpath: str,
-        csvfile: str,
         script_dir: str,
+        csvfile: str = "data.csv",
         size_ranges: list[tuple[list[int], list[int]]] = None,
     ):
         if not os.path.exists(dirpath):
@@ -171,7 +172,9 @@ def parse_size_pair(s: str) -> list[int]:
 
 def validate_size_ranges(size_ranges: list[tuple[list[int], list[int]]]) -> None:
     """Проверка диапазонов размеров на корректность"""
-    for i, (max_size, min_size) in enumerate(size_ranges, 1):
+    for i, (max_size, min_size) in enumerate(
+        size_ranges, 1
+    ):  # Для нумерации элементов.
         max_h, max_w = max_size
         min_h, min_w = min_size
 
@@ -401,7 +404,7 @@ def process_size_ranges(
 
     for i, (max_size, min_size) in enumerate(size_ranges, 1):
         # Последний диапазон получает остаток.
-        count = num_per_range + (remainder if i == len(size_ranges) else 0)
+        count = num_per_range + (remainder if i == len(size_ranges) else 0)  #
         download_images(
             directory,
             count,
@@ -438,6 +441,9 @@ def main():
     master_iterator = FilePathIterator(directory, csvfile, script_dir, size_ranges)
     master_iterator.init_csv()
     master_iterator.write_all()
+
+    for el in master_iterator:
+        print(el)
 
     print("\nЗавершено!")
 
