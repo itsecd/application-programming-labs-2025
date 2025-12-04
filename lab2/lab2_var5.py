@@ -2,7 +2,7 @@ import argparse
 import csv
 from pathlib import Path
 
-from icrawler.builtin import GoogleImageCrawler
+from icrawler.builtin import BingImageCrawler
 
 
 def parse_args() -> argparse.Namespace:
@@ -21,10 +21,12 @@ def download_images(keyword: str, color: str, save_dir: Path, count: int) -> Non
     """
     Скачивает изображения через BingImageCrawler по запросу, включающему цвет и ключевое слово.
     """
+    color_keywords = {"red": "cardinal bird", "yellow": "yellow warbler", "green": "parrot green", "blue": "blue jay"}
+    keyword = color_keywords[color]
     save_dir.mkdir(parents=True, exist_ok=True)
-    crawler = GoogleImageCrawler(storage={"root_dir": str(save_dir)}, feeder_threads=1, parser_threads=1, downloader_threads=4)
+    crawler = BingImageCrawler(storage={"root_dir": str(save_dir)}, feeder_threads=1, parser_threads=1, downloader_threads=4)
     filters = {"color" : color, "size": "large", "type" : "photo"}
-    crawler.crawl(keyword=keyword, max_num=count, filters=filters, file_idx_offset=0)
+    crawler.crawl(keyword=keyword, max_num=count)
 
 def write_csv_annotation(folder: Path, csv_path: Path) -> None:
     """
