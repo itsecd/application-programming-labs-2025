@@ -14,13 +14,17 @@ def read_file(path: str) -> str:
         return None
 
 
-def write_processed_file(original_path: str, processed_lines: str) -> bool:
+def write_processed_file(original_path: str, processed_lines: str, output_path: str = None ) -> bool:
     ''' Записывает обработанные данные в новый файл.''' 
     try:
-        directory = os.path.dirname(original_path)
-        new_file_path = os.path.join(directory, 'data_processed.txt')
+        if output_path is None:
+            directory = os.path.dirname(original_path)
+            new_file_path = os.path.join(directory, 'data_processed.txt')
         
-        with open(new_file_path, 'w', encoding='utf-8') as new_file:
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+
+        with open(output_path, 'w', encoding='utf-8') as new_file:
             for line in processed_lines:
                 new_file.write(line + '\n')
         

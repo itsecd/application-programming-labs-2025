@@ -7,6 +7,7 @@ def main() -> None:
     """Основная функция программы."""
     parser = argparse.ArgumentParser(description='Обработка данных пользователей')
     parser.add_argument('file', type=str, help='Путь к файлу с данными')
+    parser.add_argument('-o', '--output', type=str, help='Путь к выходному файлу (опционально)', default=None)
     args = parser.parse_args()
     
     
@@ -19,7 +20,7 @@ def main() -> None:
     processed_lines = process_lines(lines)
     
     
-    write_processed_file(args.file, processed_lines)
+    write_processed_file(args.file, processed_lines, args.output)
 
 
 if __name__ == '__main__':

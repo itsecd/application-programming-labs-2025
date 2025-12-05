@@ -73,33 +73,33 @@ def process_lines(lines: str) -> str:
     processed_lines = []
     processed_lines.append(lines[0])
     i = 1
-    
-    while i < len(lines):
-        if i < len(lines):
+    count_lines = len(lines)
+    while i < count_lines:
+        if i < count_lines:
             processed_lines.append(lines[i])
             i += 1
         
-        if i < len(lines):
+        if i < count_lines:
             processed_lines.append(process_name(lines[i]))
             i += 1
         
-        if i < len(lines):
+        if i < count_lines:
             processed_lines.append(process_gender(lines[i]))
             i += 1
         
-        if i < len(lines):
+        if i < count_lines:
             processed_lines.append(process_birth_date(lines[i]))
             i += 1
         
-        if i < len(lines):
+        if i < count_lines:
             processed_lines.append(process_contact(lines[i]))
             i += 1
         
-        if i < len(lines):
+        if i < count_lines:
             processed_lines.append(process_city(lines[i]))
             i += 1
         
-        if(len(lines)-i>1):
+        if(count_lines-i>1):
             for j in range(0,2):
                 processed_lines.append(lines[i])
                 i += 1
