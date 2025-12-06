@@ -1,7 +1,11 @@
+'''
+Функции для парсинга страницы
+'''
+import csv
 from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
-import csv
+
 
 BASE_URL: str = "https://mixkit.co/free-stock-music/instrument/"
 
@@ -18,7 +22,7 @@ def fetch_audio_urls(instrument: str) -> list[str]:
     url = f"{BASE_URL}{instrument}/"
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         response.raise_for_status()
     except requests.RequestException as e:
         print(f"Ошибка запроса страницы для {instrument}: {e}")
@@ -93,7 +97,7 @@ def download_audio_files(
 
     for i in range(count):
         try:
-            response = requests.get(urls[i])
+            response = requests.get(urls[i], timeout=10)
             response.raise_for_status()
             audio_bytes = response.content
         except requests.RequestException as e:
@@ -141,4 +145,3 @@ def save_annotation(
     except IOError as e:
         print(f"Ошибка при сохранении CSV: {e}")
         raise
-

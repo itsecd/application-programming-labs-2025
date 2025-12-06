@@ -1,3 +1,6 @@
+'''
+Итератор по путям файлов из CSV-аннотации 
+'''
 import csv
 from pathlib import Path
 
@@ -31,10 +34,13 @@ class FilePathIterator:
             ) as f:
                 reader = csv.DictReader(f)
                 self.rows = list(reader)
-        except Exception as e:
-            print(f"Ошибка чтения аннотации {annotation_file}: {e}")
-            self.rows = []
 
+        except FileNotFoundError:
+            print(f"Файл {annotation_file} не найден")
+            self.rows = []
+        except OSError as e:
+            print(f"Ошибка чтения файла '{annotation_file}': {e}")
+            self.rows = []
         self._index: int = 0
 
     def __iter__(self):
